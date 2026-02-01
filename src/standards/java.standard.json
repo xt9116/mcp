@@ -1,0 +1,99 @@
+{
+  "name": "Estándar de Mejores Prácticas Java",
+  "version": "1.0.0",
+  "purpose": "Definir estándares completos de desarrollo Java desde lo básico hasta lo avanzado",
+  "scope": "Desarrollo Java completo",
+  "framework": "Java SE/EE",
+
+  "basicPractices": {
+    "namingConventions": {
+      "packages": {
+        "pattern": "com.{company}.{project}.{module}",
+        "rules": ["Todo minúsculas", "Sin guiones bajos", "Dominio invertido", "Máximo 4 niveles"],
+        "examples": ["com.rimac.automation.api", "com.sistecredito.web.userinterfaces"]
+      },
+      "classes": {
+        "pattern": "PascalCase",
+        "rules": ["Sustantivos descriptivos", "Sin abreviaturas excepto comunes", "Máximo 25 caracteres"],
+        "examples": ["UserRepository", "PaymentProcessor", "SearchResult"],
+        "forbidden": ["user", "data", "manager", "handler", "util"]
+      },
+      "methods": {
+        "pattern": "camelCase",
+        "rules": ["Verbos descriptivos", "Máximo 15 caracteres", "Boolean: is/has/can/should"],
+        "examples": ["processPayment()", "isValidEmail()", "calculateTotal()"]
+      },
+      "constants": {
+        "pattern": "UPPER_SNAKE_CASE",
+        "rules": ["Final static", "Palabras completas"],
+        "examples": ["MAX_RETRY_ATTEMPTS", "DEFAULT_TIMEOUT", "API_BASE_URL"]
+      }
+    },
+    
+    "dataTypes": {
+      "primitives": {
+        "int": "Números enteros (-2^31 a 2^31-1)",
+        "long": "Números enteros grandes",
+        "double": "Números decimales (preferir sobre float)",
+        "boolean": "Valores true/false"
+      },
+      "wrappers": {
+        "usage": "Usar solo cuando necesario (null, collections, generics)",
+        "performance": "Preferir primitivos para mejor performance"
+      }
+    }
+  },
+
+  "intermediatePractices": {
+    "classDesign": {
+      "structure": {
+        "order": ["Constantes", "Variables", "Constructores", "Métodos públicos", "Métodos privados"],
+        "rules": ["Una responsabilidad", "Máximo 500 líneas", "Máximo 10 métodos públicos"]
+      }
+    },
+    "exceptions": {
+      "handling": ["No suprimir excepciones", "Loggear con contexto", "Usar try-with-resources"],
+      "forbidden": ["catch (Exception e) {}", "e.printStackTrace()"]
+    },
+    "collections": {
+      "List": "ArrayList para acceso aleatorio, LinkedList para inserciones",
+      "Set": "HashSet para performance, TreeSet para ordenamiento",
+      "Map": "HashMap para performance, TreeMap para ordenamiento por clave"
+    }
+  },
+
+  "advancedPractices": {
+    "generics": {
+      "rules": ["Usar tipos específicos", "Evitar raw types", "PECS: Producer Extends, Consumer Super"]
+    },
+    "functionalProgramming": {
+      "lambdas": ["Expresiones simples (1-3 líneas)", "Referencias a métodos cuando aplique"],
+      "streams": ["Evitar side effects", "Usar Optional para null checks"]
+    },
+    "concurrency": {
+      "threadSafety": ["Campos finales thread-safe", "Usar Atomic* para contadores", "Considerar inmutabilidad"]
+    }
+  },
+
+  "cleanCodePrinciples": {
+    "solidPrinciples": {
+      "S": "Una clase = una responsabilidad",
+      "O": "Abierto para extensión, cerrado para modificación",
+      "L": "Subtipos sustituibles por tipos base",
+      "I": "Interfaces específicas, no generales",
+      "D": "Depender de abstracciones, no concreciones"
+    },
+    "codeMetrics": {
+      "cyclomaticComplexity": 10,
+      "linesOfCode": {"class": 500, "method": 30},
+      "parameters": 5
+    }
+  },
+
+  "validationRules": {
+    "naming": "Validar convenciones de nombres",
+    "structure": "Validar orden y tamaño de clases",
+    "quality": "Validar SOLID y métricas",
+    "security": "Validar input, no hardcodear credenciales"
+  }
+}

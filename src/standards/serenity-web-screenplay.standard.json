@@ -1,0 +1,127 @@
+{
+  "name": "Estándar Serenity Screenplay - WEB UI",
+  "version": "2.0.0",
+  "purpose": "Estándar para pruebas web con Serenity BDD + Screenplay + Selenium",
+  "framework": "Serenity BDD",
+  "pattern": "Screenplay",
+  "scope": "WEB UI",
+
+  "packageStructure": {
+    "mandatory": true,
+    "pattern": "co.com.{projectName}.web",
+    "mainPackage": "co.com.screenplay.web",
+    "testPackage": "co.com.sistecredito.web"
+  },
+
+  "principles": {
+    "screenplayFirst": {
+      "forbidden": [
+        "Page Object Model tradicional",
+        "@FindBy annotations",
+        "WebDriver directo en Tasks"
+      ],
+      "required": [
+        "Locators en clases UI con Target",
+        "UI classes extienden PageObject",
+        "Tasks usan Tasks.instrumented()"
+      ]
+    },
+    "separationOfResponsibilities": {
+      "stepDefinitions": {"maxLines": 5, "forbidden": ["Lógica", "WebDriver directo"]},
+      "tasks": {"responsibility": "Acciones de negocio UI", "forbidden": ["WebDriver directo"]},
+      "interactions": {"responsibility": "Acciones técnicas reutilizables"},
+      "questions": {"responsibility": "Validaciones visuales", "mustReturn": "Boolean o valor"},
+      "ui": {"responsibility": "Target locators", "forbidden": ["Lógica", "By directo"]}
+    }
+  },
+
+  "projectStructure": {
+    "sourceStructure": {
+      "src/main/java/co/com/screenplay/web/": {
+        "userinterfaces/": "Target locators (UI{PageName})",
+        "tasks/": "Tareas de negocio (BuscarProducto, IniciarSesion)",
+        "interactions/": "Acciones técnicas reutilizables (opcional)",
+        "questions/": "Validaciones (ElementoEsVisible, TextoDelElemento)"
+      },
+      "src/test/java/co/com/sistecredito/web/": {
+        "conf/": "SetTheStage (OnStage setup) - OBLIGATORIO",
+        "stepdefinitions/": "Glue Cucumber (máx 5 líneas)",
+        "runners/": "Runner.java"
+      },
+      "src/test/resources/": {
+        "features/": "Archivos .feature",
+        "serenity.properties": "Configuración (OBLIGATORIO)"
+      }
+    }
+  },
+
+  "namingConventions": {
+    "language": "TODO en ESPAÑOL excepto framework",
+    "uiConstants": {
+      "pattern": "{PREFIX}_{NAME}",
+      "prefixes": {
+        "TXT_": "Inputs de texto",
+        "BTN_": "Botones",
+        "LBL_": "Labels",
+        "DDL_": "Dropdowns",
+        "CHK_": "Checkboxes"
+      }
+    },
+    "tasks": {
+      "pattern": "{Acción}{Complemento}",
+      "examples": ["BuscarProducto", "IniciarSesion", "AgregarAlCarrito"]
+    },
+    "questions": {
+      "pattern": "{Elemento}Es{Condición}",
+      "examples": ["ElementoEsVisible", "TextoDelElemento", "CantidadDeElementos"]
+    }
+  },
+
+  "standards": {
+    "userinterfaces": {
+      "className": "UI{PageName}",
+      "extends": "PageObject",
+      "rules": [
+        "DEBE extender PageObject",
+        "SOLO Target locators (NO By)",
+        "public static final Target",
+        "@DefaultUrl para página inicial",
+        "NO métodos de acción"
+      ],
+      "template": "package co.com.screenplay.web.userinterfaces;\n\nimport net.serenitybdd.annotations.DefaultUrl;\nimport net.serenitybdd.core.pages.PageObject;\nimport net.serenitybdd.screenplay.targets.Target;\n\n@DefaultUrl(\"https://www.ejemplo.com\")\npublic class UI{PageName} extends PageObject {\n\n    public static final Target TXT_CAMPO = Target.the(\"Campo\").locatedBy(\"#campo\");\n    public static final Target BTN_ACCION = Target.the(\"Botón\").locatedBy(\"#btn\");\n}"
+    },
+    "tasks": {
+      "rules": [
+        "Implementa Task",
+        "Constructor público",
+        "Factory method con Tasks.instrumented()",
+        "@Step annotation",
+        "Incluye waits apropiados"
+      ]
+    },
+    "conf": {
+      "className": "SetTheStage",
+      "mandatory": true,
+      "template": "package co.com.sistecredito.web.conf;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.After;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.OnlineCast;\n\npublic class SetTheStage {\n    \n    @Before\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n    \n    @After\n    public void tearDown() {\n        OnStage.drawTheCurtain();\n    }\n}"
+    }
+  },
+
+  "validations": {
+    "noPageObjectModel": "❌ NO usar @FindBy - usar Screenplay",
+    "noWebDriverDirect": "❌ NO WebDriver directo - usar Actions Serenity",
+    "mandatoryInstrumented": "❌ Usar Tasks.instrumented() - NO 'new Task()'",
+    "publicConstructors": "❌ Constructores DEBEN ser públicos (ByteBuddy)"
+  },
+
+  "locatorStrategies": {
+    "priority": ["id", "name", "cssSelector", "xpath"],
+    "recommendation": "Preferir id > name > css > xpath",
+    "avoidXPath": "XPath es frágil - usar solo cuando sea necesario"
+  },
+
+  "mandatoryFiles": {
+    "build.gradle": "Dependencias Serenity Web",
+    "serenity.properties": "webdriver.driver=chrome, screenshots, etc.",
+    "SetTheStage.java": "OnStage.setTheStage() en @Before hook"
+  }
+}

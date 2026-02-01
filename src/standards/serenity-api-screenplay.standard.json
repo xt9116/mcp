@@ -1,0 +1,122 @@
+{
+  "name": "Estándar Serenity Screenplay - API REST",
+  "version": "1.0.0",
+  "purpose": "Estándar para pruebas de APIs REST con Serenity BDD + Screenplay",
+  "framework": "Serenity BDD",
+  "pattern": "Screenplay",
+  "scope": "API REST",
+
+  "principles": {
+    "screenplayFirst": {
+      "enabled": true,
+      "forbidden": ["@Steps annotation", "Lógica en step definitions"],
+      "required": ["Toda acción debe ser Task, Interaction o Question"]
+    },
+    "separationOfResponsibilities": {
+      "stepDefinitions": {"maxLines": 3, "forbidden": ["Lógica", "Aserciones técnicas"]},
+      "tasks": {"responsibility": "Acciones de negocio", "forbidden": ["HTTP directo"]},
+      "interactions": {"responsibility": "Llamadas HTTP", "forbidden": ["Aserciones"]},
+      "questions": {"responsibility": "Validaciones", "mustReturn": "Boolean o valor"},
+      "models": {"responsibility": "Request/Response", "forbidden": ["Lógica"]},
+      "builders": {"responsibility": "Construcción de datos de prueba"}
+    }
+  },
+
+  "projectStructure": {
+    "basePackage": "com.{company}",
+    "sourceStructure": {
+      "src/main/java/com/{company}/": {
+        "tasks/": "Tareas de negocio (CrearUsuario, ObtenerPoliza)",
+        "interactions/": "HTTP (PostRequest, GetRequest, PutRequest)",
+        "questions/": "Validaciones (ResponseStatusCode, ResponseBodyField)",
+        "models/": "POJOs (CreateUserRequest, UserResponse)",
+        "builders/": "Construcción de datos (UserBuilder)",
+        "endpoints/": "URLs (UserEndpoints)"
+      },
+      "src/test/java/com/{company}/": {
+        "stepdefinitions/": "Glue Cucumber (máx 3 líneas)",
+        "runners/": "Ejecutores de tests"
+      },
+      "src/test/resources/": {
+        "features/": "Archivos .feature Gherkin",
+        "serenity.properties": "Configuración Serenity"
+      }
+    }
+  },
+
+  "namingConventions": {
+    "language": "TODO en ESPAÑOL excepto framework",
+    "tasks": {
+      "pattern": "Verbo + Recurso",
+      "examples": ["CrearUsuario", "ObtenerPoliza", "ActualizarCliente"]
+    },
+    "interactions": {
+      "pattern": "{HttpMethod}Request",
+      "examples": ["PostRequest", "GetRequest", "PutRequest", "DeleteRequest"]
+    },
+    "questions": {
+      "pattern": "{Qué} + Del/De + {Origen}",
+      "examples": ["CodigoDeEstadoRespuesta", "CampoDelCuerpo", "MensajeDeError"]
+    },
+    "models": {
+      "pattern": "{Recurso}Request|Response",
+      "examples": ["SolicitudCrearUsuario", "RespuestaUsuario"]
+    }
+  },
+
+  "standards": {
+    "tasks": {
+      "rules": [
+        "Implementa Task",
+        "Constructor público",
+        "Factory method con Tasks.instrumented()",
+        "Lenguaje de negocio"
+      ],
+      "template": "public class {TaskName} implements Task {\n    private final {Model}Request request;\n    \n    public {TaskName}({Model}Request request) {\n        this.request = request;\n    }\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            {Interaction}.to({Endpoint}, request)\n        );\n    }\n    \n    public static {TaskName} with({Model}Request request) {\n        return Tasks.instrumented({TaskName}.class, request);\n    }\n}"
+    },
+    "interactions": {
+      "rules": [
+        "Implementa Interaction",
+        "Sin aserciones",
+        "Reutilizable"
+      ]
+    },
+    "questions": {
+      "rules": [
+        "Implementa Question<T>",
+        "Retorna valor",
+        "Sin lógica compleja"
+      ]
+    }
+  },
+
+  "mandatoryValidations": {
+    "statusCode": "Validar código de respuesta HTTP",
+    "bodyField": "Validar al menos un campo del body",
+    "errorMessage": "Validar mensaje de error (si aplica)"
+  },
+
+  "serenityBdd4Migration": {
+    "deprecatedClasses": [
+      {"old": "CucumberSerenityRunner", "new": "CucumberWithSerenity"}
+    ],
+    "criticalChanges": [
+      {"method": "Get.to()", "replacement": "Get.resource()"}
+    ]
+  },
+
+  "httpStatusCodes": {
+    "GET": 200,
+    "POST": 201,
+    "PUT": 200,
+    "DELETE": 204
+  },
+
+  "forbidden": [
+    "Usar @Steps",
+    "Lógica en step definitions",
+    "HTTP directo en Tasks",
+    "URLs hardcodeadas",
+    "Endpoints sin versión"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "serenity-standards-mcp",
+  "version": "1.0.0",
+  "description": "MCP para validación y generación de código Java, OOP/SOLID, y Serenity Screenplay (API/Web)",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node build/index.js",
+    "dev": "tsc && node build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "serenity",
+    "screenplay",
+    "java",
+    "solid",
+    "oop",
+    "automation",
+    "testing"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

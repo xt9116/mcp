@@ -1,0 +1,111 @@
+{
+  "name": "Estándar de Programación Orientada a Objetos y Principios SOLID",
+  "version": "1.1.0",
+  "purpose": "Definir implementación de código OOP siguiendo principios SOLID",
+  "scope": "Programación Orientada a Objetos",
+  
+  "oopPrinciples": {
+    "encapsulation": {
+      "name": "Encapsulación",
+      "rules": [
+        "Campos privados por defecto",
+        "Usar getters y setters",
+        "No exponer estructuras internas",
+        "Validar datos en setters"
+      ],
+      "violations": ["Campos públicos", "Exponer colecciones mutables"]
+    },
+    
+    "abstraction": {
+      "name": "Abstracción",
+      "rules": [
+        "Usar interfaces para contratos",
+        "Clases abstractas para comportamiento común",
+        "Métodos bien nombrados",
+        "Ocultar complejidad"
+      ]
+    },
+    
+    "inheritance": {
+      "name": "Herencia",
+      "rules": [
+        "Solo para relaciones IS-A verdaderas",
+        "Preferir composición sobre herencia",
+        "No más de 3 niveles de herencia"
+      ]
+    },
+    
+    "polymorphism": {
+      "name": "Polimorfismo",
+      "rules": [
+        "Usar interfaces para comportamientos",
+        "Evitar instanceof excesivo",
+        "Polimorfismo en lugar de condicionales"
+      ]
+    }
+  },
+  
+  "solidPrinciples": {
+    "singleResponsibility": {
+      "initial": "S",
+      "name": "Single Responsibility Principle",
+      "definition": "Una clase debe tener una única razón para cambiar",
+      "rules": ["Una clase = una responsabilidad", "Métodos cohesivos"],
+      "violations": ["God Classes", "Mezclar lógica de negocio con persistencia"]
+    },
+    
+    "openClosed": {
+      "initial": "O",
+      "name": "Open/Closed Principle",
+      "definition": "Abierto para extensión, cerrado para modificación",
+      "rules": ["Usar abstracciones", "Nuevo comportamiento = nueva clase"],
+      "violations": ["Switch sobre tipos", "Modificar clases existentes"]
+    },
+    
+    "liskovSubstitution": {
+      "initial": "L",
+      "name": "Liskov Substitution Principle",
+      "definition": "Subtipos deben ser sustituibles por tipos base",
+      "rules": ["Cumplir contrato de clase base", "No fortalecer precondiciones"],
+      "violations": ["Override que cambia comportamiento esperado"]
+    },
+    
+    "interfaceSegregation": {
+      "initial": "I",
+      "name": "Interface Segregation Principle",
+      "definition": "Interfaces específicas mejor que generales",
+      "rules": ["Interfaces pequeñas y cohesivas", "Una interfaz por rol"],
+      "violations": ["Interfaces fat con muchos métodos"]
+    },
+    
+    "dependencyInversion": {
+      "initial": "D",
+      "name": "Dependency Inversion Principle",
+      "definition": "Depender de abstracciones, no concreciones",
+      "rules": ["Inyectar dependencias", "No usar 'new' para dependencias"],
+      "violations": ["Crear dependencias con 'new'", "Dependencia de clases concretas"]
+    }
+  },
+  
+  "codeSmells": {
+    "bloaters": ["Long Method", "Large Class", "Long Parameter List"],
+    "oopAbusers": ["Switch Statements", "Temporary Field"],
+    "changePreventers": ["Divergent Change", "Shotgun Surgery"],
+    "dispensables": ["Duplicate Code", "Lazy Class", "Dead Code"]
+  },
+  
+  "metrics": {
+    "cyclomaticComplexity": 10,
+    "linesOfCode": 300,
+    "methodLength": 20,
+    "classDepth": 3,
+    "coupling": 7
+  },
+  
+  "refactoringPatterns": {
+    "extractMethod": "Método largo → extraer métodos pequeños",
+    "extractClass": "Múltiples responsabilidades → dividir clases",
+    "introduceParameterObject": ">3 parámetros → crear objeto parameter",
+    "replaceConditionalWithPolymorphism": "Switch sobre tipos → polimorfismo"
+  }
+}
