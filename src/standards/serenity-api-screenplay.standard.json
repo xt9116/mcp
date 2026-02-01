@@ -1,122 +1,54 @@
 {
   "name": "Estándar Serenity Screenplay - API REST",
   "version": "1.0.0",
-  "purpose": "Estándar para pruebas de APIs REST con Serenity BDD + Screenplay",
+  "purpose": "Definir una forma única, consistente y escalable de implementar pruebas de APIs REST usando Serenity BDD + Screenplay",
   "framework": "Serenity BDD",
   "pattern": "Screenplay",
   "scope": "API REST",
-
-  "principles": {
-    "screenplayFirst": {
-      "enabled": true,
-      "forbidden": ["@Steps annotation", "Lógica en step definitions"],
-      "required": ["Toda acción debe ser Task, Interaction o Question"]
-    },
-    "separationOfResponsibilities": {
-      "stepDefinitions": {"maxLines": 3, "forbidden": ["Lógica", "Aserciones técnicas"]},
-      "tasks": {"responsibility": "Acciones de negocio", "forbidden": ["HTTP directo"]},
-      "interactions": {"responsibility": "Llamadas HTTP", "forbidden": ["Aserciones"]},
-      "questions": {"responsibility": "Validaciones", "mustReturn": "Boolean o valor"},
-      "models": {"responsibility": "Request/Response", "forbidden": ["Lógica"]},
-      "builders": {"responsibility": "Construcción de datos de prueba"}
-    }
-  },
-
-  "projectStructure": {
-    "basePackage": "com.{company}",
-    "sourceStructure": {
-      "src/main/java/com/{company}/": {
-        "tasks/": "Tareas de negocio (CrearUsuario, ObtenerPoliza)",
-        "interactions/": "HTTP (PostRequest, GetRequest, PutRequest)",
-        "questions/": "Validaciones (ResponseStatusCode, ResponseBodyField)",
-        "models/": "POJOs (CreateUserRequest, UserResponse)",
-        "builders/": "Construcción de datos (UserBuilder)",
-        "endpoints/": "URLs (UserEndpoints)"
+  "requestTypes": {
+    "description": "Tipos de solicitudes soportadas por el MCP - No todo es Historia de Usuario",
+    "types": {
+      "INIT": {
+        "name": "Inicialización",
+        "description": "Crear estructura base del proyecto, sin endpoints ni lógica funcional",
+        "requires": ["framework", "pattern", "scope", "basePackage"],
+        "generates": ["projectStructure", "mainRunner", "serenityProperties"],
+        "notRequires": ["endpoints", "validations", "builders", "tasks"],
+        "rules": {
+          "generateStructureOnly": true,
+          "noEndpoints": true,
+          "noValidations": true,
+          "noBuilders": true,
+          "noTasks": true
+        }
       },
-      "src/test/java/com/{company}/": {
-        "stepdefinitions/": "Glue Cucumber (máx 3 líneas)",
-        "runners/": "Ejecutores de tests"
-      },
-      "src/test/resources/": {
-        "features/": "Archivos .feature Gherkin",
-        "serenity.properties": "Configuración Serenity"
+      "API_HU": {
+        "name": "Historia de Usuario API",
+        "description": "Historia de usuario completa con endpoint, models, tasks, validaciones",
+        "requires": ["id", "nombre", "endpoint", "metodo", "request", "response", "validaciones"],
+        "generates": ["feature", "stepDefinitions", "task", "interaction", "question", "model", "builder", "endpoint"],
+        "notRequires": [],
+        "rules": {
+          "generateAll": true,
+          "validateBusiness": true
+        }
       }
     }
   },
-
-  "namingConventions": {
-    "language": "TODO en ESPAÑOL excepto framework",
-    "tasks": {
-      "pattern": "Verbo + Recurso",
-      "examples": ["CrearUsuario", "ObtenerPoliza", "ActualizarCliente"]
-    },
-    "interactions": {
-      "pattern": "{HttpMethod}Request",
-      "examples": ["PostRequest", "GetRequest", "PutRequest", "DeleteRequest"]
-    },
-    "questions": {
-      "pattern": "{Qué} + Del/De + {Origen}",
-      "examples": ["CodigoDeEstadoRespuesta", "CampoDelCuerpo", "MensajeDeError"]
-    },
-    "models": {
-      "pattern": "{Recurso}Request|Response",
-      "examples": ["SolicitudCrearUsuario", "RespuestaUsuario"]
-    }
-  },
-
-  "standards": {
-    "tasks": {
-      "rules": [
-        "Implementa Task",
-        "Constructor público",
-        "Factory method con Tasks.instrumented()",
-        "Lenguaje de negocio"
-      ],
-      "template": "public class {TaskName} implements Task {\n    private final {Model}Request request;\n    \n    public {TaskName}({Model}Request request) {\n        this.request = request;\n    }\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            {Interaction}.to({Endpoint}, request)\n        );\n    }\n    \n    public static {TaskName} with({Model}Request request) {\n        return Tasks.instrumented({TaskName}.class, request);\n    }\n}"
-    },
-    "interactions": {
-      "rules": [
-        "Implementa Interaction",
-        "Sin aserciones",
-        "Reutilizable"
-      ]
-    },
-    "questions": {
-      "rules": [
-        "Implementa Question<T>",
-        "Retorna valor",
-        "Sin lógica compleja"
-      ]
-    }
-  },
-
-  "mandatoryValidations": {
-    "statusCode": "Validar código de respuesta HTTP",
-    "bodyField": "Validar al menos un campo del body",
-    "errorMessage": "Validar mensaje de error (si aplica)"
-  },
-
-  "serenityBdd4Migration": {
-    "deprecatedClasses": [
-      {"old": "CucumberSerenityRunner", "new": "CucumberWithSerenity"}
-    ],
-    "criticalChanges": [
-      {"method": "Get.to()", "replacement": "Get.resource()"}
-    ]
-  },
-
-  "httpStatusCodes": {
-    "GET": 200,
-    "POST": 201,
-    "PUT": 200,
-    "DELETE": 204
-  },
-
-  "forbidden": [
-    "Usar @Steps",
-    "Lógica en step definitions",
-    "HTTP directo en Tasks",
-    "URLs hardcodeadas",
-    "Endpoints sin versión"
-  ]
+  "completeExample": {
+    "huId": "HU-001",
+    "huName": "Visualizar todos los personajes",
+    "baseUrl": "https://rickandmortyapi.com/api",
+    "endpoint": "/character",
+    "method": "GET",
+    "feature": "# language: es\nCaracterística: Consulta de personajes\n\n  @HU-001 @api\n  Escenario: Consultar todos los personajes\n    Dado que el servicio de personajes está disponible\n    Cuando el usuario consulta todos los personajes\n    Entonces el código de respuesta debe ser 200\n    Y el body debe contener el campo \"info\"\n    Y el body debe contener el campo \"results\"",
+    "endpoint_class": "package com.rickandmorty.endpoints;\n\npublic class CharacterEndpoints {\n    public static final String BASE_URL = \"https://rickandmortyapi.com/api\";\n    public static final String GET_ALL_CHARACTERS = \"/character\";\n    public static final String GET_CHARACTER_BY_ID = \"/character/{id}\";\n}",
+    "model_response": "package com.rickandmorty.models;\n\nimport com.fasterxml.jackson.annotation.JsonIgnoreProperties;\nimport com.fasterxml.jackson.annotation.JsonProperty;\nimport java.util.List;\n\n@JsonIgnoreProperties(ignoreUnknown = true)\npublic class CharacterResponse {\n    \n    @JsonProperty(\"info\")\n    private Info info;\n    \n    @JsonProperty(\"results\")\n    private List<Character> results;\n    \n    public Info getInfo() { return info; }\n    public void setInfo(Info info) { this.info = info; }\n    \n    public List<Character> getResults() { return results; }\n    public void setResults(List<Character> results) { this.results = results; }\n    \n    @JsonIgnoreProperties(ignoreUnknown = true)\n    public static class Info {\n        @JsonProperty(\"count\")\n        private Integer count;\n        \n        @JsonProperty(\"pages\")\n        private Integer pages;\n        \n        @JsonProperty(\"next\")\n        private String next;\n        \n        @JsonProperty(\"prev\")\n        private String prev;\n        \n        public Integer getCount() { return count; }\n        public void setCount(Integer count) { this.count = count; }\n        \n        public Integer getPages() { return pages; }\n        public void setPages(Integer pages) { this.pages = pages; }\n        \n        public String getNext() { return next; }\n        public void setNext(String next) { this.next = next; }\n        \n        public String getPrev() { return prev; }\n        public void setPrev(String prev) { this.prev = prev; }\n    }\n}",
+    "interaction": "package com.rickandmorty.interactions;\n\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.screenplay.Interaction;\nimport net.serenitybdd.screenplay.rest.interactions.Get;\nimport static net.serenitybdd.screenplay.Tasks.instrumented;\n\npublic class GetRequest implements Interaction {\n    \n    private final String endpoint;\n    \n    public GetRequest(String endpoint) {\n        if (endpoint == null || endpoint.isEmpty()) {\n            throw new IllegalArgumentException(\"Endpoint cannot be null or empty\");\n        }\n        this.endpoint = endpoint;\n    }\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            Get.resource(endpoint)\n        );\n    }\n    \n    public static GetRequest to(String endpoint) {\n        return instrumented(GetRequest.class, endpoint);\n    }\n}",
+    "task": "package com.rickandmorty.tasks;\n\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.screenplay.Task;\nimport net.serenitybdd.screenplay.rest.abilities.CallAnApi;\nimport com.rickandmorty.interactions.GetRequest;\nimport com.rickandmorty.endpoints.CharacterEndpoints;\nimport static net.serenitybdd.screenplay.Tasks.instrumented;\n\npublic class GetAllCharacters implements Task {\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            GetRequest.to(CharacterEndpoints.GET_ALL_CHARACTERS)\n        );\n    }\n    \n    public static GetAllCharacters fromApi() {\n        return instrumented(GetAllCharacters.class);\n    }\n}",
+    "question_status": "package com.rickandmorty.questions;\n\nimport net.serenitybdd.screenplay.Question;\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.rest.SerenityRest;\n\npublic class ResponseStatusCode implements Question<Integer> {\n    \n    @Override\n    public Integer answeredBy(Actor actor) {\n        return SerenityRest.lastResponse().statusCode();\n    }\n    \n    public static ResponseStatusCode value() {\n        return new ResponseStatusCode();\n    }\n}",
+    "question_field": "package com.rickandmorty.questions;\n\nimport net.serenitybdd.screenplay.Question;\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.rest.SerenityRest;\n\npublic class ResponseInfoField implements Question<Object> {\n    \n    @Override\n    public Object answeredBy(Actor actor) {\n        return SerenityRest.lastResponse().jsonPath().get(\"info\");\n    }\n    \n    public static ResponseInfoField value() {\n        return new ResponseInfoField();\n    }\n}",
+    "stepDefinitions": "package com.rickandmorty.stepdefinitions;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.en.*;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.OnlineCast;\nimport net.serenitybdd.screenplay.rest.abilities.CallAnApi;\nimport com.rickandmorty.tasks.GetAllCharacters;\nimport com.rickandmorty.questions.ResponseStatusCode;\nimport com.rickandmorty.questions.ResponseInfoField;\nimport com.rickandmorty.endpoints.CharacterEndpoints;\nimport static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;\nimport static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;\nimport static net.serenitybdd.screenplay.GivenWhenThen.seeThat;\nimport static org.hamcrest.Matchers.*;\n\npublic class CharacterStepDefinitions {\n    \n    @Before\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n    \n    @Given(\"que el servicio de personajes está disponible\")\n    public void queElServicioEstaDisponible() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(CharacterEndpoints.BASE_URL));\n    }\n    \n    @When(\"el usuario consulta todos los personajes\")\n    public void elUsuarioConsultaTodosLosPersonajes() {\n        theActorInTheSpotlight()\n            .attemptsTo(GetAllCharacters.fromApi());\n    }\n    \n    @Then(\"el código de respuesta debe ser {int}\")\n    public void elCodigoDeRespuestaDebeSer(Integer statusCode) {\n        theActorInTheSpotlight()\n            .should(seeThat(ResponseStatusCode.value(), equalTo(statusCode)));\n    }\n    \n    @And(\"el body debe contener el campo {string}\")\n    public void elBodyDebeContenerElCampo(String field) {\n        if (\"info\".equals(field)) {\n            theActorInTheSpotlight()\n                .should(seeThat(ResponseInfoField.value(), notNullValue()));\n        }\n    }\n}",
+    "runner": "package com.rickandmorty.runners;\n\nimport io.cucumber.junit.CucumberOptions;\nimport net.serenitybdd.cucumber.CucumberWithSerenity;\nimport org.junit.runner.RunWith;\n\n@RunWith(CucumberWithSerenity.class)\n@CucumberOptions(\n    features = \"src/test/resources/features\",\n    glue = \"com.rickandmorty.stepdefinitions\",\n    tags = \"not @ignore\",\n    snippets = CucumberOptions.SnippetType.CAMELCASE,\n    plugin = {\"pretty\", \"json:target/cucumber-reports/cucumber.json\"}\n)\npublic class ApiTestRunner {\n}"
+  }
 }
