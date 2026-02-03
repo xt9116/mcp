@@ -157,8 +157,9 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-${projectType !== 'web' ? `    implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
-    implementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"` : ''}
+    // Serenity REST dependencies for API testing (included in all project types for flexibility)
+    testImplementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
+    testImplementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:\${junitVersion}"
     testImplementation "org.assertj:assertj-core:\${assertjVersion}"
@@ -230,6 +231,7 @@ function generatePomXml(config: ProjectStructureConfig): string {
         <!-- serenity-core, serenity-cucumber, serenity-rest-assured and serenity-screenplay-rest do NOT have test scope -->
         <!-- because src/main/java contains Tasks, Interactions, Questions, Models that implement -->
         <!-- Serenity interfaces (Task, Interaction, Question) and need these dependencies at compile time -->
+        <!-- screenplay-rest is included in all project types for flexibility (web projects may need API calls for setup/teardown) -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
@@ -246,16 +248,19 @@ function generatePomXml(config: ProjectStructureConfig): string {
             <artifactId>serenity-cucumber</artifactId>
             <version>\${serenity.version}</version>
         </dependency>
-${projectType !== 'web' ? `        <dependency>
+        <!-- Serenity REST dependencies for API testing (included in all project types) -->
+        <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-rest-assured</artifactId>
             <version>\${serenity.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-screenplay-rest</artifactId>
             <version>\${serenity.version}</version>
-        </dependency>` : ''}
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
