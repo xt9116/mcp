@@ -157,7 +157,7 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-${projectType !== 'web' ? `    testImplementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
+${projectType !== 'web' ? `    implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
     implementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"` : ''}
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:\${junitVersion}"
