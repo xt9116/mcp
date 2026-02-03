@@ -318,7 +318,7 @@ function getResourceFromEndpoint(endpoint: string): string {
 function getEndpointConstantName(method: string, resource: string): string {
   const methodUpper = method.toUpperCase();
   const resourceUpper = resource.toUpperCase();
-  
+
   const methodMap: Record<string, string> = {
     'GET': 'OBTENER',
     'POST': 'CREAR',
@@ -326,6 +326,6 @@ function getEndpointConstantName(method: string, resource: string): string {
     'DELETE': 'ELIMINAR',
     'PATCH': 'ACTUALIZAR_PARCIAL'
   };
-  
+
   return `${methodMap[methodUpper] || methodUpper}_${resourceUpper}`;
 }

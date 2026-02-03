@@ -7,7 +7,7 @@
 interface ValidationPayloadWeb {
   code?: string;
   type?: 'Task' | 'Interaction' | 'Question' | 'StepDefinition' | 'UI' | 'Page' | 'SetTheStage';
-  
+
   stepDefinitionsLines?: number;
   taskContainsWebDriverDirect?: boolean;
   interactionContainsAssertions?: boolean;
@@ -21,20 +21,20 @@ interface ValidationPayloadWeb {
   taskUsesBusinessLanguage?: boolean;
   urlIsHardcoded?: boolean;
   hasStepAnnotation?: boolean;
-  
+
   className?: string;
   implementsCorrectInterface?: boolean;
   hasStaticFactoryMethod?: boolean;
   hasPublicConstructor?: boolean;
   usesInstrumented?: boolean;
-  
+
   scenarioValidatesVisibility?: boolean;
   scenarioValidatesText?: boolean;
   scenarioValidatesElementCount?: boolean;
-  
+
   locatorStrategy?: 'id' | 'name' | 'cssSelector' | 'xpath';
   locatorIsStable?: boolean;
-  
+
   // Validaciones de naming conventions (actualizado)
   usesCorrectUIPrefix?: boolean;
   usesCorrectTargetPrefixes?: boolean;
@@ -55,11 +55,11 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
 
   // Validación Screenplay First
   if (payload.usesPageObjectModel) {
-    errors.push("❌ PROHIBIDO: No usar Page Object Model tradicional (@FindBy)");
+    errors.push('❌ PROHIBIDO: No usar Page Object Model tradicional (@FindBy)');
   }
 
   if (payload.usesFindByAnnotations) {
-    errors.push("❌ PROHIBIDO: No usar @FindBy annotations - usar Target locators");
+    errors.push('❌ PROHIBIDO: No usar @FindBy annotations - usar Target locators');
   }
 
   // Validaciones de estructura de carpetas
@@ -72,22 +72,22 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
     if (payload.stepsExceedThreeLines) {
       errors.push(`❌ Step Definitions supera el máximo de 3 líneas (tiene ${payload.stepDefinitionsLines} líneas)`);
     }
-    
+
     if (payload.hasLogicInSteps) {
-      errors.push("❌ Step Definitions no debe contener lógica (if, for, while, try-catch)");
+      errors.push('❌ Step Definitions no debe contener lógica (if, for, while, try-catch)');
     }
-    
+
     if (!payload.usesTheActorCalled) {
-      warnings.push("⚠️ Se recomienda usar theActorCalled() para inicializar actores");
+      warnings.push('⚠️ Se recomienda usar theActorCalled() para inicializar actores');
     }
-    
+
     if (payload.code) {
       if (payload.code.includes('WebDriver') || payload.code.includes('driver.')) {
-        errors.push("❌ Step Definitions no debe interactuar directamente con WebDriver");
+        errors.push('❌ Step Definitions no debe interactuar directamente con WebDriver');
       }
-      
+
       if (!payload.code.includes('theActorCalled') && !payload.code.includes('theActorInTheSpotlight')) {
-        warnings.push("⚠️ Se recomienda usar theActorCalled() o theActorInTheSpotlight()");
+        warnings.push('⚠️ Se recomienda usar theActorCalled() o theActorInTheSpotlight()');
       }
     }
   }
@@ -95,52 +95,52 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
   // Validaciones de Tasks
   if (payload.type === 'Task') {
     if (payload.taskContainsWebDriverDirect) {
-      errors.push("❌ Los Tasks no deben contener WebDriver directo");
+      errors.push('❌ Los Tasks no deben contener WebDriver directo');
     }
-    
+
     if (!payload.implementsCorrectInterface) {
-      errors.push("❌ El Task debe implementar la interface Task");
+      errors.push('❌ El Task debe implementar la interface Task');
     }
-    
+
     if (!payload.hasPublicConstructor) {
-      errors.push("❌ CRÍTICO: El constructor debe ser público (ByteBuddy requirement)");
+      errors.push('❌ CRÍTICO: El constructor debe ser público (ByteBuddy requirement)');
     }
-    
+
     if (!payload.usesInstrumented) {
-      errors.push("❌ CRÍTICO: Usar Tasks.instrumented() en factory method");
+      errors.push('❌ CRÍTICO: Usar Tasks.instrumented() en factory method');
     }
-    
+
     if (payload.code && !payload.code.includes('WaitUntil') && payload.code.includes('Click.on')) {
-      warnings.push("⚠️ Se recomienda incluir WaitUntil para mayor estabilidad");
+      warnings.push('⚠️ Se recomienda incluir WaitUntil para mayor estabilidad');
     }
-    
+
     if (!payload.taskUsesBusinessLanguage) {
-      warnings.push("⚠️ El Task debe usar lenguaje de negocio, no términos técnicos");
+      warnings.push('⚠️ El Task debe usar lenguaje de negocio, no términos técnicos');
     }
-    
+
     if (payload.code && payload.usesPageObjectModel) {
-      errors.push("❌ Task no debe usar Page Object Model tradicional");
+      errors.push('❌ Task no debe usar Page Object Model tradicional');
     }
   }
 
   // Validaciones de Interactions
   if (payload.type === 'Interaction') {
     if (payload.interactionContainsAssertions) {
-      errors.push("❌ Las Interactions no deben contener aserciones");
+      errors.push('❌ Las Interactions no deben contener aserciones');
     }
-    
+
     if (!payload.hasPublicConstructor) {
-      errors.push("❌ CRÍTICO: El constructor debe ser público");
+      errors.push('❌ CRÍTICO: El constructor debe ser público');
     }
-    
+
     if (!payload.usesInstrumented) {
-      errors.push("❌ CRÍTICO: Usar instrumented() en factory method");
+      errors.push('❌ CRÍTICO: Usar instrumented() en factory method');
     }
-    
+
     if (payload.code && !payload.code.includes('actor.attemptsTo')) {
-      errors.push("❌ Interaction debe usar actor.attemptsTo() en performAs()");
+      errors.push('❌ Interaction debe usar actor.attemptsTo() en performAs()');
     }
-    
+
     if (payload.code && (payload.code.includes('Enter') || payload.code.includes('Click'))) {
       // Interactions pueden contener acciones nativas de Serenity
     }
@@ -149,19 +149,19 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
   // Validaciones de Questions
   if (payload.type === 'Question') {
     if (!payload.questionReturnsValue) {
-      errors.push("❌ La Question debe retornar un valor");
+      errors.push('❌ La Question debe retornar un valor');
     }
-    
+
     if (payload.usesInstrumented) {
       warnings.push("⚠️ Questions NO deben usar instrumented() - usar 'new Question()'");
     }
-    
+
     if (payload.code && (payload.code.includes('Click.on') || payload.code.includes('Enter.theValue'))) {
-      errors.push("❌ Questions NO deben ejecutar acciones");
+      errors.push('❌ Questions NO deben ejecutar acciones');
     }
-    
+
     if (!payload.usesCorrectFactoryMethods) {
-      warnings.push("⚠️ Question debe tener factory methods: en(), del(), de() (no as())");
+      warnings.push('⚠️ Question debe tener factory methods: en(), del(), de() (no as())');
     }
   }
 
@@ -172,46 +172,46 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
     }
 
     if (!payload.uiExtendsPageObject) {
-      errors.push("❌ Las clases UI DEBEN extender PageObject");
+      errors.push('❌ Las clases UI DEBEN extender PageObject');
     }
 
     if (!payload.uiUsesTarget) {
-      errors.push("❌ Las clases UI DEBEN usar Target en lugar de By");
+      errors.push('❌ Las clases UI DEBEN usar Target en lugar de By');
     }
-    
+
     if (!payload.usesLocatedByVsLocatedBy) {
-      errors.push("❌ Las clases UI DEBEN usar .locatedBy() en lugar de .located(By.*)");
+      errors.push('❌ Las clases UI DEBEN usar .locatedBy() en lugar de .located(By.*)');
     }
-    
+
     if (payload.uiContainsLogic) {
-      errors.push("❌ Las clases UI NO deben contener lógica (solo Target locators)");
+      errors.push('❌ Las clases UI NO deben contener lógica (solo Target locators)');
     }
-    
+
     if (payload.code) {
       if (!payload.code.includes('public static final Target')) {
         errors.push("❌ Los locators deben ser 'public static final Target'");
       }
 
       if (payload.code.includes('By.id') || payload.code.includes('By.cssSelector') || payload.code.includes('By.xpath')) {
-        errors.push("❌ NO usar By directo - usar Target.the().locatedBy()");
+        errors.push('❌ NO usar By directo - usar Target.the().locatedBy()');
       }
-      
+
       const targetMatches = payload.code.matchAll(/public static final Target\s+(\w+)\s*=/g);
       for (const match of targetMatches) {
         const targetName = match[1];
         if (targetName) {
           const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
           const hasValidPrefix = validPrefixes.some(prefix => targetName.startsWith(prefix));
-          
+
           if (!hasValidPrefix) {
             warnings.push(`⚠️ Target '${targetName}' no usa prefijo estándar`);
           }
         }
       }
     }
-    
+
     if (payload.locatorStrategy === 'xpath' && !payload.locatorIsStable) {
-      warnings.push("⚠️ XPath es frágil - preferir id > name > cssSelector");
+      warnings.push('⚠️ XPath es frágil - preferir id > name > cssSelector');
     }
   }
 
@@ -219,16 +219,16 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
   if (payload.type === 'SetTheStage') {
     if (payload.code) {
       if (!payload.code.includes('@Before')) {
-        errors.push("❌ SetTheStage debe tener @Before");
+        errors.push('❌ SetTheStage debe tener @Before');
       }
       if (!payload.code.includes('@After')) {
-        errors.push("❌ SetTheStage debe tener @After");
+        errors.push('❌ SetTheStage debe tener @After');
       }
       if (!payload.code.includes('OnStage.setTheStage')) {
-        errors.push("❌ SetTheStage debe llamar a OnStage.setTheStage()");
+        errors.push('❌ SetTheStage debe llamar a OnStage.setTheStage()');
       }
       if (!payload.hasDrawTheCurtain) {
-        errors.push("❌ CRÍTICO: SetTheStage debe tener OnStage.drawTheCurtain() en @After");
+        errors.push('❌ CRÍTICO: SetTheStage debe tener OnStage.drawTheCurtain() en @After');
       }
     }
   }
@@ -236,17 +236,17 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
   // Validaciones de Pages (opcional)
   if (payload.type === 'Page') {
     if (payload.pageContainsActionMethods) {
-      errors.push("❌ Pages NO deben contener métodos de acción - usar Tasks");
+      errors.push('❌ Pages NO deben contener métodos de acción - usar Tasks');
     }
-    
-    warnings.push("⚠️ Pages son opcionales - considerar usar solo UI/");
+
+    warnings.push('⚠️ Pages son opcionales - considerar usar solo UI/');
   }
 
   return {
     isValid: errors.length === 0,
     errors,
     warnings,
-    summary: errors.length === 0 
+    summary: errors.length === 0
       ? `✅ ${payload.type} válido según el estándar`
       : `❌ ${errors.length} error(es) encontrado(s)`,
     details: {
@@ -265,10 +265,10 @@ export function validateSerenityWebClass(
   const payload: ValidationPayloadWeb = {
     code,
     type,
-    className,
+    className
   };
 
-  payload.implementsCorrectInterface = 
+  payload.implementsCorrectInterface =
     (type === 'Task' && code.includes('implements Task')) ||
     (type === 'Interaction' && code.includes('implements Interaction')) ||
     (type === 'Question' && code.includes('implements Question<'));
@@ -277,7 +277,7 @@ export function validateSerenityWebClass(
   payload.hasPublicConstructor = /public \w+\([^)]*\) \{/.test(code);
   payload.usesInstrumented = code.includes('instrumented(') || code.includes('Tasks.instrumented');
   payload.hasStepAnnotation = code.includes('@Step');
-  
+
   payload.taskContainsWebDriverDirect = code.includes('WebDriver') || code.includes('driver.');
   payload.interactionContainsAssertions = code.includes('assert') || code.includes('should(');
   payload.uiContainsLogic = code.includes('public void') || code.includes('if (');
@@ -293,7 +293,7 @@ export function validateSerenityWebClass(
   payload.usesLocatedByVsLocatedBy = code.includes('.locatedBy(') && !code.includes('.located(By.');
   payload.hasDrawTheCurtain = code.includes('drawTheCurtain()');
   payload.usesTheActorCalled = code.includes('theActorCalled(');
-  
+
   if (type === 'Question') {
     payload.usesCorrectFactoryMethods = code.includes('.en(') || code.includes('.del(') || code.includes('.de(');
   }
@@ -309,8 +309,8 @@ export function validateSerenityWebClass(
         }
       });
     }
-    
-    payload.hasLogicInSteps = code.includes('if (') || code.includes('for (') || 
+
+    payload.hasLogicInSteps = code.includes('if (') || code.includes('for (') ||
                            code.includes('while (') || code.includes('try {') ||
                            code.includes('catch (');
   }
@@ -330,7 +330,7 @@ export function validateSerenityWebClass(
       payload.locatorStrategy = 'cssSelector';
       payload.locatorIsStable = true;
     }
-    
+
     // Validar prefijos de Targets
     const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
     const targetMatches = code.matchAll(/public static final Target\s+(\w+)\s*=/g);
@@ -367,13 +367,13 @@ export function isValidTaskName(name: string): boolean {
     /^Obtener/,
     /^Seleccionar/
   ];
-  
+
   return validPatterns.some(pattern => pattern.test(name));
 }
 
 export function isValidQuestionName(name: string): boolean {
-  return name.includes('Es') || 
-         name.includes('Del') || 
+  return name.includes('Es') ||
+         name.includes('Del') ||
          name.includes('De') ||
          name.startsWith('Elemento') ||
          name.startsWith('Texto') ||

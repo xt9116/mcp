@@ -16,7 +16,7 @@ export function generateProjectStructure(config: ProjectStructureConfig): string
 function generateGradleStructure(config: ProjectStructureConfig): string {
   const packagePath = config.companyPackage.replace(/\./g, '/');
   const projectType = config.type || 'both';
-  
+
   const structure = `
 📦 ${config.projectName}/
  ├── 📄 build.gradle
@@ -72,7 +72,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
 function generateMavenStructure(config: ProjectStructureConfig): string {
   const packagePath = config.companyPackage.replace(/\./g, '/');
   const projectType = config.type || 'both';
-  
+
   const structure = `
 📦 ${config.projectName}/
  ├── 📄 pom.xml
@@ -116,7 +116,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
 
 function generateGradleBuildFile(config: ProjectStructureConfig): string {
   const projectType = config.type || 'both';
-  
+
   return `plugins {
     id 'java'
     id 'idea'
@@ -145,7 +145,7 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-${projectType !== 'web' ? `    testImplementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"` : ''}
+${projectType !== 'web' ? '    testImplementation "net.serenity-bdd:serenity-rest-assured:${serenityVersion}"' : ''}
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:\${junitVersion}"
     testImplementation "org.assertj:assertj-core:\${assertjVersion}"
@@ -187,7 +187,7 @@ serenity.logging=QUIET`;
 
 function generatePomXml(config: ProjectStructureConfig): string {
   const projectType = config.type || 'both';
-  
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

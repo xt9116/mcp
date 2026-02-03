@@ -8,7 +8,7 @@ interface ValidationPayload {
   // Código fuente o metadatos
   code?: string;
   type?: 'Task' | 'Interaction' | 'Question' | 'StepDefinition' | 'Model' | 'Builder' | 'Endpoint';
-  
+
   // Validaciones específicas
   stepDefinitionsLines?: number;
   taskContainsHttp?: boolean;
@@ -20,19 +20,19 @@ interface ValidationPayload {
   builderContainsSendLogic?: boolean;
   usesStepsAnnotation?: boolean;
   taskUsesBusinessLanguage?: boolean;
-  
+
   // Validaciones de estructura
   className?: string;
   implementsCorrectInterface?: boolean;
   hasStaticFactoryMethod?: boolean;
   hasPublicConstructor?: boolean;
   usesInstrumented?: boolean;
-  
+
   // Validaciones de escenario
   scenarioValidatesStatusCode?: boolean;
   scenarioValidatesBodyField?: boolean;
   scenarioValidatesErrorMessage?: boolean;
-  
+
   // Validaciones de naming conventions (actualizado)
   usesCorrectBuilderPattern?: boolean;
   usesCorrectEndpointConstants?: boolean;
@@ -45,7 +45,7 @@ export function validateSerenityApi(payload: ValidationPayload) {
 
   // ✅ 1. Validación de principios Screenplay First
   if (payload.usesStepsAnnotation) {
-    errors.push("❌ PROHIBIDO: No usar @Steps annotation - usar Screenplay pattern");
+    errors.push('❌ PROHIBIDO: No usar @Steps annotation - usar Screenplay pattern');
   }
 
   // ✅ 2. Validaciones de Step Definitions (máximo 3 líneas)
@@ -53,14 +53,14 @@ export function validateSerenityApi(payload: ValidationPayload) {
     if (payload.stepDefinitionsLines && payload.stepDefinitionsLines > 3) {
       errors.push(`❌ Step Definitions supera el máximo de 3 líneas (tiene ${payload.stepDefinitionsLines})`);
     }
-    
+
     if (payload.code) {
       if (payload.code.includes('if (') || payload.code.includes('for (') || payload.code.includes('while (')) {
-        errors.push("❌ Step Definitions no debe contener lógica (if, for, while)");
+        errors.push('❌ Step Definitions no debe contener lógica (if, for, while)');
       }
-      
+
       if (payload.code.includes('assertEquals') || payload.code.includes('assertTrue') || payload.code.includes('assertThat')) {
-        errors.push("❌ Step Definitions no debe contener aserciones técnicas directas");
+        errors.push('❌ Step Definitions no debe contener aserciones técnicas directas');
       }
     }
   }
@@ -68,97 +68,97 @@ export function validateSerenityApi(payload: ValidationPayload) {
   // ✅ 3. Validaciones de Tasks
   if (payload.type === 'Task') {
     if (payload.taskContainsHttp) {
-      errors.push("❌ Los Tasks no deben contener llamadas HTTP directas - usar Interactions");
+      errors.push('❌ Los Tasks no deben contener llamadas HTTP directas - usar Interactions');
     }
-    
+
     if (!payload.implementsCorrectInterface) {
-      errors.push("❌ El Task debe implementar la interface Task");
+      errors.push('❌ El Task debe implementar la interface Task');
     }
-    
+
     if (!payload.hasStaticFactoryMethod) {
-      warnings.push("⚠️ Se recomienda método estático factory (ej: con(), llamado(), from())");
+      warnings.push('⚠️ Se recomienda método estático factory (ej: con(), llamado(), from())');
     }
-    
+
     if (!payload.hasPublicConstructor) {
-      errors.push("❌ CRÍTICO: El constructor del Task debe ser público (ByteBuddy requirement)");
+      errors.push('❌ CRÍTICO: El constructor del Task debe ser público (ByteBuddy requirement)');
     }
-    
+
     if (!payload.usesInstrumented) {
       errors.push("❌ CRÍTICO: El factory method debe usar Tasks.instrumented() - NO usar 'new Task()'");
     }
-    
+
     if (payload.code && (payload.code.includes('Post.to') || payload.code.includes('Get.resource'))) {
-      errors.push("❌ Task no debe usar HTTP directo - delegar en Interactions");
+      errors.push('❌ Task no debe usar HTTP directo - delegar en Interactions');
     }
-    
+
     if (!payload.taskUsesBusinessLanguage) {
-      warnings.push("⚠️ El Task debe usar lenguaje de negocio, no términos técnicos");
+      warnings.push('⚠️ El Task debe usar lenguaje de negocio, no términos técnicos');
     }
   }
 
   // ✅ 4. Validaciones de Interactions
   if (payload.type === 'Interaction') {
     if (payload.interactionContainsAssertions) {
-      errors.push("❌ Las Interactions no deben contener aserciones");
+      errors.push('❌ Las Interactions no deben contener aserciones');
     }
-    
+
     if (!payload.implementsCorrectInterface) {
-      errors.push("❌ La Interaction debe implementar la interface Interaction");
+      errors.push('❌ La Interaction debe implementar la interface Interaction');
     }
-    
+
     if (!payload.hasStaticFactoryMethod) {
-      warnings.push("⚠️ Se recomienda método estático factory (ej: to(), hacia())");
+      warnings.push('⚠️ Se recomienda método estático factory (ej: to(), hacia())');
     }
-    
+
     if (!payload.hasPublicConstructor) {
-      errors.push("❌ CRÍTICO: El constructor de la Interaction debe ser público (ByteBuddy requirement)");
+      errors.push('❌ CRÍTICO: El constructor de la Interaction debe ser público (ByteBuddy requirement)');
     }
-    
+
     if (!payload.usesInstrumented) {
       errors.push("❌ CRÍTICO: El factory method debe usar instrumented() - NO usar 'new Interaction()'");
     }
-    
+
     if (payload.code && !payload.code.includes('actor.attemptsTo')) {
-      errors.push("❌ Interaction debe usar actor.attemptsTo() en performAs()");
+      errors.push('❌ Interaction debe usar actor.attemptsTo() en performAs()');
     }
   }
 
   // ✅ 5. Validaciones de Questions
   if (payload.type === 'Question') {
     if (!payload.questionReturnsValue) {
-      errors.push("❌ La Question debe retornar un valor (Boolean, Integer, String, etc)");
+      errors.push('❌ La Question debe retornar un valor (Boolean, Integer, String, etc)');
     }
-    
+
     if (!payload.implementsCorrectInterface) {
-      errors.push("❌ La Question debe implementar Question<T> con tipo de retorno");
+      errors.push('❌ La Question debe implementar Question<T> con tipo de retorno');
     }
-    
+
     if (!payload.hasStaticFactoryMethod) {
-      warnings.push("⚠️ Se recomienda método estático factory (ej: valor(), of(), en())");
+      warnings.push('⚠️ Se recomienda método estático factory (ej: valor(), of(), en())');
     }
-    
+
     if (payload.code && payload.usesInstrumented) {
       warnings.push("⚠️ Questions NO deben usar instrumented() - usar 'new Question()' directamente");
     }
-    
+
     if (payload.code && !payload.code.includes('answeredBy')) {
-      errors.push("❌ Question debe implementar el método answeredBy(Actor actor)");
+      errors.push('❌ Question debe implementar el método answeredBy(Actor actor)');
     }
   }
 
   // ✅ 6. Validaciones de Models
   if (payload.type === 'Model') {
     if (payload.modelContainsLogic) {
-      errors.push("❌ Los Models solo deben contener datos - sin lógica de negocio");
+      errors.push('❌ Los Models solo deben contener datos - sin lógica de negocio');
     }
-    
+
     if (payload.code) {
       if (!payload.code.includes('@JsonIgnoreProperties(ignoreUnknown = true)')) {
-        warnings.push("⚠️ Se recomienda @JsonIgnoreProperties(ignoreUnknown = true) en Models");
+        warnings.push('⚠️ Se recomienda @JsonIgnoreProperties(ignoreUnknown = true) en Models');
       }
-      
+
       if (payload.code.includes('public void send') || payload.code.includes('public void post')) {
-        errors.push("❌ El Model no debe tener métodos de envío o comunicación");
+        errors.push('❌ El Model no debe tener métodos de envío o comunicación');
       }
     }
   }
@@ -166,52 +166,52 @@ export function validateSerenityApi(payload: ValidationPayload) {
   // ✅ 7. Validaciones de Builders (actualizado con nuevos patrones)
   if (payload.type === 'Builder') {
     if (payload.builderContainsSendLogic) {
-      errors.push("❌ Los Builders no deben contener lógica de envío - solo construcción");
+      errors.push('❌ Los Builders no deben contener lógica de envío - solo construcción');
     }
-    
+
     if (payload.code && !payload.code.includes('public static')) {
-      warnings.push("⚠️ Builder debe tener métodos estáticos (ej: conDatosValidos(), withValidData())");
+      warnings.push('⚠️ Builder debe tener métodos estáticos (ej: conDatosValidos(), withValidData())');
     }
-    
+
     if (payload.className && !payload.className.startsWith('Constructor') && !payload.className.endsWith('Builder')) {
       errors.push("❌ El Builder debe comenzar con 'Constructor' o terminar con 'Builder' (ej: ConstructorSolicitudCrearUsuario)");
     }
-    
+
     if (!payload.usesCorrectBuilderPattern) {
-      warnings.push("⚠️ Builder debe tener métodos estáticos: conDatosValidos(), conDatosInvalidos(), conCampoVacio(), conEmailInvalido()");
+      warnings.push('⚠️ Builder debe tener métodos estáticos: conDatosValidos(), conDatosInvalidos(), conCampoVacio(), conEmailInvalido()');
     }
   }
 
   // ✅ 8. Validaciones de Endpoints (actualizado con nuevas reglas)
   if (payload.type === 'Endpoint') {
     if (payload.endpointIsHardcoded) {
-      errors.push("❌ No hardcodear URLs - usar constantes en clase {Resource}Endpoints");
+      errors.push('❌ No hardcodear URLs - usar constantes en clase {Resource}Endpoints');
     }
-    
+
     if (payload.endpointIsVersioned === false) {
-      errors.push("❌ Los endpoints deben estar versionados (ej: /v1/users)");
+      errors.push('❌ Los endpoints deben estar versionados (ej: /v1/users)');
     }
-    
+
     if (payload.className && !payload.className.endsWith('Endpoints')) {
       warnings.push("⚠️ La clase de endpoints debe terminar con 'Endpoints' (ej: UserEndpoints)");
     }
-    
+
     if (payload.code && !payload.code.includes('public static final String')) {
-      errors.push("❌ Los endpoints deben ser constantes: public static final String");
+      errors.push('❌ Los endpoints deben ser constantes: public static final String');
     }
-    
+
     if (!payload.usesCorrectEndpointConstants) {
-      errors.push("❌ Las constantes de endpoints deben estar en ESPAÑOL (ej: CREAR_USUARIO, OBTENER_TODOS)");
+      errors.push('❌ Las constantes de endpoints deben estar en ESPAÑOL (ej: CREAR_USUARIO, OBTENER_TODOS)');
     }
   }
 
   // ✅ 9. Validaciones de escenario completo (validaciones obligatorias)
   if (payload.scenarioValidatesStatusCode === false) {
-    errors.push("❌ OBLIGATORIO: El escenario debe validar el Status Code");
+    errors.push('❌ OBLIGATORIO: El escenario debe validar el Status Code');
   }
-  
+
   if (payload.scenarioValidatesBodyField === false) {
-    warnings.push("⚠️ RECOMENDADO: El escenario debe validar al menos un campo del body");
+    warnings.push('⚠️ RECOMENDADO: El escenario debe validar al menos un campo del body');
   }
 
   // ✅ 10. Validaciones de nombres según convenciones (actualizado)
@@ -236,29 +236,29 @@ export function validateSerenityApi(payload: ValidationPayload) {
 
 function validateNamingConvention(className: string, type: string): { valid: boolean; message: string } {
   const conventions: Record<string, { pattern: RegExp; example: string }> = {
-    'Task': { 
-      pattern: /^[A-Z][a-z]+[A-Z][a-zA-Z]*$/, 
-      example: 'CreateUser, GetPolicy, UpdateCustomer, ObtenerPersonaje' 
+    'Task': {
+      pattern: /^[A-Z][a-z]+[A-Z][a-zA-Z]*$/,
+      example: 'CreateUser, GetPolicy, UpdateCustomer, ObtenerPersonaje'
     },
-    'Interaction': { 
-      pattern: /^(Post|Get|Put|Delete|Patch)Request$/, 
-      example: 'PostRequest, GetRequest, PutRequest' 
+    'Interaction': {
+      pattern: /^(Post|Get|Put|Delete|Patch)Request$/,
+      example: 'PostRequest, GetRequest, PutRequest'
     },
-    'Question': { 
-      pattern: /^Response[A-Z][a-zA-Z]*|^[A-Z][a-zA-Z]*Question|^Validar[A-Z][a-zA-Z]*$/, 
-      example: 'ResponseStatusCode, ResponseBodyField, ValidarResponse' 
+    'Question': {
+      pattern: /^Response[A-Z][a-zA-Z]*|^[A-Z][a-zA-Z]*Question|^Validar[A-Z][a-zA-Z]*$/,
+      example: 'ResponseStatusCode, ResponseBodyField, ValidarResponse'
     },
-    'Builder': { 
-      pattern: /^Constructor[A-Z][a-zA-Z]*$|^[A-Z][a-zA-Z]*Builder$/, 
-      example: 'ConstructorSolicitudCrearUsuario, CreateUserRequestBuilder' 
+    'Builder': {
+      pattern: /^Constructor[A-Z][a-zA-Z]*$|^[A-Z][a-zA-Z]*Builder$/,
+      example: 'ConstructorSolicitudCrearUsuario, CreateUserRequestBuilder'
     },
-    'Model': { 
-      pattern: /^[A-Z][a-zA-Z]*(Request|Response)$/, 
-      example: 'CreateUserRequest, UserResponse, CharacterResponse' 
+    'Model': {
+      pattern: /^[A-Z][a-zA-Z]*(Request|Response)$/,
+      example: 'CreateUserRequest, UserResponse, CharacterResponse'
     },
-    'Endpoint': { 
-      pattern: /^[A-Z][a-zA-Z]*Endpoints$/, 
-      example: 'UserEndpoints, CharacterEndpoints' 
+    'Endpoint': {
+      pattern: /^[A-Z][a-zA-Z]*Endpoints$/,
+      example: 'UserEndpoints, CharacterEndpoints'
     }
   };
 
@@ -268,9 +268,9 @@ function validateNamingConvention(className: string, type: string): { valid: boo
   }
 
   if (!convention.pattern.test(className)) {
-    return { 
-      valid: false, 
-      message: `${type} debe seguir el patrón: ${convention.example}` 
+    return {
+      valid: false,
+      message: `${type} debe seguir el patrón: ${convention.example}`
     };
   }
 
@@ -312,7 +312,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
 
   // Detectar HTTP en Tasks
   if (type === 'Task') {
-    payload.taskContainsHttp = code.includes('Post.to(') || code.includes('Get.resource(') || 
+    payload.taskContainsHttp = code.includes('Post.to(') || code.includes('Get.resource(') ||
                                code.includes('.post(') || code.includes('.get(');
   }
 
@@ -328,7 +328,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
 
   // Detectar lógica en Models
   if (type === 'Model') {
-    const hasBusinessLogic = code.includes('if (') || code.includes('for (') || 
+    const hasBusinessLogic = code.includes('if (') || code.includes('for (') ||
                             code.includes('calculate') || code.includes('validate');
     payload.modelContainsLogic = hasBusinessLogic;
   }
@@ -337,7 +337,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
   if (type === 'Endpoint') {
     payload.endpointIsVersioned = code.includes('/v1/') || code.includes('/v2/');
     payload.endpointIsHardcoded = /https?:\/\//.test(code) && !code.includes('public static final');
-    
+
     // Validar constantes en español
     const spanishConstants = /CREAR_|OBTENER_|ACTUALIZAR_|ELIMINAR_|CONSULTAR_/.test(code);
     payload.usesCorrectEndpointConstants = spanishConstants;
@@ -348,7 +348,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
     const validMethods = code.includes('conDatosValidos') || code.includes('conDatosInvalidos') ||
                        code.includes('withValidData') || code.includes('withInvalidData');
     payload.usesCorrectBuilderPattern = validMethods;
-    
+
     const sendLogic = code.includes('post(') || code.includes('get(') || code.includes('send');
     payload.builderContainsSendLogic = sendLogic;
   }
@@ -374,7 +374,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
           const trimmed = line.trim();
           return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('/*');
         }).length;
-        
+
         if (lines > 3) {
           payload.stepDefinitionsLines = lines;
         }

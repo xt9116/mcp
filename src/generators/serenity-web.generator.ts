@@ -21,7 +21,7 @@ export interface WebTarget {
 
 export function generateWebUI(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.annotations.DefaultUrl;');
@@ -33,20 +33,20 @@ export function generateWebUI(config: WebComponentConfig): string {
   lines.push(' * Responsabilidad: Target locators de elementos UI (SOLO Target, NO By)');
   lines.push(' * Carpeta: userinterfaces (todo junto, minúsculas)');
   lines.push(' */');
-  
+
   if (config.baseUrl) {
     lines.push(`@DefaultUrl("${config.baseUrl}")`);
   }
-  
+
   lines.push(`public class ${config.className} extends PageObject {`);
   lines.push('');
-  
+
   // Targets con naming convention estándar (TXT_, BTN_, LBL_, etc.)
   if (config.targets && config.targets.length > 0) {
     config.targets.forEach(target => {
       const prefix = target.prefix || 'ELEMENT';
       const description = target.name || 'Elemento';
-      
+
       // Genera el locator usando .locatedBy() (correcto según estándar)
       lines.push(`    public static final Target ${prefix}_${target.name.toUpperCase()} = Target.the("${description}")`);
       lines.push(`        .locatedBy("${target.selector}");`);
@@ -66,15 +66,15 @@ export function generateWebUI(config: WebComponentConfig): string {
     lines.push('');
     lines.push('    // public static final Target TXT_CAMPO = Target.the("descripción").locatedBy("#selector");');
   }
-  
+
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateWebTask(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.screenplay.Actor;');
@@ -95,7 +95,7 @@ export function generateWebTask(config: WebComponentConfig): string {
   lines.push(' */');
   lines.push(`public class ${config.className} implements Task {`);
   lines.push('');
-  
+
   // Si hay parámetros dinámicos, agregar fields
   const hasParameters = config.actions && config.actions.some(a => a.includes('<') || a.includes('{'));
   if (hasParameters) {
@@ -110,7 +110,7 @@ export function generateWebTask(config: WebComponentConfig): string {
     lines.push(`    public ${config.className}() {}`);
     lines.push('');
   }
-  
+
   lines.push('    @Override');
   lines.push('    public <T extends Actor> void performAs(T actor) {');
   lines.push('        actor.attemptsTo(');
@@ -121,7 +121,7 @@ export function generateWebTask(config: WebComponentConfig): string {
   lines.push('        );');
   lines.push('    }');
   lines.push('');
-  
+
   // Factory method con Tasks.instrumented()
   lines.push('    // Factory method (usa Tasks.instrumented)');
   const methodName = hasParameters ? 'llamado' : 'ahora';
@@ -134,13 +134,13 @@ export function generateWebTask(config: WebComponentConfig): string {
   }
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateWebQuestion(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.screenplay.Actor;');
@@ -160,15 +160,15 @@ export function generateWebQuestion(config: WebComponentConfig): string {
   lines.push('        this.target = target;');
   lines.push('    }');
   lines.push('');
-  
+
   lines.push('    @Override');
   lines.push('    public Boolean answeredBy(Actor actor) {');
-  const validationDescription = config.validaciones && config.validaciones[0] ? config.validaciones[0] : 'Validación';
+  const validationDescription = config.validaciones?.[0] ? config.validaciones[0] : 'Validación';
   lines.push(`        // ${validationDescription}`);
   lines.push('        return target.resolveFor(actor).isDisplayed();');
   lines.push('    }');
   lines.push('');
-  
+
   // Factory methods (en(), del(), de() según estándar)
   lines.push('    // Factory methods (Questions usan new directamente)');
   lines.push(`    public static ${config.className} en(Target target) {`);
@@ -183,13 +183,13 @@ export function generateWebQuestion(config: WebComponentConfig): string {
   lines.push(`        return new ${config.className}(target);`);
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateWebInteraction(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.core.steps.Instrumented;');
@@ -212,14 +212,14 @@ export function generateWebInteraction(config: WebComponentConfig): string {
   lines.push(' */');
   lines.push(`public class ${config.className} implements Interaction {`);
   lines.push('');
-  
+
   lines.push('    private final String dato;');
   lines.push('');
   lines.push(`    public ${config.className}(String dato) {`);
   lines.push('        this.dato = dato;');
   lines.push('    }');
   lines.push('');
-  
+
   lines.push('    @Override');
   lines.push('    public <T extends Actor> void performAs(T actor) {');
   lines.push('        actor.attemptsTo(');
@@ -229,20 +229,20 @@ export function generateWebInteraction(config: WebComponentConfig): string {
   lines.push('        );');
   lines.push('    }');
   lines.push('');
-  
+
   // Factory method con Instrumented.instanceOf()
   lines.push('    // Factory method (usa Instrumented.instanceOf())');
   lines.push(`    public static ${config.className} con(String dato) {`);
   lines.push(`        return Instrumented.instanceOf(${config.className}.class).withProperties(dato);`);
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateWebStepDefinitions(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import io.cucumber.java.es.*;');
@@ -262,7 +262,7 @@ export function generateWebStepDefinitions(config: WebComponentConfig): string {
   lines.push(' */');
   lines.push(`public class ${config.className} {`);
   lines.push('');
-  
+
   // Step Given (máximo 3 líneas)
   lines.push('    @Dado("que {string} ingresa a la página web")');
   lines.push('    public void usuarioIngresaAPagina(String nombreActor) {');
@@ -271,7 +271,7 @@ export function generateWebStepDefinitions(config: WebComponentConfig): string {
   lines.push('        );');
   lines.push('    }');
   lines.push('');
-  
+
   // Step When (máximo 3 líneas)
   lines.push('    @Cuando("realiza una acción")');
   lines.push('    public void realizaAccion() {');
@@ -280,7 +280,7 @@ export function generateWebStepDefinitions(config: WebComponentConfig): string {
   lines.push('        );');
   lines.push('    }');
   lines.push('');
-  
+
   // Step Then (máximo 3 líneas)
   lines.push('    @Entonces("debe visualizar el resultado")');
   lines.push('    public void debeVisualizarResultado() {');
@@ -289,13 +289,13 @@ export function generateWebStepDefinitions(config: WebComponentConfig): string {
   lines.push('        );');
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateSetTheStage(): string {
   const lines: string[] = [];
-  
+
   lines.push('package co.com.sistecredito.web.conf;');
   lines.push('');
   lines.push('import io.cucumber.java.Before;');
@@ -310,37 +310,37 @@ export function generateSetTheStage(): string {
   lines.push(' */');
   lines.push('public class SetTheStage {');
   lines.push('');
-  
+
   lines.push('    @Before');
   lines.push('    public void setTheStage() {');
   lines.push('        OnStage.setTheStage(new OnlineCast());');
   lines.push('    }');
   lines.push('');
-  
+
   lines.push('    @After');
   lines.push('    public void tearDown() {');
   lines.push('        OnStage.drawTheCurtain();');
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateWebComponent(config: WebComponentConfig): string {
   switch (config.componentType) {
-    case 'Task':
-      return generateWebTask(config);
-    case 'Interaction':
-      return generateWebInteraction(config);
-    case 'Question':
-      return generateWebQuestion(config);
-    case 'UI':
-      return generateWebUI(config);
-    case 'StepDefinition':
-      return generateWebStepDefinitions(config);
-    case 'SetTheStage':
-      return generateSetTheStage();
-    default:
-      throw new Error(`Unknown component type: ${config.componentType}`);
+  case 'Task':
+    return generateWebTask(config);
+  case 'Interaction':
+    return generateWebInteraction(config);
+  case 'Question':
+    return generateWebQuestion(config);
+  case 'UI':
+    return generateWebUI(config);
+  case 'StepDefinition':
+    return generateWebStepDefinitions(config);
+  case 'SetTheStage':
+    return generateSetTheStage();
+  default:
+    throw new Error(`Unknown component type: ${config.componentType}`);
   }
 }

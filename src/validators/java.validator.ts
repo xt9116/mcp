@@ -48,20 +48,20 @@ export function validateJavaCode(payload: JavaValidationPayload) {
   // Package validation
   if (payload.packageName && !payload.hasValidPackage) {
     if (!/^com\.([a-z]+)\.([a-z]+)(\.[a-z]+)*$/.test(payload.packageName)) {
-      errors.push("❌ PACKAGE: Nombre de paquete debe seguir patrón com.{company}.{project}.{module}");
+      errors.push('❌ PACKAGE: Nombre de paquete debe seguir patrón com.{company}.{project}.{module}');
     }
     if (payload.packageName.split('.').length > 4) {
-      warnings.push("⚠️ PACKAGE: Paquete demasiado profundo (>4 niveles)");
+      warnings.push('⚠️ PACKAGE: Paquete demasiado profundo (>4 niveles)');
     }
   }
 
   // Class naming
   if (payload.className && !payload.hasValidClassName) {
     if (!/^[A-Z][a-zA-Z0-9]*$/.test(payload.className)) {
-      errors.push("❌ CLASS NAME: Nombre de clase debe ser PascalCase");
+      errors.push('❌ CLASS NAME: Nombre de clase debe ser PascalCase');
     }
     if (payload.className.length > 25) {
-      warnings.push("⚠️ CLASS NAME: Nombre de clase demasiado largo (>25 caracteres)");
+      warnings.push('⚠️ CLASS NAME: Nombre de clase demasiado largo (>25 caracteres)');
     }
     const forbiddenWords = ['user', 'data', 'manager', 'handler', 'util'];
     if (forbiddenWords.some(word => payload.className?.toLowerCase().includes(word))) {
@@ -109,7 +109,7 @@ export function validateJavaCode(payload: JavaValidationPayload) {
 
     // Data types validation
     if (payload.code.includes('float ')) {
-      warnings.push("⚠️ DATA TYPES: Preferir double sobre float por precisión");
+      warnings.push('⚠️ DATA TYPES: Preferir double sobre float por precisión');
     }
 
     if (payload.code.includes('new String(')) {
@@ -118,40 +118,40 @@ export function validateJavaCode(payload: JavaValidationPayload) {
 
     // Operators validation
     if (payload.code.includes(' == ') && payload.code.includes('String')) {
-      warnings.push("⚠️ COMPARISON: Usar equals() para comparar Strings, no ==");
+      warnings.push('⚠️ COMPARISON: Usar equals() para comparar Strings, no ==');
     }
 
     // String concatenation in loops
     if (payload.code.match(/for\s*\([^)]+\)\s*\{[^}]*\+[^}]*\}/s)) {
-      errors.push("❌ PERFORMANCE: String concatenation en loops - usar StringBuilder");
+      errors.push('❌ PERFORMANCE: String concatenation en loops - usar StringBuilder');
     }
 
     // Null checks
     const nullChecks = (payload.code.match(/if\s*\(\s*\w+\s*==\s*null\s*\)/g) || []).length;
     if (nullChecks > 3) {
-      warnings.push("⚠️ NULL HANDLING: Múltiples null checks - considerar Optional");
+      warnings.push('⚠️ NULL HANDLING: Múltiples null checks - considerar Optional');
     }
 
     // Exception handling
     if (payload.code.includes('catch (Exception e)')) {
-      warnings.push("⚠️ EXCEPTIONS: Evitar catch(Exception) - ser específico");
+      warnings.push('⚠️ EXCEPTIONS: Evitar catch(Exception) - ser específico');
     }
 
     if (payload.code.includes('e.printStackTrace()')) {
-      warnings.push("⚠️ EXCEPTIONS: No usar printStackTrace() en producción");
+      warnings.push('⚠️ EXCEPTIONS: No usar printStackTrace() en producción');
     }
 
     // Collections usage
     if (payload.code.includes('new ArrayList<>()')) {
       const hasCapacity = payload.code.includes('new ArrayList<>(');
       if (!hasCapacity) {
-        suggestions.push("💡 COLLECTIONS: Considerar especificar capacidad inicial en ArrayList");
+        suggestions.push('💡 COLLECTIONS: Considerar especificar capacidad inicial en ArrayList');
       }
     }
 
     // Generics validation
     if (payload.code.includes('List ') && !payload.code.includes('List<')) {
-      errors.push("❌ GENERICS: Usar generics siempre - no raw types");
+      errors.push('❌ GENERICS: Usar generics siempre - no raw types');
     }
 
     // Lambdas validation
@@ -160,14 +160,14 @@ export function validateJavaCode(payload: JavaValidationPayload) {
       lambdaMatches.forEach(lambda => {
         const lines = lambda.split('\n').length;
         if (lines > 3) {
-          warnings.push("⚠️ LAMBDAS: Lambdas complejas (>3 líneas) - considerar método separado");
+          warnings.push('⚠️ LAMBDAS: Lambdas complejas (>3 líneas) - considerar método separado');
         }
       });
     }
 
     // Streams validation
     if (payload.code.includes('.stream()') && payload.code.includes('.collect(Collectors.toList())')) {
-      suggestions.push("💡 STREAMS: Considerar toList() (Java 16+) en lugar de collect(Collectors.toList())");
+      suggestions.push('💡 STREAMS: Considerar toList() (Java 16+) en lugar de collect(Collectors.toList())');
     }
 
     // Method size validation
@@ -176,9 +176,9 @@ export function validateJavaCode(payload: JavaValidationPayload) {
       methodBodies.forEach(body => {
         const lines = body.split('\n').length;
         if (lines > 30) {
-          errors.push("❌ METHOD SIZE: Método demasiado largo (>30 líneas)");
+          errors.push('❌ METHOD SIZE: Método demasiado largo (>30 líneas)');
         } else if (lines > 20) {
-          warnings.push("⚠️ METHOD SIZE: Método largo (>20 líneas)");
+          warnings.push('⚠️ METHOD SIZE: Método largo (>20 líneas)');
         }
       });
     }
@@ -190,7 +190,7 @@ export function validateJavaCode(payload: JavaValidationPayload) {
         const params = match.match(/,/g);
         const paramCount = params ? params.length + 1 : 0;
         if (paramCount > 5) {
-          errors.push("❌ PARAMETERS: Método con demasiados parámetros (>5)");
+          errors.push('❌ PARAMETERS: Método con demasiados parámetros (>5)');
         }
       });
     }
@@ -198,15 +198,15 @@ export function validateJavaCode(payload: JavaValidationPayload) {
     // Class size validation
     const totalLines = payload.code.split('\n').length;
     if (totalLines > 500) {
-      errors.push("❌ CLASS SIZE: Clase demasiado grande (>500 líneas)");
+      errors.push('❌ CLASS SIZE: Clase demasiado grande (>500 líneas)');
     } else if (totalLines > 300) {
-      warnings.push("⚠️ CLASS SIZE: Clase grande (>300 líneas)");
+      warnings.push('⚠️ CLASS SIZE: Clase grande (>300 líneas)');
     }
 
     // SOLID violations detection
     const methodCount = (payload.code.match(/public\s+(?!class|interface)\w+\s+\w+\s*\(/g) || []).length;
     if (methodCount > 10) {
-      warnings.push("⚠️ SOLID SRP: Clase con muchos métodos públicos (>10) - posible violación SRP");
+      warnings.push('⚠️ SOLID SRP: Clase con muchos métodos públicos (>10) - posible violación SRP');
     }
 
     if (payload.code.includes('new ') && !payload.code.includes('private') && payload.code.includes('class')) {
@@ -220,14 +220,14 @@ export function validateJavaCode(payload: JavaValidationPayload) {
     if (payload.code.includes('if') && payload.code.includes('else if')) {
       const elseIfCount = (payload.code.match(/else\s+if/g) || []).length;
       if (elseIfCount > 2) {
-        warnings.push("⚠️ CODE SMELL: Cadena larga de if-else - considerar Strategy pattern");
+        warnings.push('⚠️ CODE SMELL: Cadena larga de if-else - considerar Strategy pattern');
       }
     }
 
     const commentLines = (payload.code.match(/^\s*\/\//gm) || []).length;
     const codeLines = payload.code.split('\n').filter(line => line.trim().length > 0 && !line.trim().startsWith('//')).length;
     if (commentLines > codeLines * 0.5) {
-      warnings.push("⚠️ CODE SMELL: Demasiados comentarios - código debería ser autoexplicativo");
+      warnings.push('⚠️ CODE SMELL: Demasiados comentarios - código debería ser autoexplicativo');
     }
   }
 
@@ -355,7 +355,9 @@ function validateLambdas(code: string): boolean {
 }
 
 function validateStreams(code: string): boolean {
-  if (!code.includes('.stream()')) return true;
+  if (!code.includes('.stream()')) {
+    return true;
+  }
   const hasCollect = code.includes('.collect(');
   const hasForEach = code.includes('.forEach(');
   const hasTerminal = hasCollect || hasForEach || code.includes('.count()') || code.includes('.anyMatch(');
