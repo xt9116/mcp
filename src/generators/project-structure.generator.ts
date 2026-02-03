@@ -228,9 +228,10 @@ function generatePomXml(config: ProjectStructureConfig): string {
 
     <dependencies>
         <!-- Serenity BDD Core Dependencies -->
-        <!-- serenity-core, serenity-cucumber, serenity-rest-assured and serenity-screenplay-rest do NOT have test scope -->
-        <!-- because src/main/java contains Tasks, Interactions, Questions, Models that implement -->
-        <!-- Serenity interfaces (Task, Interaction, Question) and need these dependencies at compile time -->
+        <!-- Note: serenity-core and serenity-cucumber do NOT have test scope because src/main/java -->
+        <!-- contains Tasks, Questions that may need these dependencies at compile time -->
+        <!-- However, serenity-rest-assured and serenity-screenplay-rest use test scope as they -->
+        <!-- are primarily used in test code and for API testing -->
         <!-- screenplay-rest is included in all project types for flexibility (web projects may need API calls for setup/teardown) -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
