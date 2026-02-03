@@ -173,7 +173,7 @@ export function generateWebQuestion(config: WebComponentConfig): string {
   lines.push('    // Factory methods (Questions usan new directamente)');
   lines.push(`    public static ${config.className} en(Target target) {`);
   lines.push(`        return new ${config.className}(target);`);
-  lines.push('    }`);
+  lines.push('    }');
   lines.push('');
   lines.push(`    public static ${config.className} del(Target target) {`);
   lines.push(`        return new ${config.className}(target);`);
