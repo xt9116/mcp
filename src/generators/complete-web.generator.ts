@@ -28,6 +28,7 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
   features.push(featureCode);
 
   const setTheStageCode = generateSetTheStage();
+  const runnerCode = generateWebRunner();
 
   const output = uiClasses.map((code, index) =>
     `### UI: ${request.paginas[index]?.uiName || 'Unknown'}.java
@@ -53,6 +54,11 @@ ${code}
 ${setTheStageCode}
 \`\`\`
 
+### Runner: CucumberTestRunner.java
+\`\`\`java
+${runnerCode}
+\`\`\`
+
 ### Step Definitions: ${request.huId.replace('WEB-HU-', '')}StepDefinitions.java
 \`\`\`java
 ${stepCode}
@@ -67,12 +73,13 @@ ${featureCode}
   return {
     output,
     summary: {
-      totalFiles: 4 + request.paginas.length + request.validaciones.length,
+      totalFiles: 5 + request.paginas.length + request.validaciones.length,
       files: [
         ...request.paginas.map(p => ({ name: `${p.uiName}.java`, type: 'UI' })),
         { name: `${request.huId.replace('WEB-HU-', '')}.java`, type: 'Task' },
         ...request.validaciones.map(v => ({ name: `Verificar${v.replace(/\s+/g, '')}.java`, type: 'Question' })),
         { name: 'SetTheStage.java', type: 'SetTheStage' },
+        { name: 'CucumberTestRunner.java', type: 'Runner' },
         { name: `${request.huId.replace('WEB-HU-', '')}StepDefinitions.java`, type: 'StepDefinitions' },
         { name: `${request.huId.replace('WEB-HU-', '')}.feature`, type: 'Feature' }
       ]
@@ -269,5 +276,29 @@ public class SetTheStage {
     public void tearDown() {
         OnStage.drawTheCurtain();
     }
+}`;
+}
+
+function generateWebRunner(): string {
+  return `package com.screenplay.web.runners;
+
+import io.cucumber.junit.CucumberOptions;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
+import org.junit.runner.RunWith;
+
+/**
+ * Runner principal para ejecutar los tests de Web con Cucumber y Serenity
+ * Ejecuta las features ubicadas en src/test/resources/features/
+ */
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(
+    features = "src/test/resources/features",
+    glue = "com.screenplay.web.stepdefinitions",
+    plugin = {"pretty", "json:target/cucumber-report.json"},
+    tags = "@web"
+)
+public class CucumberTestRunner {
+    // Esta clase no necesita código adicional
+    // El Runner ejecuta automáticamente las features con los step definitions
 }`;
 }

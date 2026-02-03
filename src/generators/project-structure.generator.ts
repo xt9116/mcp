@@ -46,6 +46,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
  │       ├── 📁 java/
  │       │   └── 📁 ${packagePath}/
  │       │       ├── 📁 stepdefinitions/
+ │       │       ├── 📁 hooks/
  │       │       └── 📁 runners/
  │       └── 📁 resources/
  │           ├── 📄 serenity.conf
@@ -59,6 +60,8 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
   const serenityConf = generateSerenityConf(config);
   const logbackTest = generateLogbackTest();
   const readme = generateReadme(config);
+  const runnerClass = generateRunnerClass(config);
+  const hooksClass = generateHooksClass(config);
 
   return structure + '\n\n## 📄 Archivos de Configuración\n\n' +
          `### build.gradle\n\`\`\`gradle\n${buildGradle}\n\`\`\`\n\n` +
@@ -66,7 +69,10 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
          `### gradle.properties\n\`\`\`properties\n${gradleProperties}\n\`\`\`\n\n` +
          `### serenity.conf\n\`\`\`properties\n${serenityConf}\n\`\`\`\n\n` +
          `### logback-test.xml\n\`\`\`xml\n${logbackTest}\n\`\`\`\n\n` +
-         `### README.md\n\`\`\`markdown\n${readme}\n\`\`\``;
+         `### README.md\n\`\`\`markdown\n${readme}\n\`\`\`\n\n` +
+         `## 📄 Archivos Java Básicos\n\n` +
+         `### Runner Class (${config.companyPackage.replace(/\./g, '/')}/runners/CucumberTestRunner.java)\n\`\`\`java\n${runnerClass}\n\`\`\`\n\n` +
+         `### Hooks Class (${config.companyPackage.replace(/\./g, '/')}/hooks/Hooks.java)\n\`\`\`java\n${hooksClass}\n\`\`\``;
 }
 
 function generateMavenStructure(config: ProjectStructureConfig): string {
@@ -95,6 +101,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
  │       ├── 📁 java/
  │       │   └── 📁 ${packagePath}/
  │       │       ├── 📁 stepdefinitions/
+ │       │       ├── 📁 hooks/
  │       │       └── 📁 runners/
  │       └── 📁 resources/
  │           ├── 📄 serenity.conf
@@ -106,12 +113,17 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
   const serenityConf = generateSerenityConf(config);
   const logbackTest = generateLogbackTest();
   const readme = generateReadme(config);
+  const runnerClass = generateRunnerClass(config);
+  const hooksClass = generateHooksClass(config);
 
   return structure + '\n\n## 📄 Archivos de Configuración\n\n' +
          `### pom.xml\n\`\`\`xml\n${pomXml}\n\`\`\`\n\n` +
          `### serenity.conf\n\`\`\`properties\n${serenityConf}\n\`\`\`\n\n` +
          `### logback-test.xml\n\`\`\`xml\n${logbackTest}\n\`\`\`\n\n` +
-         `### README.md\n\`\`\`markdown\n${readme}\n\`\`\``;
+         `### README.md\n\`\`\`markdown\n${readme}\n\`\`\`\n\n` +
+         `## 📄 Archivos Java Básicos\n\n` +
+         `### Runner Class (${config.companyPackage.replace(/\./g, '/')}/runners/CucumberTestRunner.java)\n\`\`\`java\n${runnerClass}\n\`\`\`\n\n` +
+         `### Hooks Class (${config.companyPackage.replace(/\./g, '/')}/hooks/Hooks.java)\n\`\`\`java\n${hooksClass}\n\`\`\``;
 }
 
 function generateGradleBuildFile(config: ProjectStructureConfig): string {
@@ -355,9 +367,72 @@ src/
 
 ## Dependencias
 
-- Serenity BDD 3.6.12
+- Serenity BDD 4.3.4
 - JUnit 5
 - Cucumber
 ${config.buildTool === 'gradle' ? '- Gradle' : '- Maven'}
 `;
+}
+
+function generateRunnerClass(config: ProjectStructureConfig): string {
+  return `package ${config.companyPackage}.runners;
+
+import io.cucumber.junit.CucumberOptions;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
+import org.junit.runner.RunWith;
+
+/**
+ * Runner principal para ejecutar los tests de Cucumber con Serenity
+ * Ejecuta las features ubicadas en src/test/resources/features/
+ */
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(
+    features = "src/test/resources/features",
+    glue = "${config.companyPackage}.stepdefinitions",
+    plugin = {"pretty", "json:target/cucumber-report.json"},
+    tags = "@smoke or @regression"
+)
+public class CucumberTestRunner {
+    // Esta clase no necesita código adicional
+    // El Runner ejecuta automáticamente las features con los step definitions
+}`;
+}
+
+function generateHooksClass(config: ProjectStructureConfig): string {
+  const projectType = config.type || 'both';
+  const isApi = projectType === 'api' || projectType === 'both';
+  
+  return `package ${config.companyPackage}.hooks;
+
+import io.cucumber.java.Before;
+import io.cucumber.java.After;
+import net.serenitybdd.screenplay.actors.OnStage;
+import net.serenitybdd.screenplay.actors.OnlineCast;
+
+/**
+ * Hooks: Configuración de actores antes y después de cada escenario
+ * Responsabilidad: Inicializar OnStage y liberar recursos
+ * CRÍTICO: Debe ejecutarse antes de cualquier StepDefinition
+ */
+public class Hooks {
+
+    /**
+     * Configuración inicial del escenario
+     * Inicializa el cast de actores para el patrón Screenplay
+     */
+    @Before(order = 0)
+    public void setTheStage() {
+        OnStage.setTheStage(new OnlineCast());
+    }
+
+    /**
+     * Limpieza después de cada escenario
+     * Cierra el navegador${isApi ? ' y libera recursos de API' : ''}
+     * IMPORTANTE: drawTheCurtain() es obligatorio para evitar memory leaks
+     */
+    @After(order = 1)
+    public void tearDown() {
+        OnStage.drawTheCurtain();
+    }
+}`;
 }

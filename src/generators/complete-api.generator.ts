@@ -10,6 +10,8 @@ export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
   const interactionCode = generateApiInteraction(request);
   const builderCode = generateApiBuilder(request);
   const endpointCode = generateApiEndpoints(request);
+  const runnerCode = generateApiRunner();
+  const hooksCode = generateApiHooks();
 
   const taskName = request.huId.replace('API-HU-', '');
   const questionName = `Validar${taskName}Response`;
@@ -55,6 +57,16 @@ ${interactionCode}
 ${stepCode}
 \`\`\`
 
+### Runner: CucumberTestRunner.java
+\`\`\`java
+${runnerCode}
+\`\`\`
+
+### Hooks: Hooks.java
+\`\`\`java
+${hooksCode}
+\`\`\`
+
 ### Feature: ${featureName}
 \`\`\`gherkin
 ${featureCode}
@@ -64,7 +76,7 @@ ${featureCode}
   return {
     output,
     summary: {
-      totalFiles: 8,
+      totalFiles: 10,
       files: [
         { name: `${taskName}.java`, type: 'Task' },
         { name: `${questionName}.java`, type: 'Question' },
@@ -73,6 +85,8 @@ ${featureCode}
         { name: `${endpointName}.java`, type: 'Endpoint' },
         { name: `${interactionName}.java`, type: 'Interaction' },
         { name: `${stepName}.java`, type: 'StepDefinitions' },
+        { name: 'CucumberTestRunner.java', type: 'Runner' },
+        { name: 'Hooks.java', type: 'Hooks' },
         { name: featureName, type: 'Feature' }
       ]
     }
@@ -328,4 +342,64 @@ function getEndpointConstantName(method: string, resource: string): string {
   };
 
   return `${methodMap[methodUpper] || methodUpper}_${resourceUpper}`;
+}
+
+function generateApiRunner(): string {
+  return `package com.screenplay.api.runners;
+
+import io.cucumber.junit.CucumberOptions;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
+import org.junit.runner.RunWith;
+
+/**
+ * Runner principal para ejecutar los tests de API con Cucumber y Serenity
+ * Ejecuta las features ubicadas en src/test/resources/features/
+ */
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(
+    features = "src/test/resources/features",
+    glue = "com.screenplay.api.stepdefinitions",
+    plugin = {"pretty", "json:target/cucumber-report.json"},
+    tags = "@api"
+)
+public class CucumberTestRunner {
+    // Esta clase no necesita código adicional
+    // El Runner ejecuta automáticamente las features con los step definitions
+}`;
+}
+
+function generateApiHooks(): string {
+  return `package com.screenplay.api.hooks;
+
+import io.cucumber.java.Before;
+import io.cucumber.java.After;
+import net.serenitybdd.screenplay.actors.OnStage;
+import net.serenitybdd.screenplay.actors.OnlineCast;
+
+/**
+ * Hooks: Configuración de actores antes y después de cada escenario API
+ * Responsabilidad: Inicializar OnStage y liberar recursos
+ * CRÍTICO: Debe ejecutarse antes de cualquier StepDefinition
+ */
+public class Hooks {
+
+    /**
+     * Configuración inicial del escenario
+     * Inicializa el cast de actores para el patrón Screenplay
+     */
+    @Before(order = 0)
+    public void setTheStage() {
+        OnStage.setTheStage(new OnlineCast());
+    }
+
+    /**
+     * Limpieza después de cada escenario
+     * Libera recursos de API y cierra conexiones
+     * IMPORTANTE: drawTheCurtain() es obligatorio para evitar memory leaks
+     */
+    @After(order = 1)
+    public void tearDown() {
+        OnStage.drawTheCurtain();
+    }
+}`;
 }
