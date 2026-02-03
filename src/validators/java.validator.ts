@@ -1,11 +1,13 @@
 // java.validator.ts - Validador completo para estándares Java
 import { validateOOPPrinciples, validateSOLIDPrinciples, validateCodeMetrics } from './oop-solid.validator.js';
+import { getClassNameValidationErrors, getFilenameValidationErrors } from '../generators/naming.helper.js';
 
 interface JavaValidationPayload {
   code?: string;
   className?: string;
   packageName?: string;
   type?: 'class' | 'interface' | 'enum' | 'method';
+  filename?: string; // Added to support filename validation
 
   // Basic validations
   hasValidPackage?: boolean;
@@ -42,6 +44,15 @@ export function validateJavaCode(payload: JavaValidationPayload) {
   const suggestions: string[] = [];
 
   // ═══════════════════════════════════════════════════════════
+  // FILENAME VALIDATION (Critical for Java)
+  // ═══════════════════════════════════════════════════════════
+
+  if (payload.filename && payload.className) {
+    const filenameErrors = getFilenameValidationErrors(payload.filename, payload.className);
+    errors.push(...filenameErrors);
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // BASIC VALIDATIONS - Naming, Packages, Types
   // ═══════════════════════════════════════════════════════════
 
@@ -57,9 +68,11 @@ export function validateJavaCode(payload: JavaValidationPayload) {
 
   // Class naming
   if (payload.className && !payload.hasValidClassName) {
-    if (!/^[A-Z][a-zA-Z0-9]*$/.test(payload.className)) {
-      errors.push('❌ CLASS NAME: Nombre de clase debe ser PascalCase');
-    }
+    const classNameErrors = getClassNameValidationErrors(payload.className);
+    errors.push(...classNameErrors.filter(e => e.startsWith('❌')));
+    warnings.push(...classNameErrors.filter(e => e.startsWith('⚠️')));
+    
+    // Additional legacy checks
     if (payload.className.length > 25) {
       warnings.push('⚠️ CLASS NAME: Nombre de clase demasiado largo (>25 caracteres)');
     }

@@ -1,4 +1,5 @@
 // Generator para componentes de Serenity API Screenplay - Alineado con Estándares
+import { httpMethodToPascalCase, getClassNameValidationErrors } from './naming.helper.js';
 
 export interface APIComponentConfig {
   componentType: 'Task' | 'Interaction' | 'Question' | 'Model' | 'Builder' | 'Endpoint';
@@ -99,7 +100,18 @@ export function generateAPITask(config: APIComponentConfig): string {
 
 export function generateAPIInteraction(config: APIComponentConfig): string {
   const lines: string[] = [];
-  const httpMethod = config.httpMethod || 'Get';
+  
+  // Validate and normalize the HTTP method to PascalCase for class name
+  const httpMethod = config.httpMethod ? httpMethodToPascalCase(config.httpMethod) : 'Get';
+  
+  // Use provided className or generate from HTTP method
+  const className = config.className || `${httpMethod}Request`;
+  
+  // Validate the class name before generation
+  const nameErrors = getClassNameValidationErrors(className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid class name '${className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -112,10 +124,10 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
   lines.push('import static net.serenitybdd.screenplay.Tasks.instrumented;');
   lines.push('');
   lines.push('/**');
-  lines.push(` * Interaction: ${config.className}`);
+  lines.push(` * Interaction: ${className}`);
   lines.push(' * Responsabilidad: Acción HTTP reutilizable (HTTP vive aquí)');
   lines.push(' */');
-  lines.push(`public class ${httpMethod}Request implements Interaction {`);
+  lines.push(`public class ${className} implements Interaction {`);
   lines.push('');
   lines.push('    private final String endpoint;');
   lines.push('    private final Object body;');
@@ -123,7 +135,7 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
 
   // Constructor público
   lines.push('    // Constructor público (requerido por Serenity)');
-  lines.push(`    public ${httpMethod}Request(String endpoint, Object body) {`);
+  lines.push(`    public ${className}(String endpoint, Object body) {`);
   lines.push('        this.endpoint = endpoint;');
   lines.push('        this.body = body;');
   lines.push('    }');
@@ -154,8 +166,8 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
 
   // Factory method
   lines.push('    // Factory method (usa instrumented)');
-  lines.push(`    public static ${httpMethod}Request to(String endpoint, Object body) {`);
-  lines.push(`        return instrumented(${httpMethod}Request.class, endpoint, body);`);
+  lines.push(`    public static ${className} to(String endpoint, Object body) {`);
+  lines.push(`        return instrumented(${className}.class, endpoint, body);`);
   lines.push('    }');
   lines.push('}');
 

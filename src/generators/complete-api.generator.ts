@@ -1,5 +1,6 @@
 // Generador completo para HU de API REST - Alineado con Estándares actualizados
 import type { ApiHURequest, GeneratedHU } from './types.js';
+import { httpMethodToPascalCase } from './naming.helper.js';
 
 export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
   const taskCode = generateApiTask(request);
@@ -18,7 +19,7 @@ export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
   const modelName = `${taskName}Response`;
   const stepName = `${taskName}StepDefinitions`;
   const featureName = `${taskName}.feature`;
-  const interactionName = `${request.metodo}Request`;
+  const interactionName = `${httpMethodToPascalCase(request.metodo)}Request`;
   const builderName = `Constructor${modelName}`;
   const endpointName = `${taskName}Endpoints`;
 
@@ -97,13 +98,14 @@ function generateApiTask(request: ApiHURequest): string {
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const resource = getResourceFromEndpoint(request.endpoint);
   const endpointConstant = getEndpointConstantName(request.metodo, resource);
+  const interactionClassName = `${httpMethodToPascalCase(request.metodo)}Request`;
 
   return `package com.screenplay.api.tasks;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.Tasks;
-import com.screenplay.api.interactions.${request.metodo}Request;
+import com.screenplay.api.interactions.${interactionClassName};
 import com.screenplay.api.endpoints.${request.huId.replace('API-HU-', '')}Endpoints;
 import com.screenplay.api.models.${request.huId.replace('API-HU-', '')}Request;
 import static com.screenplay.api.endpoints.${request.huId.replace('API-HU-', '')}Endpoints.*;
@@ -119,7 +121,7 @@ public class ${taskName} implements Task {
     @Override
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
-            ${request.metodo}Request.to(BASE_URL + ${endpointConstant}, request)
+            ${interactionClassName}.to(BASE_URL + ${endpointConstant}, request)
         );
     }
 
@@ -281,24 +283,26 @@ function generateApiFeature(request: ApiHURequest): string {
 
 function generateApiInteraction(request: ApiHURequest): string {
   const isGet = request.metodo === 'GET';
-  const methodCall = isGet ? 'Get.resource(url)' : `${request.metodo}.to(url)`;
+  const normalizedMethod = httpMethodToPascalCase(request.metodo);
+  const className = `${normalizedMethod}Request`;
+  const methodCall = isGet ? 'Get.resource(url)' : `${normalizedMethod}.to(url)`;
 
   return `package com.screenplay.api.interactions;
 
 import net.serenitybdd.screenplay.Actor;
-import net.serenitybdd.screenplay.rest.interactions.${request.metodo};
+import net.serenitybdd.screenplay.rest.interactions.${normalizedMethod};
 import net.serenitybdd.screenplay.Interaction;
 import net.serenitybdd.screenplay.Tasks;
 import io.restassured.http.ContentType;
 import java.util.Map;
 import java.util.HashMap;
 
-public class ${request.metodo}Request implements Interaction {
+public class ${className} implements Interaction {
 
     private final String url;
     private final Object body;
 
-    public ${request.metodo}Request(String url, Object body) {
+    public ${className}(String url, Object body) {
         this.url = url;
         this.body = body;
     }
@@ -317,8 +321,8 @@ ${isGet ? '' : `                .with(request -> {
         );
     }
 
-    public static ${request.metodo}Request to(String url, Object body) {
-        return Tasks.instrumented(${request.metodo}Request.class, url, body);
+    public static ${className} to(String url, Object body) {
+        return Tasks.instrumented(${className}.class, url, body);
     }
 }`;
 }
