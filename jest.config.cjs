@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.ts'],
@@ -12,6 +12,10 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       useESM: true,
+      tsconfig: {
+        module: 'ES2022',
+        moduleResolution: 'node',
+      }
     }],
   },
   extensionsToTreatAsEsm: ['.ts'],

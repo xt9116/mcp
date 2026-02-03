@@ -24,10 +24,10 @@ import { generateProjectStructure as generateProjectStructureGen } from './gener
 import { validateGeneratedCode } from './generators/validation.helper.js';
 
 // Importar estándares
-import * as javaStandard from './standards/java.standard.json';
-import * as oopSolidStandard from './standards/oop-solid.standard.json';
-import * as apiStandard from './standards/serenity-api-screenplay.standard.json';
-import * as webStandard from './standards/serenity-web-screenplay.standard.json';
+import javaStandard from './standards/java.standard.json' with { type: 'json' };
+import oopSolidStandard from './standards/oop-solid.standard.json' with { type: 'json' };
+import apiStandard from './standards/serenity-api-screenplay.standard.json' with { type: 'json' };
+import webStandard from './standards/serenity-web-screenplay.standard.json' with { type: 'json' };
 
 const server = new Server(
   {
