@@ -225,11 +225,14 @@ function generatePomXml(config: ProjectStructureConfig): string {
     </properties>
 
     <dependencies>
+        <!-- Serenity BDD Core Dependencies -->
+        <!-- serenity-core, serenity-cucumber y serenity-rest-assured NO tienen scope test -->
+        <!-- porque src/main/java contiene Tasks, Interactions, Questions, Models que implementan -->
+        <!-- interfaces de Serenity (Task, Interaction, Question) y necesitan estas dependencias en compile time -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
             <version>\${serenity.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.serenity-bdd</groupId>
@@ -241,13 +244,11 @@ function generatePomXml(config: ProjectStructureConfig): string {
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-cucumber</artifactId>
             <version>\${serenity.version}</version>
-            <scope>test</scope>
         </dependency>
 ${projectType !== 'web' ? `        <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-rest-assured</artifactId>
             <version>\${serenity.version}</version>
-            <scope>test</scope>
         </dependency>` : ''}
         <dependency>
             <groupId>org.junit.jupiter</groupId>
