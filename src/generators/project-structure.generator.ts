@@ -157,7 +157,8 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-    // Serenity REST dependencies for API testing (included in all project types for flexibility)
+    // Serenity REST dependencies (rest-assured and screenplay-rest) for API testing
+    // Included in all project types for flexibility (web projects may need API calls for setup/teardown)
     testImplementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
@@ -229,10 +230,10 @@ function generatePomXml(config: ProjectStructureConfig): string {
     <dependencies>
         <!-- Serenity BDD Core Dependencies -->
         <!-- Note: serenity-core and serenity-cucumber do NOT have test scope because src/main/java -->
-        <!-- contains Tasks, Questions that may need these dependencies at compile time -->
+        <!-- contains Tasks, Interactions, Questions, and Models that may need these dependencies at compile time -->
         <!-- However, serenity-rest-assured and serenity-screenplay-rest use test scope as they -->
         <!-- are primarily used in test code and for API testing -->
-        <!-- screenplay-rest is included in all project types for flexibility (web projects may need API calls for setup/teardown) -->
+        <!-- Both REST dependencies are included in all project types for flexibility (web projects may need API calls for setup/teardown) -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
