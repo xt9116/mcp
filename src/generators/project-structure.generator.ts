@@ -157,11 +157,13 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-    // Serenity REST dependencies (rest-assured and screenplay-rest) for API testing
-    // Included in all project types for flexibility (web projects may need API calls for setup/teardown)
-    // Using 'implementation' scope because Tasks/Interactions/Questions are in src/main/java
+${projectType !== 'web' ? `    // Serenity REST dependencies for API testing
+    // Using 'implementation' scope because Interactions/Questions are in src/main/java
     implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
-    implementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"` : ''}
+${projectType !== 'api' ? `    // Serenity WebDriver dependency for Web UI testing
+    // Using 'implementation' scope because Tasks/Questions are in src/main/java
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:\${serenityVersion}"` : ''}
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:\${junitVersion}"
     testImplementation "org.assertj:assertj-core:\${assertjVersion}"
@@ -230,11 +232,8 @@ function generatePomXml(config: ProjectStructureConfig): string {
 
     <dependencies>
         <!-- Serenity BDD Core Dependencies -->
-        <!-- Note: serenity-core, serenity-cucumber, serenity-rest-assured, and serenity-screenplay-rest -->
-        <!-- do NOT have test scope because src/main/java contains Tasks, Interactions, Questions, and Models -->
-        <!-- that implement Serenity interfaces and need these dependencies at compile time -->
-        <!-- Both REST dependencies (rest-assured and screenplay-rest) are included in all project types -->
-        <!-- for flexibility - web projects may need API calls for test data setup/teardown -->
+        <!-- Note: serenity-core and serenity-cucumber do NOT have test scope because src/main/java -->
+        <!-- contains Tasks, Interactions, Questions, and Models that implement Serenity interfaces -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
@@ -251,7 +250,7 @@ function generatePomXml(config: ProjectStructureConfig): string {
             <artifactId>serenity-cucumber</artifactId>
             <version>\${serenity.version}</version>
         </dependency>
-        <!-- Serenity REST dependencies for API testing (included in all project types) -->
+${projectType !== 'web' ? `        <!-- Serenity REST dependencies for API testing -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-rest-assured</artifactId>
@@ -261,7 +260,13 @@ function generatePomXml(config: ProjectStructureConfig): string {
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-screenplay-rest</artifactId>
             <version>\${serenity.version}</version>
-        </dependency>
+        </dependency>` : ''}
+${projectType !== 'api' ? `        <!-- Serenity WebDriver dependency for Web UI testing -->
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-screenplay-webdriver</artifactId>
+            <version>\${serenity.version}</version>
+        </dependency>` : ''}
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
