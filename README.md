@@ -9,9 +9,9 @@ Un MCP Server profesional para la validación y generación de código Java, OOP
 ## Características
 
 ### Generación de Código Avanzada
-- **HU Completas API**: Genera automáticamente Task, Interaction, Question, Model, StepDefinitions y Features para historias de usuario API REST
-- **HU Completas Web**: Genera automáticamente UI Classes, Tasks, Questions, StepDefinitions y Features para historias de usuario Web
-- **Estructura de Proyectos**: Genera estructura completa de proyectos Maven o Gradle para Serenity BDD
+- **HU Completas API**: Genera automáticamente Task, Interaction, Question, Model, Builder, Endpoints, StepDefinitions, Runner, Hooks y Features para historias de usuario API REST
+- **HU Completas Web**: Genera automáticamente UI Classes, Tasks, Questions, StepDefinitions, Runner, Hooks (SetTheStage) y Features para historias de usuario Web
+- **Estructura de Proyectos**: Genera estructura completa de proyectos Maven o Gradle para Serenity BDD con archivos básicos (Runner, Hooks, configuración)
 
 ### Validación y Calidad
 - **Validación Java**: Análisis completo de código Java siguiendo estándares profesionales
@@ -20,11 +20,13 @@ Un MCP Server profesional para la validación y generación de código Java, OOP
 - **Serenity API**: Generación y validación de componentes Screenplay para API REST
 - **Serenity Web**: Generación y validación de componentes Screenplay para Web UI
 - **Estándares**: Acceso a estándares de mejores prácticas completos y actualizados
+- **Serenity 4.3.4**: Última versión estable de Serenity BDD
 
 ### Generación de Componentes
 - **Java**: Clases, interfaces, enums, POJOs, Builders
-- **Serenity API**: Tasks, Interactions, Questions, Models
+- **Serenity API**: Tasks, Interactions, Questions, Models, Endpoints, Builders
 - **Serenity Web**: UI Classes, Tasks, Questions, Page Objects
+- **Infraestructura**: Runner (CucumberTestRunner), Hooks (inicialización de actores, cierre de navegador)
 
 ## Instalación
 
