@@ -231,7 +231,7 @@ public class ${className} {
     @Entonces("válido los resultados de búsqueda que se muestren correctamente")
     public void validoResultados() {
         theActorInTheSpotlight().should(
-            seeThat(VerificarElemento.en(UIHome.LBL_RESULTADOS), is(true))
+            seeThat("Los resultados de búsqueda", VerificarElemento.en(UIHome.LBL_RESULTADOS), is(true))
         );
     }
 }`;
