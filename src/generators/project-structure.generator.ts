@@ -226,9 +226,9 @@ function generatePomXml(config: ProjectStructureConfig): string {
 
     <dependencies>
         <!-- Serenity BDD Core Dependencies -->
-        <!-- serenity-core, serenity-cucumber y serenity-rest-assured NO tienen scope test -->
-        <!-- porque src/main/java contiene Tasks, Interactions, Questions, Models que implementan -->
-        <!-- interfaces de Serenity (Task, Interaction, Question) y necesitan estas dependencias en compile time -->
+        <!-- serenity-core, serenity-cucumber and serenity-rest-assured do NOT have test scope -->
+        <!-- because src/main/java contains Tasks, Interactions, Questions, Models that implement -->
+        <!-- Serenity interfaces (Task, Interaction, Question) and need these dependencies at compile time -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
