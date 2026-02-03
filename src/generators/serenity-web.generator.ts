@@ -163,7 +163,7 @@ export function generateWebQuestion(config: WebComponentConfig): string {
 
   lines.push('    @Override');
   lines.push('    public Boolean answeredBy(Actor actor) {');
-  const validationDescription = config.validaciones?.[0] ? config.validaciones[0] : 'Validación';
+  const validationDescription = config.validaciones?.[0] ?? 'Validación';
   lines.push(`        // ${validationDescription}`);
   lines.push('        return target.resolveFor(actor).isDisplayed();');
   lines.push('    }');
