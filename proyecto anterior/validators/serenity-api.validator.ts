@@ -1,9 +1,3 @@
-/**
- * Validador para Serenity Screenplay - API REST
- * Valida Tasks, Interactions, Questions, Models, Builders, Endpoints, StepDefinitions
- * según el estándar serenity-api-screenplay.standard.json (actualizado)
- */
-
 interface ValidationPayload {
   // Código fuente o metadatos
   code?: string;
@@ -25,18 +19,11 @@ interface ValidationPayload {
   className?: string;
   implementsCorrectInterface?: boolean;
   hasStaticFactoryMethod?: boolean;
-  hasPublicConstructor?: boolean;
-  usesInstrumented?: boolean;
   
   // Validaciones de escenario
   scenarioValidatesStatusCode?: boolean;
   scenarioValidatesBodyField?: boolean;
   scenarioValidatesErrorMessage?: boolean;
-  
-  // Validaciones de naming conventions (actualizado)
-  usesCorrectBuilderPattern?: boolean;
-  usesCorrectEndpointConstants?: boolean;
-  usesCorrectFactoryMethods?: boolean;
 }
 
 export function validateSerenityApi(payload: ValidationPayload) {
@@ -48,10 +35,10 @@ export function validateSerenityApi(payload: ValidationPayload) {
     errors.push("❌ PROHIBIDO: No usar @Steps annotation - usar Screenplay pattern");
   }
 
-  // ✅ 2. Validaciones de Step Definitions (máximo 3 líneas)
+  // ✅ 2. Validaciones de Step Definitions
   if (payload.type === 'StepDefinition') {
     if (payload.stepDefinitionsLines && payload.stepDefinitionsLines > 3) {
-      errors.push(`❌ Step Definitions supera el máximo de 3 líneas (tiene ${payload.stepDefinitionsLines})`);
+      errors.push("❌ Step Definitions supera el máximo de 3 líneas");
     }
     
     if (payload.code) {
@@ -76,18 +63,10 @@ export function validateSerenityApi(payload: ValidationPayload) {
     }
     
     if (!payload.hasStaticFactoryMethod) {
-      warnings.push("⚠️ Se recomienda método estático factory (ej: con(), llamado(), from())");
+      warnings.push("⚠️ Se recomienda método estático factory (ej: with(), from())");
     }
     
-    if (!payload.hasPublicConstructor) {
-      errors.push("❌ CRÍTICO: El constructor del Task debe ser público (ByteBuddy requirement)");
-    }
-    
-    if (!payload.usesInstrumented) {
-      errors.push("❌ CRÍTICO: El factory method debe usar Tasks.instrumented() - NO usar 'new Task()'");
-    }
-    
-    if (payload.code && (payload.code.includes('Post.to') || payload.code.includes('Get.resource'))) {
+    if (payload.code && (payload.code.includes('Post.to') || payload.code.includes('Get.to'))) {
       errors.push("❌ Task no debe usar HTTP directo - delegar en Interactions");
     }
     
@@ -107,15 +86,7 @@ export function validateSerenityApi(payload: ValidationPayload) {
     }
     
     if (!payload.hasStaticFactoryMethod) {
-      warnings.push("⚠️ Se recomienda método estático factory (ej: to(), hacia())");
-    }
-    
-    if (!payload.hasPublicConstructor) {
-      errors.push("❌ CRÍTICO: El constructor de la Interaction debe ser público (ByteBuddy requirement)");
-    }
-    
-    if (!payload.usesInstrumented) {
-      errors.push("❌ CRÍTICO: El factory method debe usar instrumented() - NO usar 'new Interaction()'");
+      warnings.push("⚠️ Se recomienda método estático factory (ej: to(), with())");
     }
     
     if (payload.code && !payload.code.includes('actor.attemptsTo')) {
@@ -134,11 +105,7 @@ export function validateSerenityApi(payload: ValidationPayload) {
     }
     
     if (!payload.hasStaticFactoryMethod) {
-      warnings.push("⚠️ Se recomienda método estático factory (ej: valor(), of(), en())");
-    }
-    
-    if (payload.code && payload.usesInstrumented) {
-      warnings.push("⚠️ Questions NO deben usar instrumented() - usar 'new Question()' directamente");
+      warnings.push("⚠️ Se recomienda método estático factory (ej: value(), of())");
     }
     
     if (payload.code && !payload.code.includes('answeredBy')) {
@@ -153,36 +120,28 @@ export function validateSerenityApi(payload: ValidationPayload) {
     }
     
     if (payload.code) {
-      if (!payload.code.includes('@JsonIgnoreProperties(ignoreUnknown = true)')) {
-        warnings.push("⚠️ Se recomienda @JsonIgnoreProperties(ignoreUnknown = true) en Models");
-      }
-      
       if (payload.code.includes('public void send') || payload.code.includes('public void post')) {
         errors.push("❌ El Model no debe tener métodos de envío o comunicación");
       }
     }
   }
 
-  // ✅ 7. Validaciones de Builders (actualizado con nuevos patrones)
+  // ✅ 7. Validaciones de Builders
   if (payload.type === 'Builder') {
     if (payload.builderContainsSendLogic) {
       errors.push("❌ Los Builders no deben contener lógica de envío - solo construcción");
     }
     
     if (payload.code && !payload.code.includes('public static')) {
-      warnings.push("⚠️ Builder debe tener métodos estáticos (ej: conDatosValidos(), withValidData())");
+      warnings.push("⚠️ Builder debe tener métodos estáticos (ej: withValidData())");
     }
     
-    if (payload.className && !payload.className.startsWith('Constructor') && !payload.className.endsWith('Builder')) {
-      errors.push("❌ El Builder debe comenzar con 'Constructor' o terminar con 'Builder' (ej: ConstructorSolicitudCrearUsuario)");
-    }
-    
-    if (!payload.usesCorrectBuilderPattern) {
-      warnings.push("⚠️ Builder debe tener métodos estáticos: conDatosValidos(), conDatosInvalidos(), conCampoVacio(), conEmailInvalido()");
+    if (payload.className && !payload.className.endsWith('Builder')) {
+      warnings.push("⚠️ El Builder debe terminar con 'Builder' (ej: CreateUserRequestBuilder)");
     }
   }
 
-  // ✅ 8. Validaciones de Endpoints (actualizado con nuevas reglas)
+  // ✅ 8. Validaciones de Endpoints
   if (payload.type === 'Endpoint') {
     if (payload.endpointIsHardcoded) {
       errors.push("❌ No hardcodear URLs - usar constantes en clase {Resource}Endpoints");
@@ -193,15 +152,11 @@ export function validateSerenityApi(payload: ValidationPayload) {
     }
     
     if (payload.className && !payload.className.endsWith('Endpoints')) {
-      warnings.push("⚠️ La clase de endpoints debe terminar con 'Endpoints' (ej: UserEndpoints)");
+      warnings.push("⚠️ La clase de endpoints debe terminar con 'Endpoints'");
     }
     
     if (payload.code && !payload.code.includes('public static final String')) {
       errors.push("❌ Los endpoints deben ser constantes: public static final String");
-    }
-    
-    if (!payload.usesCorrectEndpointConstants) {
-      errors.push("❌ Las constantes de endpoints deben estar en ESPAÑOL (ej: CREAR_USUARIO, OBTENER_TODOS)");
     }
   }
 
@@ -214,7 +169,7 @@ export function validateSerenityApi(payload: ValidationPayload) {
     warnings.push("⚠️ RECOMENDADO: El escenario debe validar al menos un campo del body");
   }
 
-  // ✅ 10. Validaciones de nombres según convenciones (actualizado)
+  // ✅ 10. Validaciones de nombres según convenciones
   if (payload.className && payload.type) {
     const namingValidation = validateNamingConvention(payload.className, payload.type);
     if (!namingValidation.valid) {
@@ -238,27 +193,27 @@ function validateNamingConvention(className: string, type: string): { valid: boo
   const conventions: Record<string, { pattern: RegExp; example: string }> = {
     'Task': { 
       pattern: /^[A-Z][a-z]+[A-Z][a-zA-Z]*$/, 
-      example: 'CreateUser, GetPolicy, UpdateCustomer, ObtenerPersonaje' 
+      example: 'CreateUser, GetPolicy, UpdateCustomer' 
     },
     'Interaction': { 
       pattern: /^(Post|Get|Put|Delete|Patch)Request$/, 
       example: 'PostRequest, GetRequest, PutRequest' 
     },
     'Question': { 
-      pattern: /^Response[A-Z][a-zA-Z]*|^[A-Z][a-zA-Z]*Question|^Validar[A-Z][a-zA-Z]*$/, 
-      example: 'ResponseStatusCode, ResponseBodyField, ValidarResponse' 
+      pattern: /^Response[A-Z][a-zA-Z]*|^[A-Z][a-zA-Z]*$/, 
+      example: 'ResponseStatusCode, ResponseBodyField, ErrorMessage' 
     },
     'Builder': { 
-      pattern: /^Constructor[A-Z][a-zA-Z]*$|^[A-Z][a-zA-Z]*Builder$/, 
-      example: 'ConstructorSolicitudCrearUsuario, CreateUserRequestBuilder' 
+      pattern: /^[A-Z][a-zA-Z]*Builder$/, 
+      example: 'CreateUserRequestBuilder' 
     },
     'Model': { 
       pattern: /^[A-Z][a-zA-Z]*(Request|Response)$/, 
-      example: 'CreateUserRequest, UserResponse, CharacterResponse' 
+      example: 'CreateUserRequest, UserResponse' 
     },
     'Endpoint': { 
       pattern: /^[A-Z][a-zA-Z]*Endpoints$/, 
-      example: 'UserEndpoints, CharacterEndpoints' 
+      example: 'UserEndpoints, PolicyEndpoints' 
     }
   };
 
@@ -283,9 +238,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
     code,
     type,
     implementsCorrectInterface: false,
-    hasStaticFactoryMethod: false,
-    hasPublicConstructor: false,
-    usesInstrumented: false
+    hasStaticFactoryMethod: false
   };
 
   // Detectar interface implementada
@@ -299,20 +252,14 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
     payload.implementsCorrectInterface = true;
   }
 
-  // Detectar constructor público
-  payload.hasPublicConstructor = /public\s+\w+\s*\([^)]*\)\s*\{/.test(code);
-
   // Detectar método factory estático
   if (code.includes('public static')) {
     payload.hasStaticFactoryMethod = true;
   }
 
-  // Detectar uso de instrumented()
-  payload.usesInstrumented = code.includes('instrumented(') || code.includes('Tasks.instrumented(');
-
   // Detectar HTTP en Tasks
   if (type === 'Task') {
-    payload.taskContainsHttp = code.includes('Post.to(') || code.includes('Get.resource(') || 
+    payload.taskContainsHttp = code.includes('Post.to(') || code.includes('Get.to(') || 
                                code.includes('.post(') || code.includes('.get(');
   }
 
@@ -333,79 +280,11 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
     payload.modelContainsLogic = hasBusinessLogic;
   }
 
-  // Detectar versionado en endpoints
-  if (type === 'Endpoint') {
-    payload.endpointIsVersioned = code.includes('/v1/') || code.includes('/v2/');
-    payload.endpointIsHardcoded = /https?:\/\//.test(code) && !code.includes('public static final');
-    
-    // Validar constantes en español
-    const spanishConstants = /CREAR_|OBTENER_|ACTUALIZAR_|ELIMINAR_|CONSULTAR_/.test(code);
-    payload.usesCorrectEndpointConstants = spanishConstants;
-  }
-
-  // Detectar patrones de Builder
-  if (type === 'Builder') {
-    const validMethods = code.includes('conDatosValidos') || code.includes('conDatosInvalidos') ||
-                       code.includes('withValidData') || code.includes('withInvalidData');
-    payload.usesCorrectBuilderPattern = validMethods;
-    
-    const sendLogic = code.includes('post(') || code.includes('get(') || code.includes('send');
-    payload.builderContainsSendLogic = sendLogic;
-  }
-
   // Extraer nombre de clase
   const classMatch = code.match(/class\s+(\w+)/);
   if (classMatch) {
     payload.className = classMatch[1];
   }
 
-  // Validar lenguaje de negocio en Tasks
-  if (type === 'Task') {
-    const hasBusinessTerms = /crear|obtener|actualizar|eliminar|buscar|procesar|validar|registrar|consultar/i.test(code);
-    payload.taskUsesBusinessLanguage = hasBusinessTerms;
-  }
-
-  // Contar líneas en step definitions
-  if (type === 'StepDefinition') {
-    const methodMatches = code.match(/@(?:Given|When|Then|Dado|Cuando|Entonces)\s*\([^)]+\)\s*public\s+void\s+\w+\([^)]*\)\s*\{([^}]+)\}/g);
-    if (methodMatches) {
-      methodMatches.forEach(match => {
-        const lines = match.split('\n').filter(line => {
-          const trimmed = line.trim();
-          return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('/*');
-        }).length;
-        
-        if (lines > 3) {
-          payload.stepDefinitionsLines = lines;
-        }
-      });
-    }
-  }
-
   return validateSerenityApi(payload);
-}
-
-// Exportar funciones auxiliares
-export function isValidTaskName(name: string): boolean {
-  return /^[A-Z][a-z]+[A-Z][a-zA-Z]*$/.test(name);
-}
-
-export function isValidInteractionName(name: string): boolean {
-  return /^(Post|Get|Put|Delete|Patch)Request$/.test(name);
-}
-
-export function isValidQuestionName(name: string): boolean {
-  return /^Response[A-Z][a-zA-Z]*|^[A-Z][a-zA-Z]*Question|^Validar[A-Z][a-zA-Z]*$/.test(name);
-}
-
-export function isValidBuilderName(name: string): boolean {
-  return /^Constructor[A-Z][a-zA-Z]*$|^[A-Z][a-zA-Z]*Builder$/.test(name);
-}
-
-export function isValidModelName(name: string): boolean {
-  return /^[A-Z][a-zA-Z]*(Request|Response)$/.test(name);
-}
-
-export function isValidEndpointName(name: string): boolean {
-  return /^[A-Z][a-zA-Z]*Endpoints$/.test(name);
 }

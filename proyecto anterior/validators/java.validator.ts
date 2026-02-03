@@ -1,4 +1,3 @@
-// java.validator.ts - Validador completo para estándares Java
 import { validateOOPPrinciples, validateSOLIDPrinciples, validateCodeMetrics } from './oop-solid.validator.js';
 
 interface JavaValidationPayload {
@@ -286,10 +285,36 @@ export function validateJavaCode(payload: JavaValidationPayload) {
   };
 }
 
-// Helper functions
-function extractClassName(code: string): string | undefined {
+export function validateJavaStandards(code: string, type: 'class' | 'interface' | 'enum' | 'method' = 'class') {
+  const payload: JavaValidationPayload = {
+    code,
+    type,
+    hasValidPackage: code.includes('package com.'),
+    hasValidClassName: /^[A-Z][a-zA-Z0-9]*$/.test(extractClassName(code) || ''),
+    hasValidMethodNames: validateMethodNames(code),
+    hasValidVariableNames: validateVariableNames(code),
+    hasValidConstants: validateConstants(code),
+    usesPrimitivesAppropriately: !code.includes('new Integer('),
+    usesWrappersCorrectly: !code.includes('int = null'),
+    handlesStringsProperly: !code.includes('==') || !code.includes('String'),
+    hasProperStructure: validateClassStructure(code),
+    hasValidConstructors: validateConstructors(code),
+    hasValidMethods: validateMethods(code),
+    usesGenericsCorrectly: !code.includes('List ') || code.includes('List<'),
+    usesLambdasAppropriately: validateLambdas(code),
+    usesStreamsProperly: validateStreams(code),
+    handlesConcurrency: !code.includes('synchronized') || code.includes('private final Object'),
+    followsSOLID: validateSOLIDCompliance(code),
+    hasGoodMetrics: validateMetrics(code),
+    avoidsAntiPatterns: !hasAntiPatterns(code)
+  };
+
+  return validateJavaCode(payload);
+}
+
+function extractClassName(code: string): string | null {
   const match = code.match(/class\s+(\w+)/);
-  return match ? match[1] : undefined;
+  return match ? match[1] : null;
 }
 
 function validateMethodNames(code: string): boolean {
@@ -320,6 +345,7 @@ function validateConstants(code: string): boolean {
 }
 
 function validateClassStructure(code: string): boolean {
+  // Check basic structure order
   const hasConstants = code.includes('static final');
   const hasFields = !!(code.match(/(?:private|public|protected)\s+(?!static|final)\w+\s+\w+\s*;/));
   const hasConstructors = code.includes('public ') && code.includes('(') && code.includes('{');
@@ -356,22 +382,28 @@ function validateLambdas(code: string): boolean {
 
 function validateStreams(code: string): boolean {
   if (!code.includes('.stream()')) return true;
+
+  // Check for proper stream usage
   const hasCollect = code.includes('.collect(');
   const hasForEach = code.includes('.forEach(');
   const hasTerminal = hasCollect || hasForEach || code.includes('.count()') || code.includes('.anyMatch(');
+
   return hasTerminal;
 }
 
 function validateSOLIDCompliance(code: string): boolean {
+  // Basic SOLID checks
   const hasInterface = code.includes('interface') || code.includes('implements');
   const hasMultipleMethods = (code.match(/public\s+(?!class|interface)\w+\s+\w+\s*\(/g) || []).length > 1;
   const hasNewInstances = (code.match(/new\s+\w+\(/g) || []).length > 2;
+
   return hasInterface && !hasMultipleMethods || !hasNewInstances;
 }
 
 function validateMetrics(code: string): boolean {
   const lines = code.split('\n').length;
   const methods = (code.match(/public\s+(?!class|interface)\w+\s+\w+\s*\(/g) || []).length;
+
   return lines <= 500 && methods <= 10;
 }
 
@@ -379,34 +411,4 @@ function hasAntiPatterns(code: string): boolean {
   return code.includes('catch (Exception e) {}') ||
          code.includes('System.out.println') ||
          code.includes('String + ') && code.includes('for ');
-}
-
-// Main validation function
-export function validateJavaStandards(code: string, type: 'class' | 'interface' | 'enum' | 'method' = 'class') {
-  const payload: JavaValidationPayload = {
-    code,
-    type,
-    className: extractClassName(code) || undefined,
-    packageName: code.match(/package\s+([\w.]+);/)?.[1],
-    hasValidPackage: code.includes('package com.'),
-    hasValidClassName: /^[A-Z][a-zA-Z0-9]*$/.test(extractClassName(code) || ''),
-    hasValidMethodNames: validateMethodNames(code),
-    hasValidVariableNames: validateVariableNames(code),
-    hasValidConstants: validateConstants(code),
-    usesPrimitivesAppropriately: !code.includes('new Integer('),
-    usesWrappersCorrectly: !code.includes('int = null'),
-    handlesStringsProperly: !code.includes('==') || !code.includes('String'),
-    hasProperStructure: validateClassStructure(code),
-    hasValidConstructors: validateConstructors(code),
-    hasValidMethods: validateMethods(code),
-    usesGenericsCorrectly: !code.includes('List ') || code.includes('List<'),
-    usesLambdasAppropriately: validateLambdas(code),
-    usesStreamsProperly: validateStreams(code),
-    handlesConcurrency: !code.includes('synchronized') || code.includes('private final Object'),
-    followsSOLID: validateSOLIDCompliance(code),
-    hasGoodMetrics: validateMetrics(code),
-    avoidsAntiPatterns: !hasAntiPatterns(code)
-  };
-
-  return validateJavaCode(payload);
 }

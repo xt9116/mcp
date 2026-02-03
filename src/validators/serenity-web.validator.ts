@@ -1,12 +1,12 @@
 /**
  * Validador para Serenity Screenplay - WEB UI
  * Valida Tasks, Interactions, Questions, UI classes, StepDefinitions
- * según el estándar serenity-web-screenplay.standard.json
+ * según el estándar serenity-web-screenplay.standard.json (actualizado con patrones robots Rimac)
  */
 
 interface ValidationPayloadWeb {
   code?: string;
-  type?: 'Task' | 'Interaction' | 'Question' | 'StepDefinition' | 'UI' | 'Page';
+  type?: 'Task' | 'Interaction' | 'Question' | 'StepDefinition' | 'UI' | 'Page' | 'SetTheStage';
   
   stepDefinitionsLines?: number;
   taskContainsWebDriverDirect?: boolean;
@@ -34,6 +34,19 @@ interface ValidationPayloadWeb {
   
   locatorStrategy?: 'id' | 'name' | 'cssSelector' | 'xpath';
   locatorIsStable?: boolean;
+  
+  // Validaciones de naming conventions (actualizado)
+  usesCorrectUIPrefix?: boolean;
+  usesCorrectTargetPrefixes?: boolean;
+  usesCorrectQuestionPattern?: boolean;
+  usesCorrectFactoryMethods?: boolean;
+  usesCorrectFolderName?: boolean;
+  usesCorrectUIClassName?: boolean;
+  usesLocatedByVsLocatedBy?: boolean;
+  hasDrawTheCurtain?: boolean;
+  usesTheActorCalled?: boolean;
+  stepsExceedThreeLines?: boolean;
+  hasLogicInSteps?: boolean;
 }
 
 export function validateSerenityWeb(payload: ValidationPayloadWeb) {
@@ -42,17 +55,30 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
 
   // Validación Screenplay First
   if (payload.usesPageObjectModel) {
-    errors.push("❌ PROHIBIDO: No usar Page Object Model tradicional");
+    errors.push("❌ PROHIBIDO: No usar Page Object Model tradicional (@FindBy)");
   }
 
   if (payload.usesFindByAnnotations) {
     errors.push("❌ PROHIBIDO: No usar @FindBy annotations - usar Target locators");
   }
 
-  // Validaciones de Step Definitions
+  // Validaciones de estructura de carpetas
+  if (payload.usesCorrectFolderName === false) {
+    errors.push("❌ La carpeta de UI debe llamarse 'userinterfaces' (todo junto, minúsculas)");
+  }
+
+  // Validaciones de StepDefinitions (máximo 3 líneas)
   if (payload.type === 'StepDefinition') {
-    if (payload.stepDefinitionsLines && payload.stepDefinitionsLines > 5) {
-      errors.push(`❌ Step Definitions supera el máximo de 5 líneas (tiene ${payload.stepDefinitionsLines})`);
+    if (payload.stepsExceedThreeLines) {
+      errors.push(`❌ Step Definitions supera el máximo de 3 líneas (tiene ${payload.stepDefinitionsLines} líneas)`);
+    }
+    
+    if (payload.hasLogicInSteps) {
+      errors.push("❌ Step Definitions no debe contener lógica (if, for, while, try-catch)");
+    }
+    
+    if (!payload.usesTheActorCalled) {
+      warnings.push("⚠️ Se recomienda usar theActorCalled() para inicializar actores");
     }
     
     if (payload.code) {
@@ -87,6 +113,14 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
     if (payload.code && !payload.code.includes('WaitUntil') && payload.code.includes('Click.on')) {
       warnings.push("⚠️ Se recomienda incluir WaitUntil para mayor estabilidad");
     }
+    
+    if (!payload.taskUsesBusinessLanguage) {
+      warnings.push("⚠️ El Task debe usar lenguaje de negocio, no términos técnicos");
+    }
+    
+    if (payload.code && payload.usesPageObjectModel) {
+      errors.push("❌ Task no debe usar Page Object Model tradicional");
+    }
   }
 
   // Validaciones de Interactions
@@ -101,6 +135,14 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
     
     if (!payload.usesInstrumented) {
       errors.push("❌ CRÍTICO: Usar instrumented() en factory method");
+    }
+    
+    if (payload.code && !payload.code.includes('actor.attemptsTo')) {
+      errors.push("❌ Interaction debe usar actor.attemptsTo() en performAs()");
+    }
+    
+    if (payload.code && (payload.code.includes('Enter') || payload.code.includes('Click'))) {
+      // Interactions pueden contener acciones nativas de Serenity
     }
   }
 
@@ -117,12 +159,16 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
     if (payload.code && (payload.code.includes('Click.on') || payload.code.includes('Enter.theValue'))) {
       errors.push("❌ Questions NO deben ejecutar acciones");
     }
+    
+    if (!payload.usesCorrectFactoryMethods) {
+      warnings.push("⚠️ Question debe tener factory methods: en(), del(), de() (no as())");
+    }
   }
 
-  // Validaciones de UI
+  // Validaciones de UI (actualizado con validaciones robots Rimac)
   if (payload.type === 'UI') {
-    if (!payload.className?.startsWith('UI')) {
-      errors.push("❌ Las clases UI deben empezar con 'UI' (ej: UIHome)");
+    if (!payload.usesCorrectUIClassName) {
+      errors.push("❌ Las clases UI deben empezar con 'UI' (ej: UIHome, UISoatDigital)");
     }
 
     if (!payload.uiExtendsPageObject) {
@@ -133,8 +179,12 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
       errors.push("❌ Las clases UI DEBEN usar Target en lugar de By");
     }
     
+    if (!payload.usesLocatedByVsLocatedBy) {
+      errors.push("❌ Las clases UI DEBEN usar .locatedBy() en lugar de .located(By.*)");
+    }
+    
     if (payload.uiContainsLogic) {
-      errors.push("❌ Las clases UI NO deben contener lógica");
+      errors.push("❌ Las clases UI NO deben contener lógica (solo Target locators)");
     }
     
     if (payload.code) {
@@ -142,24 +192,44 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
         errors.push("❌ Los locators deben ser 'public static final Target'");
       }
 
-      if (payload.code.includes('By.id') || payload.code.includes('By.cssSelector')) {
+      if (payload.code.includes('By.id') || payload.code.includes('By.cssSelector') || payload.code.includes('By.xpath')) {
         errors.push("❌ NO usar By directo - usar Target.the().locatedBy()");
       }
       
-      const targetMatches = payload.code.matchAll(/Target\s+(\w+)\s*=/g);
+      const targetMatches = payload.code.matchAll(/public static final Target\s+(\w+)\s*=/g);
       for (const match of targetMatches) {
         const targetName = match[1];
-        const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
-        const hasValidPrefix = validPrefixes.some(prefix => targetName.startsWith(prefix));
-        
-        if (!hasValidPrefix) {
-          warnings.push(`⚠️ Target '${targetName}' no usa prefijo estándar`);
+        if (targetName) {
+          const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
+          const hasValidPrefix = validPrefixes.some(prefix => targetName.startsWith(prefix));
+          
+          if (!hasValidPrefix) {
+            warnings.push(`⚠️ Target '${targetName}' no usa prefijo estándar`);
+          }
         }
       }
     }
     
     if (payload.locatorStrategy === 'xpath' && !payload.locatorIsStable) {
       warnings.push("⚠️ XPath es frágil - preferir id > name > cssSelector");
+    }
+  }
+
+  // Validaciones de SetTheStage (actualizado con validaciones robots Rimac)
+  if (payload.type === 'SetTheStage') {
+    if (payload.code) {
+      if (!payload.code.includes('@Before')) {
+        errors.push("❌ SetTheStage debe tener @Before");
+      }
+      if (!payload.code.includes('@After')) {
+        errors.push("❌ SetTheStage debe tener @After");
+      }
+      if (!payload.code.includes('OnStage.setTheStage')) {
+        errors.push("❌ SetTheStage debe llamar a OnStage.setTheStage()");
+      }
+      if (!payload.hasDrawTheCurtain) {
+        errors.push("❌ CRÍTICO: SetTheStage debe tener OnStage.drawTheCurtain() en @After");
+      }
     }
   }
 
@@ -188,7 +258,7 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
 }
 
 export function validateSerenityWebClass(
-  type: 'Task' | 'Interaction' | 'Question' | 'StepDefinition' | 'UI' | 'Page',
+  type: 'Task' | 'Interaction' | 'Question' | 'StepDefinition' | 'UI' | 'Page' | 'SetTheStage',
   code: string,
   className?: string
 ) {
@@ -217,16 +287,32 @@ export function validateSerenityWebClass(
   payload.urlIsHardcoded = /https?:\/\/[^\s"']+/.test(code) && !code.includes('@DefaultUrl');
   payload.questionReturnsValue = code.includes('implements Question<') && !code.includes('<Void>');
 
+  // Validaciones de naming conventions (actualizado)
+  payload.usesCorrectFolderName = code.includes('userinterfaces') && !code.includes('userInterfaces');
+  payload.usesCorrectUIClassName = className?.startsWith('UI') || false;
+  payload.usesLocatedByVsLocatedBy = code.includes('.locatedBy(') && !code.includes('.located(By.');
+  payload.hasDrawTheCurtain = code.includes('drawTheCurtain()');
+  payload.usesTheActorCalled = code.includes('theActorCalled(');
+  
+  if (type === 'Question') {
+    payload.usesCorrectFactoryMethods = code.includes('.en(') || code.includes('.del(') || code.includes('.de(');
+  }
+
   if (type === 'StepDefinition') {
-    const methodMatches = code.match(/@(?:Given|When|Then|Dado|Cuando|Entonces)\s*\([^)]+\)\s*public\s+void\s+\w+\([^)]*\)\s*\{([^}]+)\}/g);
+    const methodMatches = code.match(/@(?:Given|When|Then|And|But|Dado|Cuando|Entonces|Y)\s*\([^)]+\)\s*public\s+void\s+\w+\([^)]*\)\s*\{([^}]+)\}/g);
     if (methodMatches) {
       methodMatches.forEach(match => {
         const lines = match.split('\n').filter(line => line.trim() && !line.trim().startsWith('//')).length;
-        if (lines > 5) {
+        if (lines > 3) {
+          payload.stepsExceedThreeLines = true;
           payload.stepDefinitionsLines = lines;
         }
       });
     }
+    
+    payload.hasLogicInSteps = code.includes('if (') || code.includes('for (') || 
+                           code.includes('while (') || code.includes('try {') ||
+                           code.includes('catch (');
   }
 
   payload.scenarioValidatesVisibility = code.includes('ElementoEsVisible') || code.includes('isVisible');
@@ -244,6 +330,22 @@ export function validateSerenityWebClass(
       payload.locatorStrategy = 'cssSelector';
       payload.locatorIsStable = true;
     }
+    
+    // Validar prefijos de Targets
+    const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
+    const targetMatches = code.matchAll(/public static final Target\s+(\w+)\s*=/g);
+    let allValid = true;
+    for (const match of targetMatches) {
+      const targetName = match[1];
+      if (targetName) {
+        const hasValidPrefix = validPrefixes.some(prefix => targetName.startsWith(prefix));
+        if (!hasValidPrefix) {
+          allValid = false;
+          break;
+        }
+      }
+    }
+    payload.usesCorrectTargetPrefixes = allValid;
   }
 
   return validateSerenityWeb(payload);
@@ -255,7 +357,15 @@ export function isValidTaskName(name: string): boolean {
     /^Abrir/,
     /^Buscar/,
     /^Iniciar/,
-    /^Agregar/
+    /^Agregar/,
+    /^Completar/,
+    /^Navegar/,
+    /^Registrar/,
+    /^IniciarSesion/,
+    /^CerrarSesion/,
+    /^Diligenciar/,
+    /^Obtener/,
+    /^Seleccionar/
   ];
   
   return validPatterns.some(pattern => pattern.test(name));
@@ -266,5 +376,11 @@ export function isValidQuestionName(name: string): boolean {
          name.includes('Del') || 
          name.includes('De') ||
          name.startsWith('Elemento') ||
-         name.startsWith('Texto');
+         name.startsWith('Texto') ||
+         name.startsWith('Cantidad') ||
+         name.startsWith('Verificar');
+}
+
+export function isValidUIName(name: string): boolean {
+  return name.startsWith('UI');
 }

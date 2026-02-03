@@ -1,41 +1,73 @@
 {
-  "name": "java-serenity-standards-mcp",
+  "name": "serenity-automation-mcp",
   "version": "1.0.0",
-  "description": "MCP Server para validación, generación y análisis de código Java con Serenity Screenplay",
-  "type": "module",
+  "description": "MCP Server profesional para validación y generación de código Java, OOP/SOLID, y Serenity Screenplay (API/Web)",
   "main": "build/index.js",
+  "type": "module",
   "bin": {
-    "java-serenity-standards-mcp": "./build/index.js"
+    "serenity-mcp": "./build/index.js"
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
     "watch": "tsc --watch",
+    "start": "node build/index.js",
     "dev": "tsc && node build/index.js",
-    "inspector": "npx @modelcontextprotocol/inspector node build/index.js"
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf build",
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepare": "npm run build"
   },
   "keywords": [
     "mcp",
-    "java",
+    "model-context-protocol",
     "serenity",
     "screenplay",
+    "java",
+    "solid",
+    "oop",
     "automation",
     "testing",
-    "standards",
-    "validation"
+    "code-generation",
+    "validation",
+    "best-practices"
   ],
-  "author": "xt9116",
-  "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.4"
+  "author": {
+    "name": "Tu Nombre",
+    "email": "tu-email@ejemplo.com"
   },
-  "devDependencies": {
-    "@types/node": "^22.10.5",
-    "typescript": "^5.7.3"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/serenity-automation-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/serenity-automation-mcp/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/serenity-automation-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "files": [
-    "build/**/*",
-    "standards/**/*.json",
-    "README.md"
-  ]
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/jest": "^29.5.0",
+    "typescript": "^5.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0"
+  }
 }

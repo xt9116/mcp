@@ -1,127 +1,575 @@
 {
-  "name": "Estándar Serenity Screenplay - WEB UI",
-  "version": "2.0.0",
-  "purpose": "Estándar para pruebas web con Serenity BDD + Screenplay + Selenium",
+  "name": "Estándar Serenity Screenplay - WEB UI (Alineado con Robots Rimac)",
+  "version": "1.4.0",
+  "purpose": "Definir los estándares de automatización web usando Serenity BDD + Screenplay + Selenium WebDriver según las prácticas establecidas en los proyectos Rimac (rimac-auto-web, rimac-auto-mobile)",
   "framework": "Serenity BDD",
   "pattern": "Screenplay",
   "scope": "WEB UI",
-
-  "packageStructure": {
-    "mandatory": true,
-    "pattern": "co.com.{projectName}.web",
-    "mainPackage": "co.com.screenplay.web",
-    "testPackage": "co.com.sistecredito.web"
+  "requestTypes": {
+    "description": "Tipos de solicitudes soportadas por el MCP - No todo es Historia de Usuario",
+    "types": {
+      "INIT": {
+        "name": "Inicialización",
+        "description": "Crear estructura base del proyecto, sin páginas ni lógica funcional",
+        "requires": [
+          "framework",
+          "pattern",
+          "scope",
+          "basePackage"
+        ],
+        "generates": [
+          "projectStructure",
+          "mainRunner",
+          "serenityProperties"
+        ],
+        "notRequires": [
+          "pages",
+          "validaciones",
+          "ui",
+          "tasks"
+        ],
+        "rules": {
+          "generateStructureOnly": true,
+          "noPages": true,
+          "noValidaciones": true,
+          "noUI": true,
+          "noTasks": true
+        }
+      },
+      "WEB_HU": {
+        "name": "Historia de Usuario WEB",
+        "description": "Historia de usuario completa con páginas, locators, tasks, interactions y validaciones",
+        "requires": [
+          "id",
+          "nombre",
+          "url",
+          "paginas",
+          "selectores",
+          "acciones",
+          "validaciones"
+        ],
+        "generates": [
+          "feature",
+          "stepDefinitions",
+          "task",
+          "interaction",
+          "question",
+          "pageObject",
+          "locators"
+        ],
+        "notRequires": [],
+        "rules": {
+          "generateAll": true,
+          "validateBusiness": true
+        }
+      }
+    }
   },
-
   "principles": {
     "screenplayFirst": {
+      "enabled": true,
+      "description": "Screenplay first - NO usar @Steps, NO lógica en step definitions",
       "forbidden": [
-        "Page Object Model tradicional",
-        "@FindBy annotations",
-        "WebDriver directo en Tasks"
+        "@Steps annotation",
+        "Lógica en step definitions"
       ],
       "required": [
-        "Locators en clases UI con Target",
-        "UI classes extienden PageObject",
-        "Tasks usan Tasks.instrumented()"
+        "Toda acción debe ser un Task, Interaction o Question"
       ]
     },
     "separationOfResponsibilities": {
-      "stepDefinitions": {"maxLines": 5, "forbidden": ["Lógica", "WebDriver directo"]},
-      "tasks": {"responsibility": "Acciones de negocio UI", "forbidden": ["WebDriver directo"]},
-      "interactions": {"responsibility": "Acciones técnicas reutilizables"},
-      "questions": {"responsibility": "Validaciones visuales", "mustReturn": "Boolean o valor"},
-      "ui": {"responsibility": "Target locators", "forbidden": ["Lógica", "By directo"]}
-    }
-  },
-
-  "projectStructure": {
-    "sourceStructure": {
-      "src/main/java/co/com/screenplay/web/": {
-        "userinterfaces/": "Target locators (UI{PageName})",
-        "tasks/": "Tareas de negocio (BuscarProducto, IniciarSesion)",
-        "interactions/": "Acciones técnicas reutilizables (opcional)",
-        "questions/": "Validaciones (ElementoEsVisible, TextoDelElemento)"
-      },
-      "src/test/java/co/com/sistecredito/web/": {
-        "conf/": "SetTheStage (OnStage setup) - OBLIGATORIO",
-        "stepdefinitions/": "Glue Cucumber (máx 5 líneas)",
-        "runners/": "Runner.java"
-      },
-      "src/test/resources/": {
-        "features/": "Archivos .feature",
-        "serenity.properties": "Configuración (OBLIGATORIO)"
+      "enabled": true,
+      "layers": {
+        "feature": {
+          "responsibility": "Lenguaje de negocio",
+          "format": "Gherkin"
+        },
+        "stepDefinitions": {
+          "responsibility": "Orquestación mínima",
+          "maxLines": 3,
+          "forbidden": [
+            "Lógica",
+            "Aserciones técnicas"
+          ]
+        },
+        "tasks": {
+          "responsibility": "Acciones sobre la API",
+          "language": "Lenguaje de negocio",
+          "forbidden": [
+            "HTTP directo"
+          ]
+        },
+        "interactions": {
+          "responsibility": "Acciones técnicas (HTTP)",
+          "allowed": [
+            "HTTP calls"
+          ],
+          "forbidden": [
+            "Aserciones"
+          ]
+        },
+        "questions": {
+          "responsibility": "Validaciones",
+          "mustReturn": "Boolean o valor"
+        },
+        "models": {
+          "responsibility": "Request / Response",
+          "dataOnly": true,
+          "forbidden": [
+            "Lógica"
+          ]
+        },
+        "builders": {
+          "responsibility": "Construcción de requests",
+          "noSendLogic": true
+        }
       }
     }
   },
-
   "namingConventions": {
-    "language": "TODO en ESPAÑOL excepto framework",
-    "uiConstants": {
-      "pattern": "{PREFIX}_{NAME}",
-      "prefixes": {
-        "TXT_": "Inputs de texto",
-        "BTN_": "Botones",
-        "LBL_": "Labels",
-        "DDL_": "Dropdowns",
-        "CHK_": "Checkboxes"
+    "userinterfaces": {
+      "folderName": "userInterfaces",
+      "description": "Carpeta para UI classes según prácticas Rimac",
+      "note": "NOTA: En proyectos Rimac se usa 'userInterfaces' con mayúscula en 'I'. Esta es la práctica establecida."
+    },
+    "uiClassPrefix": {
+      "pattern": "Ui{PageName}",
+      "description": "Prefijo para clases UI según prácticas Rimac",
+      "note": "NOTA: En proyectos Rimac se usa 'Ui' con minúscula. Esta es la práctica establecida.",
+      "alternativePattern": "UI{PageName}",
+      "alternativeNote": "Opcional: UI con ambas mayúsculas. Ambos patrones son aceptados."
+    },
+    "questionFactoryMethods": {
+      "primary": ".as()",
+      "description": "Factory method más usado en proyectos Rimac",
+      "examples": [
+        "VerificarElemento.as(target)",
+        "VerificarLogin.as()"
+      ],
+      "alternatives": [
+        ".en(target)",
+        ".del(target)",
+        ".de(target)"
+      ],
+      "note": "NOTA: Se prefiere .as() por ser el patrón más usado en los proyectos. Los métodos .en(), .del() y .de() también son válidos."
+    },
+    "targetLocators": {
+      "preferred": ".locatedBy()",
+      "description": "Método recomendado para locators Target",
+      "examples": [
+        "Target.the(\"descripción\").locatedBy(\"selector\")"
+      ],
+      "alternatives": [
+        ".located(By.xpath(\"selector\"))",
+        ".located(By.cssSelector(\"selector\"))",
+        ".located(By.id(\"selector\"))"
+      ],
+      "note": "NOTA: En proyectos Rimac se usa un enfoque mixto. Se prefiere .locatedBy() pero el uso de .located(By.*) también es aceptado."
+    }
+  },
+  "standards": {
+    "dependencies": {
+      "serenity": {
+        "version": "4.3.4",
+        "description": "Versión de Serenity BDD usada en rimac-auto-web",
+        "note": "Versión estable probada en producción."
+      },
+      "serenity_cucumber": "4.3.4",
+      "selenium": {
+        "java": "4.35.0",
+        "description": "Versión de Selenium Java usada en rimac-auto-web",
+        "devtools_v144": "4.40.0",
+        "chrome_driver": "4.35.0",
+        "note": "Versión estable probada en producción."
+      },
+      "junit": {
+        "version": "4.13.2",
+        "description": "Versión de JUnit usada en proyectos Rimac"
+      },
+      "assertj": {
+        "version": "3.27.4",
+        "description": "Versión de AssertJ usada en proyectos Rimac"
+      },
+      "slf4j": {
+        "version": "2.0.9",
+        "description": "Versión de SLF4J usada en rimac-auto-web"
+      },
+      "aspectj": {
+        "version": "1.9.21",
+        "description": "Versión de AspectJ usada en proyectos Rimac"
+      },
+      "allure": {
+        "version": "2.32.0",
+        "description": "Versión de Allure usada para reportes"
+      }
+    },
+    "java": {
+      "compiler": {
+        "source": "21",
+        "target": "21",
+        "description": "Versión de Java usada en proyectos Rimac"
+      }
+    },
+    "dependencies_mobile": {
+      "serenity": {
+        "version": "4.2.33",
+        "description": "Versión de Serenity BDD usada en rimac-auto-mobile",
+        "note": "Versión estable probada en producción."
+      },
+      "selenium": {
+        "java": "4.33.0",
+        "description": "Versión de Selenium Java usada en rimac-auto-mobile"
+      },
+      "appium": {
+        "java_client": "9.2.2",
+        "description": "Versión de Appium Java Client usada en rimac-auto-mobile"
+      },
+      "junit": {
+        "version": "4.13.2",
+        "description": "Versión de JUnit usada en proyectos Rimac"
+      },
+      "assertj": {
+        "version": "3.27.4",
+        "description": "Versión de AssertJ usada en proyectos Rimac"
+      },
+      "slf4j": {
+        "version": "2.0.13",
+        "description": "Versión de SLF4J usada en rimac-auto-mobile"
+      },
+      "aspectj": {
+        "version": "1.9.21",
+        "description": "Versión de AspectJ usada en proyectos Rimac"
+      },
+      "logback": {
+        "version": "1.5.13",
+        "description": "Versión de Logback alternativa a SLF4J usada en rimac-auto-mobile"
+      }
+    }
+  },
+  "structure": {
+    "packages": {
+      "mainCode": {
+        "name": "rimac.auto.web",
+        "pattern": "rimac.auto.web",
+        "description": "Paquete para código principal (Tasks, Questions, Interactions)",
+        "folder": "src/main/java/rimac/auto/web/"
+      },
+      "testCode": {
+        "name": "rimac.auto.web.stepdefinitions",
+        "pattern": "rimac.auto.web.stepdefinitions",
+        "description": "Paquete para StepDefinitions",
+        "folder": "src/test/java/rimac/auto/web/stepdefinitions/"
+      }
+    },
+    "folders": {
+      "userInterfaces": {
+        "name": "userInterfaces",
+        "pattern": "src/main/java/rimac/auto/web/userInterfaces/",
+        "description": "Carpeta para UI classes con Target locators",
+        "note": "NOTA: Carpeta se llama 'userInterfaces' con 'I' mayúscula según prácticas Rimac."
+      },
+      "tasks": {
+        "name": "tasks",
+        "pattern": "src/main/java/rimac/auto/web/tasks/",
+        "description": "Tasks de negocio de alto nivel"
+      },
+      "interactions": {
+        "name": "interactions",
+        "pattern": "src/main/java/rimac/auto/web/interactions/",
+        "description": "Interactions técnicas reutilizables"
+      },
+      "questions": {
+        "name": "questions",
+        "pattern": "src/main/java/rimac/auto/web/questions/",
+        "description": "Questions para validaciones"
+      }
+    }
+  },
+  "components": {
+    "userInterfaces": {
+      "className": {
+        "pattern": "Ui{PageName}",
+        "description": "Nombres de clases UI según prácticas Rimac",
+        "examples": [
+          "UiSoatDigital",
+          "UiBBVA",
+          "UiBBVAAgente",
+          "UiSoatBanbif",
+          "UiGildemeister",
+          "UiGerencia",
+          "UiSegurosViajes",
+          "UIAlerts",
+          "TransversalUI"
+        ],
+        "alternatives": [
+          "UISoatDigital",
+          "UIBBVA",
+          "UIBBVAAgente",
+          "UISoatBanbif",
+          "UIGildemeister",
+          "UIGerencia",
+          "UISegurosViajes",
+          "UIAlerts",
+          "UITransversalUI"
+        ],
+        "note": "NOTA: Ambos patrones (Ui* y UI*) son aceptados. Se prefiere Ui* según prácticas Rimac pero UI* con mayúsculas también es válido."
+      },
+      "extends": {
+        "value": "PageObject",
+        "description": "Todas las clases UI deben extender PageObject"
+      },
+      "annotations": {
+        "defaultUrl": {
+          "name": "@DefaultUrl",
+          "description": "Anotación opcional para URL base de la página",
+          "note": "Usado en varias UI classes de proyectos Rimac"
+        }
+      },
+      "locators": {
+        "prefixes": [
+          "TXT_",
+          "BTN_",
+          "LBL_",
+          "DDL_",
+          "CHK_",
+          "RDB_",
+          "LNK_",
+          "IMG_",
+          "TBL_"
+        ],
+        "description": "Prefijos para constantes de Target",
+        "note": "En proyectos Rimac se usan todos estos prefijos"
+      },
+      "strategies": {
+        "preferred": ".locatedBy()",
+        "description": "Método preferido para Target",
+        "alternatives": [
+          ".located(By.xpath(...))",
+          ".located(By.cssSelector(...))",
+          ".located(By.id(...))"
+        ],
+        "note": "En proyectos Rimac se usa un enfoque mixto. Se prefiere .locatedBy() pero también se acepta .located(By.*)"
       }
     },
     "tasks": {
-      "pattern": "{Acción}{Complemento}",
-      "examples": ["BuscarProducto", "IniciarSesion", "AgregarAlCarrito"]
+      "implements": {
+        "value": "Task",
+        "description": "Todas las clases Task deben implementar Task"
+      },
+      "factoryMethod": {
+        "pattern": "Tasks.instrumented()",
+        "method": "llamado",
+        "description": "Factory method para Tasks según prácticas Rimac",
+        "examples": [
+          "OpenPagePublicWeb.ir(new UiSoatDigital())",
+          "DiligenciarDatosPlan.go(plan, medioPago, false)"
+        ],
+        "note": "NOTA: El método factory se llama 'llamado' según prácticas Rimac. 'con' también es aceptado."
+      },
+      "actorActions": "actor.attemptsTo()",
+      "description": "Todos los tasks deben usar actor.attemptsTo()"
     },
     "questions": {
-      "pattern": "{Elemento}Es{Condición}",
-      "examples": ["ElementoEsVisible", "TextoDelElemento", "CantidadDeElementos"]
+      "factoryMethod": {
+        "pattern": ".as()",
+        "description": "Factory method para Questions según prácticas Rimac",
+        "examples": [
+          "VerificarElemento.as(LBL_MENSAJE)",
+          "VerificarLogin.as()"
+        ],
+        "alternatives": [
+          ".en(target)",
+          ".del(target)",
+          ".de(target)"
+        ],
+        "note": "NOTA: Se prefiere .as() según prácticas Rimac pero .en(), .del(), .de() también son válidos."
+      },
+      "implements": {
+        "value": "Question<T>",
+        "description": "Todas las clases Question deben implementar Question<T>"
+      },
+      "returnType": "Boolean o valor",
+      "actorValidation": "actor.should(seeThat())",
+      "description": "Usar seeThat() para validaciones"
+    },
+    "stepDefinitions": {
+      "maxLines": 3,
+      "description": "Máximo de líneas por método según estándar general",
+      "note": "En proyectos Rimac hay métodos que exceden este límite. Esto es aceptado en contexto real pero se debe mantener en 3 líneas cuando sea posible."
+    },
+    "setTheStage": {
+      "hooks": {
+        "before": "@Before",
+        "after": "@After",
+        "drawTheCurtain": {
+          "required": false,
+          "description": "No se requiere drawTheCurtain() en proyectos Rimac",
+          "note": "Se maneja el cierre del driver de otras formas en SetTheStage y @AfterAll."
+        }
+      },
+      "actorInitialization": {
+        "pattern": "OnStage.theActor(\"{nombre}\")",
+        "description": "Inicialización de actores según prácticas Rimac",
+        "alternatives": [
+          "theActorCalled(\"{nombre}\")"
+        ],
+        "note": "NOTA: En proyectos Rimac se usa OnStage.theActor(). También es válido el uso de theActorCalled()."
+      }
+    },
+    "interactions": {
+      "implements": {
+        "value": "Interaction",
+        "description": "Todas las clases Interaction deben implementar Interaction"
+      },
+      "actorActions": "actor.attemptsTo()",
+      "description": "Todos los interactions deben usar actor.attemptsTo()"
     }
   },
-
-  "standards": {
-    "userinterfaces": {
-      "className": "UI{PageName}",
-      "extends": "PageObject",
-      "rules": [
-        "DEBE extender PageObject",
-        "SOLO Target locators (NO By)",
-        "public static final Target",
-        "@DefaultUrl para página inicial",
-        "NO métodos de acción"
-      ],
-      "template": "package co.com.screenplay.web.userinterfaces;\n\nimport net.serenitybdd.annotations.DefaultUrl;\nimport net.serenitybdd.core.pages.PageObject;\nimport net.serenitybdd.screenplay.targets.Target;\n\n@DefaultUrl(\"https://www.ejemplo.com\")\npublic class UI{PageName} extends PageObject {\n\n    public static final Target TXT_CAMPO = Target.the(\"Campo\").locatedBy(\"#campo\");\n    public static final Target BTN_ACCION = Target.the(\"Botón\").locatedBy(\"#btn\");\n}"
+  "validation": {
+    "principles": {
+      "screenplayFirst": {
+        "enabled": true,
+        "description": "Validar Screenplay first - NO usar @Steps, NO lógica en step definitions"
+      }
     },
-    "tasks": {
-      "rules": [
-        "Implementa Task",
-        "Constructor público",
-        "Factory method con Tasks.instrumented()",
-        "@Step annotation",
-        "Incluye waits apropiados"
+    "components": {
+      "tasks": {
+        "validatesScreenplay": true,
+        "noDirectHttp": true,
+        "usesActorAttemptsTo": true,
+        "hasPublicConstructor": true
+      },
+      "interactions": {
+        "validatesScreenplay": true,
+        "noAssertions": true,
+        "usesActorAttemptsTo": true,
+        "hasPublicConstructor": true
+      },
+      "questions": {
+        "validatesScreenplay": true,
+        "returnsValue": true,
+        "noActions": true,
+        "hasPublicConstructor": true
+      },
+      "userInterfaces": {
+        "extendsPageObject": true,
+        "usesTarget": true,
+        "acceptsBothPatterns": true,
+        "acceptsMixedStrategies": true
+      },
+      "stepDefinitions": {
+        "maxLines": 3,
+        "acceptsExistingPatterns": true,
+        "note": "Validar máximo 3 líneas cuando sea posible"
+      },
+      "setTheStage": {
+        "hasBefore": true,
+        "hasAfter": true,
+        "acceptsInitializationPattern": true
+      }
+    },
+    "nonBlockingViolations": {
+      "description": "Prácticas que NO se consideran violations según experiencias Rimac",
+      "items": [
+        {
+          "item": "Carpeta userInterfaces",
+          "pattern": "userInterfaces",
+          "reason": "Es la práctica establecida en proyectos Rimac y funciona correctamente"
+        },
+        {
+          "item": "Prefijo Ui* en clases UI",
+          "pattern": "Ui{PageName}",
+          "reason": "Es el patrón establecido en proyectos Rimac y funciona correctamente"
+        },
+        {
+          "item": "Uso de .located(By.*) en locators",
+          "pattern": ".located(By.xpath(...))",
+          "reason": "Es aceptado en proyectos Rimac. Se prefiere .locatedBy() pero no es un error"
+        },
+        {
+          "item": "Factory method .as() en Questions",
+          "pattern": ".as()",
+          "reason": "Es el patrón predominante en proyectos Rimac. .en(), .del(), .de() también son válidos"
+        },
+        {
+          "item": "SetTheStage sin drawTheCurtain()",
+          "pattern": "No drawTheCurtain() en @After",
+          "reason": "Los proyectos Rimac manejan el cierre de driver de otras formas en SetTheStage/@AfterAll"
+        },
+        {
+          "item": "OnStage.theActor() vs theActorCalled()",
+          "pattern": "OnStage.theActor(\"nombre\")",
+          "reason": "Ambos son válidos según experiencias Rimac"
+        },
+        {
+          "item": "OnStage.theActor() en StepDefinitions",
+          "pattern": "OnStage.theActor()",
+          "reason": "Es el patrón predominante en proyectos Rimac. También se acepta theActorCalled()"
+        },
+        {
+          "item": "Factory method llamado() en Tasks",
+          "pattern": ".llamado()",
+          "reason": "Es el patrón usado en proyectos Rimac. 'con()' también es aceptado"
+        },
+        {
+          "item": "StepDefinitions con lógica compleja",
+          "pattern": "try-catch, if-else",
+          "reason": "En proyectos Rimac se acepta en algunos casos. Se debe mantener simple cuando sea posible pero no bloquea la funcionalidad existente"
+        }
       ]
     },
-    "conf": {
-      "className": "SetTheStage",
-      "mandatory": true,
-      "template": "package co.com.sistecredito.web.conf;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.After;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.OnlineCast;\n\npublic class SetTheStage {\n    \n    @Before\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n    \n    @After\n    public void tearDown() {\n        OnStage.drawTheCurtain();\n    }\n}"
+    "blockingViolations": {
+      "description": "Prácticas que SÍ se consideran violations y deben corregirse",
+      "items": [
+        {
+          "item": "@Steps annotation",
+          "severity": "critical",
+          "description": "NO usar @Steps annotation - usar Screenplay",
+          "pattern": "@Steps"
+        },
+        {
+          "item": "Lógica en StepDefinitions",
+          "severity": "high",
+          "description": "StepDefinitions con más de 3 líneas y con lógica compleja",
+          "pattern": "try, catch, if, else, for, while"
+        },
+        {
+          "item": "HTTP directo en Tasks",
+          "severeity": "high",
+          "description": "Usar HTTP directo (Get.resource, Post.to) en Tasks en lugar de Interactions",
+          "pattern": "Get.resource, Post.to"
+        },
+        {
+          "item": "Aserciones en Interactions",
+          "severity": "high",
+          "description": "Interactions no deben tener aserciones (assert, should)",
+          "pattern": "assert, should"
+        },
+        {
+          "item": "UI sin Target locators",
+          "severity": "high",
+          "description": "UI classes deben usar Target locators",
+          "pattern": "By.xpath, By.cssSelector, By.id"
+        },
+        {
+          "item": "Modelo sin Jackson",
+          "severity": "medium",
+          "description": "Models de request/response deben usar Jackson annotations",
+          "pattern": "sin @JsonProperty, sin @JsonIgnoreProperties"
+        },
+        {
+          "item": "Constructor sin público",
+          "severity": "critical",
+          "description": "Constructores deben ser públicos para ByteBuddy",
+          "pattern": "private constructor"
+        },
+        {
+          "item": "Factory method sin instrumented()",
+          "severity": "critical",
+          "description": "Factory methods deben usar Tasks.instrumented()",
+          "pattern": "new Task(), new Question()"
+        }
+      ]
     }
-  },
-
-  "validations": {
-    "noPageObjectModel": "❌ NO usar @FindBy - usar Screenplay",
-    "noWebDriverDirect": "❌ NO WebDriver directo - usar Actions Serenity",
-    "mandatoryInstrumented": "❌ Usar Tasks.instrumented() - NO 'new Task()'",
-    "publicConstructors": "❌ Constructores DEBEN ser públicos (ByteBuddy)"
-  },
-
-  "locatorStrategies": {
-    "priority": ["id", "name", "cssSelector", "xpath"],
-    "recommendation": "Preferir id > name > css > xpath",
-    "avoidXPath": "XPath es frágil - usar solo cuando sea necesario"
-  },
-
-  "mandatoryFiles": {
-    "build.gradle": "Dependencias Serenity Web",
-    "serenity.properties": "webdriver.driver=chrome, screenshots, etc.",
-    "SetTheStage.java": "OnStage.setTheStage() en @Before hook"
   }
 }
