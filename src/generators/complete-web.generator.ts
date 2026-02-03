@@ -109,13 +109,13 @@ function generateWebTaskFromFlow(request: WebHURequest): string {
     if (step.includes('Open.browserOn')) {
       return `            Open.browserOn(${uiClass}.class),`;
     } else if (step.includes('WaitUntil')) {
-      return `            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`;
+      return '            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),';
     } else if (step.includes('Ingresar')) {
-      return `            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),`;
+      return '            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),';
     } else if (step.includes('Hacer clic')) {
-      return `            Click.on(BTN_BUSCAR),`;
+      return '            Click.on(BTN_BUSCAR),';
     } else if (step.includes('Esperar')) {
-      return `            WaitUntil.the(LBL_RESULTADOS, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`;
+      return '            WaitUntil.the(LBL_RESULTADOS, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),';
     }
     return `            // ${step}`;
   }).join('\n');

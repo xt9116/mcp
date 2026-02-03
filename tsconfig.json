@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    // Node 20 module system with Node 16 resolution
+    // Note: node16 resolution is compatible with node20 modules and provides better CommonJS/ESM interop
     "target": "ES2022",
-    "module": "ES2022",
+    "module": "node20",
     "lib": ["ES2022"],
     "outDir": "./build",
     "rootDir": "./src",
@@ -9,7 +11,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,

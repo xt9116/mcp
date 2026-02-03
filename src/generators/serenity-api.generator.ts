@@ -21,7 +21,7 @@ export interface Field {
 
 export function generateAPITask(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.screenplay.Actor;');
@@ -35,7 +35,7 @@ export function generateAPITask(config: APIComponentConfig): string {
   lines.push(' */');
   lines.push(`public class ${config.className} implements Task {`);
   lines.push('');
-  
+
   // Fields
   if (config.requestFields && config.requestFields.length > 0) {
     config.requestFields.forEach(field => {
@@ -43,7 +43,7 @@ export function generateAPITask(config: APIComponentConfig): string {
     });
     lines.push('');
   }
-  
+
   // Constructor público (CRÍTICO para ByteBuddy)
   lines.push('    // Constructor público (requerido por Serenity)');
   const constructorParams = config.requestFields?.map(f => `${f.type} ${f.name}`).join(', ') || '';
@@ -55,12 +55,12 @@ export function generateAPITask(config: APIComponentConfig): string {
   }
   lines.push('    }');
   lines.push('');
-  
+
   // performAs method
   lines.push('    @Step("{0} ejecuta la tarea")');
   lines.push('    @Override');
   lines.push('    public <T extends Actor> void performAs(T actor) {');
-  
+
   if (config.httpMethod === 'POST' || config.httpMethod === 'PUT' || config.httpMethod === 'PATCH') {
     const modelType = config.requestFields && config.requestFields.length > 0 ? 'request' : 'null';
     lines.push('        actor.attemptsTo(');
@@ -77,10 +77,10 @@ export function generateAPITask(config: APIComponentConfig): string {
   } else {
     lines.push('        // TODO: Implementar interacción HTTP');
   }
-  
+
   lines.push('    }');
   lines.push('');
-  
+
   // Factory method con Tasks.instrumented()
   lines.push('    // Factory method (usa Tasks.instrumented)');
   const factoryParams = config.requestFields?.map(f => `${f.type} ${f.name}`).join(', ') || '';
@@ -93,14 +93,14 @@ export function generateAPITask(config: APIComponentConfig): string {
   }
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateAPIInteraction(config: APIComponentConfig): string {
   const lines: string[] = [];
   const httpMethod = config.httpMethod || 'Get';
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.screenplay.Actor;');
@@ -120,7 +120,7 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
   lines.push('    private final String endpoint;');
   lines.push('    private final Object body;');
   lines.push('');
-  
+
   // Constructor público
   lines.push('    // Constructor público (requerido por Serenity)');
   lines.push(`    public ${httpMethod}Request(String endpoint, Object body) {`);
@@ -128,19 +128,19 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
   lines.push('        this.body = body;');
   lines.push('    }');
   lines.push('');
-  
+
   // performAs method
   lines.push(`    @Step("{0} envía petición ${httpMethod} a {1}")`);
   lines.push('    @Override');
   lines.push('    public <T extends Actor> void performAs(T actor) {');
   lines.push('        actor.attemptsTo(');
-  
-  const methodCall = httpMethod === 'GET' 
-    ? 'Get.resource(endpoint)' 
+
+  const methodCall = httpMethod === 'GET'
+    ? 'Get.resource(endpoint)'
     : httpMethod === 'DELETE'
       ? 'Delete.to(endpoint)'
       : `${httpMethod}.to(endpoint)`;
-  
+
   lines.push(`            ${methodCall}`);
   if (httpMethod === 'POST' || httpMethod === 'PUT' || httpMethod === 'PATCH') {
     lines.push('                .with(request -> request');
@@ -151,20 +151,20 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
   lines.push('        );');
   lines.push('    }');
   lines.push('');
-  
+
   // Factory method
   lines.push('    // Factory method (usa instrumented)');
   lines.push(`    public static ${httpMethod}Request to(String endpoint, Object body) {`);
   lines.push(`        return instrumented(${httpMethod}Request.class, endpoint, body);`);
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateAPIQuestion(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import net.serenitybdd.screenplay.Actor;');
@@ -189,13 +189,13 @@ export function generateAPIQuestion(config: APIComponentConfig): string {
   lines.push(`        return new ${config.className}();`);
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateAPIModel(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('import com.fasterxml.jackson.annotation.JsonIgnoreProperties;');
@@ -208,7 +208,7 @@ export function generateAPIModel(config: APIComponentConfig): string {
   lines.push('@JsonIgnoreProperties(ignoreUnknown = true)');
   lines.push(`public class ${config.className} {`);
   lines.push('');
-  
+
   // Fields
   const fields = config.requestFields || config.responseFields || [];
   fields.forEach(field => {
@@ -218,11 +218,11 @@ export function generateAPIModel(config: APIComponentConfig): string {
     lines.push(`    private ${field.type} ${field.name};`);
     lines.push('');
   });
-  
+
   // Constructor
   lines.push('    // Constructor');
   lines.push(`    public ${config.className}() {}`);
-  
+
   if (fields.length > 0) {
     const constructorParams = fields.map(f => `${f.type} ${f.name}`).join(', ');
     lines.push(`    public ${config.className}(${constructorParams}) {`);
@@ -231,35 +231,35 @@ export function generateAPIModel(config: APIComponentConfig): string {
     });
     lines.push('    }');
   }
-  
+
   lines.push('');
-  
+
   // Getters and Setters
   fields.forEach(field => {
     const capitalizedName = capitalize(field.name);
-    
+
     // Getter
     lines.push(`    public ${field.type} get${capitalizedName}() {`);
     lines.push(`        return ${field.name};`);
     lines.push('    }');
     lines.push('');
-    
+
     // Setter
     lines.push(`    public void set${capitalizedName}(${field.type} ${field.name}) {`);
     lines.push(`        this.${field.name} = ${field.name};`);
     lines.push('    }');
     lines.push('');
   });
-  
+
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateAPIEndpoints(config: APIComponentConfig): string {
   const lines: string[] = [];
   const resource = config.resource || config.className.replace('Endpoints', '');
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('/**');
@@ -270,23 +270,23 @@ export function generateAPIEndpoints(config: APIComponentConfig): string {
   lines.push('');
   lines.push(`    public static final String BASE_URL = "${config.baseUrl || 'https://api.example.com'}";`);
   lines.push('');
-  
+
   // Generar constantes en español según el estándar
   const endpointUpper = config.endpoint || '';
   if (config.httpMethod) {
     const constantName = getEndpointConstantName(config.httpMethod, resource);
     lines.push(`    public static final String ${constantName} = "/v1${endpointUpper}";`);
   }
-  
+
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
 export function generateAPIBuilder(config: APIComponentConfig): string {
   const lines: string[] = [];
   const modelType = config.className.replace('Constructor', '').replace('Builder', '');
-  
+
   lines.push(`package ${config.packageName};`);
   lines.push('');
   lines.push('/**');
@@ -311,7 +311,7 @@ export function generateAPIBuilder(config: APIComponentConfig): string {
   lines.push(`        return new ${modelType}("nombre", "invalid-email");`);
   lines.push('    }');
   lines.push('}');
-  
+
   return lines.join('\n');
 }
 
@@ -322,7 +322,7 @@ function capitalize(str: string): string {
 function getEndpointConstantName(method: string, resource: string): string {
   const methodUpper = method.toUpperCase();
   const resourceUpper = resource.toUpperCase();
-  
+
   const methodMap: Record<string, string> = {
     'GET': 'OBTENER',
     'POST': 'CREAR',
@@ -330,25 +330,25 @@ function getEndpointConstantName(method: string, resource: string): string {
     'DELETE': 'ELIMINAR',
     'PATCH': 'ACTUALIZAR_PARCIAL'
   };
-  
+
   return `${methodMap[methodUpper] || methodUpper}_${resourceUpper}`;
 }
 
 export function generateAPIComponent(config: APIComponentConfig): string {
   switch (config.componentType) {
-    case 'Task':
-      return generateAPITask(config);
-    case 'Interaction':
-      return generateAPIInteraction(config);
-    case 'Question':
-      return generateAPIQuestion(config);
-    case 'Model':
-      return generateAPIModel(config);
-    case 'Builder':
-      return generateAPIBuilder(config);
-    case 'Endpoint':
-      return generateAPIEndpoints(config);
-    default:
-      throw new Error(`Unknown component type: ${config.componentType}`);
+  case 'Task':
+    return generateAPITask(config);
+  case 'Interaction':
+    return generateAPIInteraction(config);
+  case 'Question':
+    return generateAPIQuestion(config);
+  case 'Model':
+    return generateAPIModel(config);
+  case 'Builder':
+    return generateAPIBuilder(config);
+  case 'Endpoint':
+    return generateAPIEndpoints(config);
+  default:
+    throw new Error(`Unknown component type: ${config.componentType}`);
   }
 }
