@@ -1004,16 +1004,20 @@
       "State leaks entre escenarios"
     ],
     "required": {
-      "beforeHook": "OBLIGATORIO en step definitions",
-      "imports": [
+      "separateHooksClass": "OBLIGATORIO - Crear clase Hooks separada de StepDefinitions",
+      "hooksImports": [
         "import io.cucumber.java.Before;",
+        "import io.cucumber.java.After;",
         "import net.serenitybdd.screenplay.actors.OnStage;",
-        "import net.serenitybdd.screenplay.actors.OnlineCast;",
+        "import net.serenitybdd.screenplay.actors.OnlineCast;"
+      ],
+      "stepDefinitionsImports": [
         "import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;",
         "import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;"
       ]
     },
-    "template": "public class UserStepDefinitions {\n    \n    @Before\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n    \n    @When(\"el usuario crea un usuario valido\")\n    public void createUser() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(UserEndpoints.BASE_URL));\n        \n        theActorInTheSpotlight()\n            .attemptsTo(CreateUser.with(CreateUserRequestBuilder.withValidData()));\n    }\n    \n    @Then(\"la respuesta debe ser {int}\")\n    public void validateStatus(int status) {\n        theActorInTheSpotlight()\n            .should(seeThat(ResponseStatusCode.value(), equalTo(status)));\n    }\n}",
+    "hooksTemplate": "package com.screenplay.api.hooks;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.After;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.OnlineCast;\n\n/**\n * Hooks: Configuración de actores antes y después de cada escenario\n * Responsabilidad: Inicializar OnStage y liberar recursos\n * CRÍTICO: Debe ejecutarse antes de cualquier StepDefinition\n */\npublic class Hooks {\n\n    @Before(order = 0)\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n\n    @After(order = 1)\n    public void tearDown() {\n        OnStage.drawTheCurtain();\n    }\n}",
+    "stepDefinitionsTemplate": "package com.screenplay.api.stepdefinitions;\n\nimport io.cucumber.java.es.*;\nimport static net.serenitybdd.screenplay.actors.OnStage.*;\nimport static net.serenitybdd.screenplay.GivenWhenThen.seeThat;\nimport static org.hamcrest.Matchers.*;\n\npublic class UserStepDefinitions {\n\n    @Cuando(\"el usuario crea un usuario valido\")\n    public void createUser() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(UserEndpoints.BASE_URL));\n        \n        theActorInTheSpotlight()\n            .attemptsTo(CreateUser.with(CreateUserRequestBuilder.withValidData()));\n    }\n\n    @Entonces(\"la respuesta debe ser {int}\")\n    public void validateStatus(int status) {\n        theActorInTheSpotlight()\n            .should(seeThat(ResponseStatusCode.value(), equalTo(status)));\n    }\n}",
     "methods": [
       {
         "name": "OnStage.setTheStage()",
@@ -1037,8 +1041,20 @@
     "forbidden": [
       "private Actor actor = Actor.named(\"Usuario\");",
       "Actor actor = Actor.named(\"Usuario\");",
-      "Crear actores sin OnStage"
-    ]
+      "Crear actores sin OnStage",
+      "@Before en StepDefinitions - debe ir en clase Hooks separada",
+      "OnStage.setTheStage() en StepDefinitions - debe ir en clase Hooks separada"
+    ],
+    "criticalRule": {
+      "title": "NUNCA poner @Before/@After en StepDefinitions",
+      "reason": "Viola separación de responsabilidades y causa duplicación",
+      "correct": "Crear clase Hooks SEPARADA con @Before/@After",
+      "incorrect": "Poner @Before/@After dentro de StepDefinitions",
+      "example": {
+        "wrong": "public class UserStepDefinitions {\n    @Before\n    public void setTheStage() { // ❌ MAL - No hacer esto\n        OnStage.setTheStage(new OnlineCast());\n    }\n}",
+        "right": "// Hooks.java - Clase SEPARADA\npublic class Hooks {\n    @Before\n    public void setTheStage() { // ✅ BIEN\n        OnStage.setTheStage(new OnlineCast());\n    }\n}\n\n// UserStepDefinitions.java - Sin @Before/@After\npublic class UserStepDefinitions {\n    @When(\"...\")\n    public void step() { // ✅ BIEN - Solo steps\n        theActorCalled(\"Usuario\")...;\n    }\n}"
+      }
+    }
   },
   "jacksonAnnotations": {
     "description": "Anotaciones obligatorias para serialización JSON con Jackson",
@@ -1211,8 +1227,8 @@
         "type": "Runtime",
         "component": "Actor/StepDefinitions",
         "cause": "Actor sin habilidad CallAnApi configurada",
-        "solution": "Configurar CallAnApi en el actor",
-        "fix": "// ❌ Incorrecto\nprivate Actor actor = Actor.named(\"Usuario\");\nactor.attemptsTo(GetRequest.to(\"/endpoint\"));\n\n// ✅ Correcto - Opción 1 (Constructor)\npublic StepDefinitions() {\n    this.actor = Actor.named(\"Usuario\");\n    this.actor.whoCan(CallAnApi.at(BASE_URL));\n}\n\n// ✅ Correcto - Opción 2 (Mejor: @Before hook)\n@Before\npublic void setTheStage() {\n    OnStage.setTheStage(new OnlineCast());\n    OnStage.theActorCalled(\"Usuario\")\n        .whoCan(CallAnApi.at(BASE_URL));\n}",
+        "solution": "Configurar CallAnApi en el actor usando OnStage pattern",
+        "fix": "// ❌ Incorrecto - NO crear actores con Actor.named()\nprivate Actor actor = Actor.named(\"Usuario\");\nactor.attemptsTo(GetRequest.to(\"/endpoint\"));\n\n// ❌ Incorrecto - NO poner @Before en StepDefinitions\n@Before\npublic void setTheStage() {\n    OnStage.setTheStage(new OnlineCast());\n}\n\n// ✅ Correcto - Crear clase Hooks SEPARADA\npackage com.screenplay.api.hooks;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.After;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.OnlineCast;\n\npublic class Hooks {\n    @Before(order = 0)\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n    \n    @After(order = 1)\n    public void tearDown() {\n        OnStage.drawTheCurtain();\n    }\n}\n\n// ✅ Correcto - StepDefinitions solo usan OnStage methods\npackage com.screenplay.api.stepdefinitions;\n\nimport static net.serenitybdd.screenplay.actors.OnStage.*;\n\npublic class UserStepDefinitions {\n    @When(\"el usuario consulta\")\n    public void consultar() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(BASE_URL))\n            .attemptsTo(GetRequest.to(\"/endpoint\"));\n    }\n}",
         "severity": "CRÍTICO",
         "additionalInfo": "También puede ocurrir si el constructor es privado"
       },
@@ -1244,8 +1260,9 @@
       "✓ Tasks/Interactions tienen constructor público (sin 'private')",
       "✓ Factory methods usan Tasks.instrumented() (NO usar 'new')",
       "✓ Actor configurado con CallAnApi.at(BASE_URL)",
-      "✓ Step Definitions usan OnStage pattern",
-      "✓ Existe @Before hook con OnStage.setTheStage()",
+      "✓ Step Definitions usan OnStage pattern (theActorCalled/theActorInTheSpotlight)",
+      "✓ Existe clase Hooks SEPARADA con @Before para OnStage.setTheStage()",
+      "✓ StepDefinitions NO tienen @Before ni @After - solo métodos de steps",
       "✓ Modelos tienen @JsonIgnoreProperties(ignoreUnknown = true)",
       "✓ Status codes correctos (GET=200, POST=201, DELETE=204)",
       "✓ Anotación @Step en Tasks/Interactions (opcional pero recomendada)"
