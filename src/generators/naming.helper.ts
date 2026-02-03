@@ -1,5 +1,9 @@
 // Naming Helper - Utilities for consistent Java naming conventions
 
+// Constants for naming validation
+const MAX_ACRONYM_LENGTH = 3; // Max length for acronyms like IO, UI
+const MAX_RECOMMENDED_CLASS_NAME_LENGTH = 25; // Recommended max length for class names
+
 /**
  * Converts an HTTP method to PascalCase for Java class names
  * @param method - HTTP method (GET, POST, PUT, DELETE, PATCH)
@@ -30,7 +34,7 @@ export function isValidJavaClassName(className: string): boolean {
   }
   
   // Check that it's not all uppercase (except very short names like IO, UI)
-  if (className.length > 3 && className === className.toUpperCase()) {
+  if (className.length > MAX_ACRONYM_LENGTH && className === className.toUpperCase()) {
     return false;
   }
   
@@ -72,13 +76,13 @@ export function getClassNameValidationErrors(className: string): string[] {
       errors.push(`❌ CLASS NAME: '${className}' contains invalid characters (only letters and numbers allowed)`);
     }
     
-    if (className.length > 3 && className === className.toUpperCase()) {
+    if (className.length > MAX_ACRONYM_LENGTH && className === className.toUpperCase()) {
       errors.push(`❌ CLASS NAME: '${className}' is all uppercase - use PascalCase instead (e.g., '${httpMethodToPascalCase(className)}Request')`);
     }
   }
   
-  if (className.length > 25) {
-    errors.push(`⚠️ CLASS NAME: '${className}' is too long (${className.length} characters, recommended max 25)`);
+  if (className.length > MAX_RECOMMENDED_CLASS_NAME_LENGTH) {
+    errors.push(`⚠️ CLASS NAME: '${className}' is too long (${className.length} characters, recommended max ${MAX_RECOMMENDED_CLASS_NAME_LENGTH})`);
   }
   
   return errors;

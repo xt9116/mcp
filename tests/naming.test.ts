@@ -7,6 +7,9 @@ import {
   getFilenameValidationErrors
 } from '../src/generators/naming.helper';
 
+// Test constants
+const LONG_CLASS_NAME_LENGTH = 30;
+
 describe('Naming Helper', () => {
   
   describe('httpMethodToPascalCase', () => {
@@ -126,7 +129,7 @@ describe('Naming Helper', () => {
     });
 
     it('should return warning for very long names', () => {
-      const longName = 'A'.repeat(30);
+      const longName = 'A'.repeat(LONG_CLASS_NAME_LENGTH);
       const errors = getClassNameValidationErrors(longName);
       expect(errors.some(e => e.includes('too long'))).toBe(true);
     });
