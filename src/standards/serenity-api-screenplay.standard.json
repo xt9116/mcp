@@ -728,7 +728,8 @@
         "Solo orquestación"
       ],
       "template": "@{Cucumber}(\"{text}\")\npublic void {methodName}({params}) {\n    actor.attemptsTo(\n        {Task}.with({Builder}.{method}())\n    );\n}",
-      "validationTemplate": "@Then(\"{validation text}\")\npublic void {methodName}({type} {param}) {\n    actor.should(\n        seeThat({Question}.value(), equalTo({param}))\n    );\n}"
+      "validationTemplate": "@Then(\"{validation text}\")\npublic void {methodName}({type} {param}) {\n    actor.should(\n        seeThat(\"{description}\", {Question}.value(), equalTo({param}))\n    );\n}",
+      "note": "El primer parámetro de seeThat() es una descripción que mejora el reporte y ayuda con la inferencia de tipos"
     }
   },
   "mandatoryValidations": {
@@ -736,15 +737,15 @@
     "required": [
       {
         "validation": "Status code",
-        "example": "actor.should(seeThat(ResponseStatusCode.value(), equalTo(200)))"
+        "example": "actor.should(seeThat(\"El código de respuesta\", ResponseStatusCode.value(), equalTo(200)))"
       },
       {
         "validation": "Un campo del body",
-        "example": "actor.should(seeThat(ResponseBodyField.of(\"name\"), equalTo(\"Daniel\")))"
+        "example": "actor.should(seeThat(\"El campo name del response\", ResponseBodyField.of(\"name\"), equalTo(\"Daniel\")))"
       },
       {
         "validation": "Mensaje de error (si aplica)",
-        "example": "actor.should(seeThat(ErrorMessage.value(), containsString(\"invalid\")))"
+        "example": "actor.should(seeThat(\"El mensaje de error\", ErrorMessage.value(), containsString(\"invalid\")))"
       }
     ]
   },
@@ -756,7 +757,7 @@
     "interaction": "public class PostRequest implements Interaction {\n    private final String endpoint;\n    private final Object body;\n    \n    public PostRequest(String endpoint, Object body) {\n        this.endpoint = endpoint;\n        this.body = body;\n    }\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            Post.to(endpoint)\n                .with(request -> request\n                    .contentType(ContentType.JSON)\n                    .body(body)\n                )\n        );\n    }\n    \n    public static PostRequest to(String endpoint, Object body) {\n        return new PostRequest(endpoint, body);\n    }\n}",
     "task": "public class CreateUser implements Task {\n    private final CreateUserRequest request;\n    \n    public CreateUser(CreateUserRequest request) {\n        this.request = request;\n    }\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            PostRequest.to(UserEndpoints.CREATE_USER, request)\n        );\n    }\n    \n    public static CreateUser with(CreateUserRequest request) {\n        return new CreateUser(request);\n    }\n}",
     "question": "public class ResponseStatusCode implements Question<Integer> {\n    @Override\n    public Integer answeredBy(Actor actor) {\n        return SerenityRest.lastResponse().statusCode();\n    }\n    \n    public static ResponseStatusCode value() {\n        return new ResponseStatusCode();\n    }\n}",
-    "stepDefinition": "@When(\"el usuario crea un usuario valido\")\npublic void createUser() {\n    actor.attemptsTo(\n        CreateUser.with(CreateUserRequestBuilder.withValidData())\n    );\n}\n\n@Then(\"la respuesta debe ser {int}\")\npublic void validateStatus(int status) {\n    actor.should(\n        seeThat(ResponseStatusCode.value(), equalTo(status))\n    );\n}\n\n@And(\"el body debe contener el nombre del usuario\")\npublic void validateBodyField() {\n    actor.should(\n        seeThat(ResponseBodyField.of(\"name\"), equalTo(\"Daniel\"))\n    );\n}"
+    "stepDefinition": "@When(\"el usuario crea un usuario valido\")\npublic void createUser() {\n    actor.attemptsTo(\n        CreateUser.with(CreateUserRequestBuilder.withValidData())\n    );\n}\n\n@Then(\"la respuesta debe ser {int}\")\npublic void validateStatus(int status) {\n    actor.should(\n        seeThat(\"El código de respuesta\", ResponseStatusCode.value(), equalTo(status))\n    );\n}\n\n@And(\"el body debe contener el nombre del usuario\")\npublic void validateBodyField() {\n    actor.should(\n        seeThat(\"El campo name del response\", ResponseBodyField.of(\"name\"), equalTo(\"Daniel\"))\n    );\n}"
   },
   "forbidden": [
     "Usar @Steps",
@@ -765,7 +766,10 @@
     "Aserciones en Interactions",
     "URLs hardcodeadas",
     "Lógica en Models",
-    "Endpoints sin versión"
+    "Endpoints sin versión",
+    "Usar lambdas con seeThat() - SIEMPRE usar Question implementación",
+    "Usar is() con tipos no-Boolean - usar equalTo() para Integer, String, etc",
+    "Omitir descripción en seeThat() - SIEMPRE incluir el primer parámetro descriptivo"
   ],
   "requiredArtifacts": [
     "Feature (.feature)",
@@ -1017,7 +1021,7 @@
       ]
     },
     "hooksTemplate": "package com.screenplay.api.hooks;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.After;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.OnlineCast;\n\n/**\n * Hooks: Configuración de actores antes y después de cada escenario\n * Responsabilidad: Inicializar OnStage y liberar recursos\n * CRÍTICO: Debe ejecutarse antes de cualquier StepDefinition\n */\npublic class Hooks {\n\n    @Before(order = 0)\n    public void setTheStage() {\n        OnStage.setTheStage(new OnlineCast());\n    }\n\n    @After(order = 1)\n    public void tearDown() {\n        OnStage.drawTheCurtain();\n    }\n}",
-    "stepDefinitionsTemplate": "package com.screenplay.api.stepdefinitions;\n\nimport io.cucumber.java.es.*;\nimport static net.serenitybdd.screenplay.actors.OnStage.*;\nimport static net.serenitybdd.screenplay.GivenWhenThen.seeThat;\nimport static org.hamcrest.Matchers.*;\n\npublic class UserStepDefinitions {\n\n    @Cuando(\"el usuario crea un usuario valido\")\n    public void createUser() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(UserEndpoints.BASE_URL));\n        \n        theActorInTheSpotlight()\n            .attemptsTo(CreateUser.with(CreateUserRequestBuilder.withValidData()));\n    }\n\n    @Entonces(\"la respuesta debe ser {int}\")\n    public void validateStatus(int status) {\n        theActorInTheSpotlight()\n            .should(seeThat(ResponseStatusCode.value(), equalTo(status)));\n    }\n}",
+    "stepDefinitionsTemplate": "package com.screenplay.api.stepdefinitions;\n\nimport io.cucumber.java.es.*;\nimport static net.serenitybdd.screenplay.actors.OnStage.*;\nimport static net.serenitybdd.screenplay.GivenWhenThen.seeThat;\nimport static org.hamcrest.Matchers.*;\n\npublic class UserStepDefinitions {\n\n    @Cuando(\"el usuario crea un usuario valido\")\n    public void createUser() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(UserEndpoints.BASE_URL));\n        \n        theActorInTheSpotlight()\n            .attemptsTo(CreateUser.with(CreateUserRequestBuilder.withValidData()));\n    }\n\n    @Entonces(\"la respuesta debe ser {int}\")\n    public void validateStatus(int status) {\n        theActorInTheSpotlight()\n            .should(seeThat(\"El código de respuesta\", ResponseStatusCode.value(), equalTo(status)));\n    }\n}",
     "methods": [
       {
         "name": "OnStage.setTheStage()",
@@ -1252,6 +1256,22 @@
         "fix": "# ❌ Incorrecto\nCuando el usuario consulta todos los personajes\nEntonces la respuesta debe ser 201\n\n# ✅ Correcto\nCuando el usuario consulta todos los personajes\nEntonces la respuesta debe ser 200",
         "severity": "BAJO",
         "reference": "Ver httpStatusCodes section"
+      },
+      {
+        "id": 7,
+        "error": "no suitable method found for seeThat(()->net.serenitybdd.rest.SerenityRest.lastResponse().statusCode(),Matcher<Integer>)",
+        "type": "Compilación",
+        "component": "StepDefinitions",
+        "cause": "Usar lambda expressions con seeThat() en lugar de Question implementations",
+        "solution": "SIEMPRE usar Question implementación, NUNCA lambdas. Incluir descripción como primer parámetro.",
+        "fix": "// ❌ INCORRECTO - Lambda expression NO funciona con seeThat()\ntheActorInTheSpotlight().should(\n    seeThat(() -> SerenityRest.lastResponse().statusCode(), is(200))\n);\n\n// ❌ INCORRECTO - Sin descripción (causa problemas de inferencia de tipos)\ntheActorInTheSpotlight().should(\n    seeThat(ResponseStatusCode.value(), equalTo(200))\n);\n\n// ✅ CORRECTO - Question implementation + descripción\ntheActorInTheSpotlight().should(\n    seeThat(\"El código de respuesta\", ResponseStatusCode.value(), equalTo(200))\n);\n\n// Implementación de Question:\npublic class ResponseStatusCode implements Question<Integer> {\n    @Override\n    public Integer answeredBy(Actor actor) {\n        return SerenityRest.lastResponse().statusCode();\n    }\n    \n    public static ResponseStatusCode value() {\n        return new ResponseStatusCode();\n    }\n}",
+        "severity": "CRÍTICO",
+        "additionalInfo": "Java no puede inferir tipos de lambdas para el método seeThat(). La descripción ayuda con la inferencia y mejora los reportes.",
+        "relatedErrors": [
+          "cannot infer type-variable(s)",
+          "argument mismatch; incompatible parameter types in lambda expression",
+          "method GivenWhenThen.seeThat not applicable"
+        ]
       }
     ],
     "checklist": [
@@ -1265,7 +1285,10 @@
       "✓ StepDefinitions NO tienen @Before ni @After - solo métodos de steps",
       "✓ Modelos tienen @JsonIgnoreProperties(ignoreUnknown = true)",
       "✓ Status codes correctos (GET=200, POST=201, DELETE=204)",
-      "✓ Anotación @Step en Tasks/Interactions (opcional pero recomendada)"
+      "✓ Anotación @Step en Tasks/Interactions (opcional pero recomendada)",
+      "✓ seeThat() SIEMPRE con 3 parámetros: descripción, Question, matcher",
+      "✓ NUNCA usar lambdas con seeThat() - solo Question implementations",
+      "✓ Usar equalTo() para Integer/String, is() solo para Boolean"
     ],
     "realWorldCasesFixed": {
       "description": "Errores reales encontrados durante implementación HU-001 (Rick and Morty API)",

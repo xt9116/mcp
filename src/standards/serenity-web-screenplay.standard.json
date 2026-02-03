@@ -389,8 +389,8 @@
         "description": "Todas las clases Question deben implementar Question<T>"
       },
       "returnType": "Boolean o valor",
-      "actorValidation": "actor.should(seeThat())",
-      "description": "Usar seeThat() para validaciones"
+      "actorValidation": "actor.should(seeThat(\"descripción\", question, matcher))",
+      "description": "Usar seeThat() con descripción para validaciones (mejora reportes y ayuda con inferencia de tipos)"
     },
     "stepDefinitions": {
       "maxLines": 3,
