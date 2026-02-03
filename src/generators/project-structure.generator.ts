@@ -157,7 +157,8 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-${projectType !== 'web' ? '    testImplementation "net.serenity-bdd:serenity-rest-assured:${serenityVersion}"' : ''}
+${projectType !== 'web' ? `    implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"` : ''}
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:\${junitVersion}"
     testImplementation "org.assertj:assertj-core:\${assertjVersion}"
@@ -226,7 +227,7 @@ function generatePomXml(config: ProjectStructureConfig): string {
 
     <dependencies>
         <!-- Serenity BDD Core Dependencies -->
-        <!-- serenity-core, serenity-cucumber and serenity-rest-assured do NOT have test scope -->
+        <!-- serenity-core, serenity-cucumber, serenity-rest-assured and serenity-screenplay-rest do NOT have test scope -->
         <!-- because src/main/java contains Tasks, Interactions, Questions, Models that implement -->
         <!-- Serenity interfaces (Task, Interaction, Question) and need these dependencies at compile time -->
         <dependency>
@@ -248,6 +249,11 @@ function generatePomXml(config: ProjectStructureConfig): string {
 ${projectType !== 'web' ? `        <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-rest-assured</artifactId>
+            <version>\${serenity.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-screenplay-rest</artifactId>
             <version>\${serenity.version}</version>
         </dependency>` : ''}
         <dependency>
