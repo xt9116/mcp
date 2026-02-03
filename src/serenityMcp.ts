@@ -373,11 +373,11 @@ const tools: Tool[] = [
         },
         companyPackage: {
           type: 'string',
-          description: 'Package base de la compañía para las clases Java (ej: com.rimac, com.sistecredito, co.com.corredores). Este será el paquete donde se generarán las clases Java.'
+          description: 'Package base de la compañía para las clases Java (ej: com.rimac, co.com.corredores)'
         },
         projectName: {
           type: 'string',
-          description: 'Nombre completo del proyecto que se usará para el directorio raíz, artifact ID y configuraciones. Puede ser un nombre simple (ej: "api", "web-tests") o un identificador completo con notación de puntos (ej: "co.com.corredores.api", "com.example.proyecto"). IMPORTANTE: Use el nombre COMPLETO tal como lo proporciona el usuario, sin dividirlo ni extraer solo la última parte.'
+          description: 'Nombre del proyecto usado para directorio raíz, artifact ID y configuraciones. Soporta nombres simples ("api") o notación de puntos ("co.com.corredores.api"). Use el nombre COMPLETO tal como se proporciona.'
         },
         type: {
           type: 'string',
