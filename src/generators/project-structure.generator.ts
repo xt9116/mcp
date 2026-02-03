@@ -157,8 +157,13 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
-${projectType !== 'web' ? `    implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
+${projectType !== 'web' ? `    // Serenity REST dependencies for API testing
+    // Using 'implementation' scope because Interactions/Questions are in src/main/java
+    implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
     implementation "net.serenity-bdd:serenity-screenplay-rest:\${serenityVersion}"` : ''}
+${projectType !== 'api' ? `    // Serenity WebDriver dependency for Web UI testing
+    // Using 'implementation' scope because Tasks/Questions are in src/main/java
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:\${serenityVersion}"` : ''}
     testImplementation "org.junit.jupiter:junit-jupiter-api:\${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:\${junitVersion}"
     testImplementation "org.assertj:assertj-core:\${assertjVersion}"
@@ -227,9 +232,8 @@ function generatePomXml(config: ProjectStructureConfig): string {
 
     <dependencies>
         <!-- Serenity BDD Core Dependencies -->
-        <!-- serenity-core, serenity-cucumber, serenity-rest-assured and serenity-screenplay-rest do NOT have test scope -->
-        <!-- because src/main/java contains Tasks, Interactions, Questions, Models that implement -->
-        <!-- Serenity interfaces (Task, Interaction, Question) and need these dependencies at compile time -->
+        <!-- Note: serenity-core and serenity-cucumber do NOT have test scope because src/main/java -->
+        <!-- contains Tasks, Interactions, Questions, and Models that implement Serenity interfaces -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
@@ -246,7 +250,8 @@ function generatePomXml(config: ProjectStructureConfig): string {
             <artifactId>serenity-cucumber</artifactId>
             <version>\${serenity.version}</version>
         </dependency>
-${projectType !== 'web' ? `        <dependency>
+${projectType !== 'web' ? `        <!-- Serenity REST dependencies for API testing -->
+        <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-rest-assured</artifactId>
             <version>\${serenity.version}</version>
@@ -254,6 +259,12 @@ ${projectType !== 'web' ? `        <dependency>
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-screenplay-rest</artifactId>
+            <version>\${serenity.version}</version>
+        </dependency>` : ''}
+${projectType !== 'api' ? `        <!-- Serenity WebDriver dependency for Web UI testing -->
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-screenplay-webdriver</artifactId>
             <version>\${serenity.version}</version>
         </dependency>` : ''}
         <dependency>
