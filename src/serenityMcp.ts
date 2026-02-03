@@ -373,11 +373,11 @@ const tools: Tool[] = [
         },
         companyPackage: {
           type: 'string',
-          description: 'Package base de la compañía (ej: com.rimac, com.sistecredito)'
+          description: 'Package base de la compañía para las clases Java (ej: com.rimac, co.com.corredores)'
         },
         projectName: {
           type: 'string',
-          description: 'Nombre del proyecto'
+          description: 'Nombre del proyecto usado para directorio raíz, artifact ID y configuraciones. Soporta nombres simples ("api") o notación de puntos ("co.com.corredores.api"). Use el nombre COMPLETO tal como se proporciona.'
         },
         type: {
           type: 'string',

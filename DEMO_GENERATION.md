@@ -20,7 +20,7 @@ Este documento demuestra que el MCP está **completamente implementado** para tr
 
 Genera la estructura completa de un proyecto Serenity BDD con todos los archivos necesarios.
 
-#### Entrada:
+#### Entrada - Ejemplo 1 (Nombre simple):
 ```json
 {
   "buildTool": "gradle",
@@ -29,6 +29,22 @@ Genera la estructura completa de un proyecto Serenity BDD con todos los archivos
   "type": "web"
 }
 ```
+
+#### Entrada - Ejemplo 2 (Nombre completo con notación de puntos):
+```json
+{
+  "buildTool": "gradle",
+  "companyPackage": "co.com.corredores",
+  "projectName": "co.com.corredores.api",
+  "type": "api"
+}
+```
+
+**Nota**: El `projectName` se puede especificar como:
+- Nombre simple: `"api"`, `"web-tests"`, `"serenity-api-tests"`
+- Nombre completo: `"co.com.corredores.api"`, `"com.example.proyecto.web"`
+
+El nombre se usará **exactamente como se proporciona** para el directorio del proyecto y todas las configuraciones.
 
 #### Salida incluye:
 
