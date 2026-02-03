@@ -1,4 +1,5 @@
 // Generator para componentes de Serenity Web Screenplay - Alineado con Estándars y Robots Rimac
+import { getClassNameValidationErrors } from './naming.helper.js';
 
 export interface WebComponentConfig {
   componentType: 'Task' | 'Interaction' | 'Question' | 'UI' | 'StepDefinition' | 'SetTheStage';
@@ -21,6 +22,12 @@ export interface WebTarget {
 
 export function generateWebUI(config: WebComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid UI class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -74,6 +81,12 @@ export function generateWebUI(config: WebComponentConfig): string {
 
 export function generateWebTask(config: WebComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Task class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -140,6 +153,12 @@ export function generateWebTask(config: WebComponentConfig): string {
 
 export function generateWebQuestion(config: WebComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Question class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -189,6 +208,12 @@ export function generateWebQuestion(config: WebComponentConfig): string {
 
 export function generateWebInteraction(config: WebComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Interaction class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -242,6 +267,12 @@ export function generateWebInteraction(config: WebComponentConfig): string {
 
 export function generateWebStepDefinitions(config: WebComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid StepDefinitions class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');

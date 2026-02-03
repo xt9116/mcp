@@ -1,5 +1,7 @@
 import { validateJavaStandards } from '../validators/java.validator.js';
 
+import { getClassNameValidationErrors } from '../generators/naming.helper.js';
+
 export interface ValidationResults {
   summary: string;
   solidStatus: string;
@@ -7,6 +9,21 @@ export interface ValidationResults {
   javaStatus: string;
   hasIssues: boolean;
   issues: string;
+}
+
+/**
+ * Validates a generated Java class name before code generation
+ * @param className The class name to validate
+ * @param context Additional context for error messages (e.g., "Task", "Question")
+ * @throws Error if the class name is invalid
+ */
+export function validateClassName(className: string, context: string = 'Class'): void {
+  const errors = getClassNameValidationErrors(className);
+  if (errors.length > 0) {
+    throw new Error(
+      `Invalid ${context} class name '${className}':\n${errors.join('\n')}`
+    );
+  }
 }
 
 export function validateGeneratedCode(generatedOutput: string): ValidationResults {

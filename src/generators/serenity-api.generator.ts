@@ -22,6 +22,12 @@ export interface Field {
 
 export function generateAPITask(config: APIComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Task class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -176,6 +182,12 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
 
 export function generateAPIQuestion(config: APIComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Question class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -207,6 +219,12 @@ export function generateAPIQuestion(config: APIComponentConfig): string {
 
 export function generateAPIModel(config: APIComponentConfig): string {
   const lines: string[] = [];
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Model class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -271,6 +289,12 @@ export function generateAPIModel(config: APIComponentConfig): string {
 export function generateAPIEndpoints(config: APIComponentConfig): string {
   const lines: string[] = [];
   const resource = config.resource || config.className.replace('Endpoints', '');
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Endpoints class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
@@ -298,6 +322,12 @@ export function generateAPIEndpoints(config: APIComponentConfig): string {
 export function generateAPIBuilder(config: APIComponentConfig): string {
   const lines: string[] = [];
   const modelType = config.className.replace('Constructor', '').replace('Builder', '');
+  
+  // Validate class name
+  const nameErrors = getClassNameValidationErrors(config.className);
+  if (nameErrors.length > 0) {
+    throw new Error(`Invalid Builder class name '${config.className}': ${nameErrors.join(', ')}`);
+  }
 
   lines.push(`package ${config.packageName};`);
   lines.push('');
