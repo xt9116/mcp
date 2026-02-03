@@ -354,6 +354,7 @@ Este servidor permite a los asistentes de IA:
 
 #### 3. Generación de Estructura de Proyecto
 
+**Ejemplo 1: Nombre simple**
 ```json
 {
   "tool": "generate_project_structure",
@@ -365,6 +366,23 @@ Este servidor permite a los asistentes de IA:
   }
 }
 ```
+
+**Ejemplo 2: Nombre completo con notación de puntos**
+```json
+{
+  "tool": "generate_project_structure",
+  "arguments": {
+    "buildTool": "gradle",
+    "companyPackage": "co.com.corredores",
+    "projectName": "co.com.corredores.api",
+    "type": "api"
+  }
+}
+```
+
+**Nota importante**: El parámetro `projectName` debe usarse **exactamente como se proporciona**:
+- ✅ `"co.com.corredores.api"` → Se usa completo
+- ❌ NO dividir por puntos ni tomar solo la última parte
 
 **Resultado**:
 - ✅ Estructura de directorios completa

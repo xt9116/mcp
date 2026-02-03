@@ -256,6 +256,7 @@ Para usar este servidor MCP, necesitas configurarlo en tu cliente MCP. Agrega lo
 
 ### Generar estructura de proyecto Gradle
 
+**Ejemplo 1: Nombre simple del proyecto**
 ```json
 {
   "tool": "generate_project_structure",
@@ -267,6 +268,25 @@ Para usar este servidor MCP, necesitas configurarlo en tu cliente MCP. Agrega lo
   }
 }
 ```
+
+**Ejemplo 2: Nombre completo con notación de puntos**
+```json
+{
+  "tool": "generate_project_structure",
+  "arguments": {
+    "buildTool": "gradle",
+    "companyPackage": "co.com.corredores",
+    "projectName": "co.com.corredores.api",
+    "type": "api"
+  }
+}
+```
+
+**Nota importante**: El parámetro `projectName` puede ser:
+- Un nombre simple como `"api"` o `"serenity-api-tests"`
+- Un identificador completo con notación de puntos como `"co.com.corredores.api"`
+
+El nombre se usará tal cual para el directorio del proyecto, artifact ID en Maven/Gradle, y configuraciones de Serenity.
 
 ### Validar código Java
 
