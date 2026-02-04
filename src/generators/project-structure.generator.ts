@@ -49,7 +49,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
  │       │       ├── 📁 hooks/
  │       │       └── 📁 runners/
  │       └── 📁 resources/
- │           ├── 📄 serenity.conf
+ │           ├── 📄 serenity.properties
  │           ├── 📄 logback-test.xml
  │           └── 📁 features/
  └── 📁 target/`;
@@ -57,7 +57,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
   const buildGradle = generateGradleBuildFile(config);
   const settingsGradle = `rootProject.name = '${config.projectName}'`;
   const gradleProperties = generateGradlePropertiesFile(config);
-  const serenityConf = generateSerenityConf(config);
+  const serenityProperties = generateSerenityProperties(config);
   const logbackTest = generateLogbackTest();
   const readme = generateReadme(config);
   const runnerClass = generateRunnerClass(config);
@@ -67,7 +67,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
          `### build.gradle\n\`\`\`gradle\n${buildGradle}\n\`\`\`\n\n` +
          `### settings.gradle\n\`\`\`gradle\n${settingsGradle}\n\`\`\`\n\n` +
          `### gradle.properties\n\`\`\`properties\n${gradleProperties}\n\`\`\`\n\n` +
-         `### serenity.conf\n\`\`\`properties\n${serenityConf}\n\`\`\`\n\n` +
+         `### serenity.properties\n\`\`\`properties\n${serenityProperties}\n\`\`\`\n\n` +
          `### logback-test.xml\n\`\`\`xml\n${logbackTest}\n\`\`\`\n\n` +
          `### README.md\n\`\`\`markdown\n${readme}\n\`\`\`\n\n` +
          '## 📄 Archivos Java Básicos\n\n' +
@@ -104,13 +104,13 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
  │       │       ├── 📁 hooks/
  │       │       └── 📁 runners/
  │       └── 📁 resources/
- │           ├── 📄 serenity.conf
+ │           ├── 📄 serenity.properties
  │           ├── 📄 logback-test.xml
  │           └── 📁 features/
  └── 📁 target/`;
 
   const pomXml = generatePomXml(config);
-  const serenityConf = generateSerenityConf(config);
+  const serenityProperties = generateSerenityProperties(config);
   const logbackTest = generateLogbackTest();
   const readme = generateReadme(config);
   const runnerClass = generateRunnerClass(config);
@@ -118,7 +118,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
 
   return structure + '\n\n## 📄 Archivos de Configuración\n\n' +
          `### pom.xml\n\`\`\`xml\n${pomXml}\n\`\`\`\n\n` +
-         `### serenity.conf\n\`\`\`properties\n${serenityConf}\n\`\`\`\n\n` +
+         `### serenity.properties\n\`\`\`properties\n${serenityProperties}\n\`\`\`\n\n` +
          `### logback-test.xml\n\`\`\`xml\n${logbackTest}\n\`\`\`\n\n` +
          `### README.md\n\`\`\`markdown\n${readme}\n\`\`\`\n\n` +
          '## 📄 Archivos Java Básicos\n\n' +
@@ -326,6 +326,7 @@ ${projectType !== 'api' ? `        <dependency>
                     <includes>
                         <include>**/runners/**/*.java</include>
                     </includes>
+                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -333,7 +334,7 @@ ${projectType !== 'api' ? `        <dependency>
 </project>`;
 }
 
-function generateSerenityConf(config: ProjectStructureConfig): string {
+function generateSerenityProperties(config: ProjectStructureConfig): string {
   const projectType = config.type || 'both';
   const isApi = projectType === 'api' || projectType === 'both';
 
@@ -416,7 +417,7 @@ import org.junit.runner.RunWith;
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
     features = "src/test/resources/features",
-    glue = "${config.companyPackage}.stepdefinitions",
+    glue = {"${config.companyPackage}.stepdefinitions", "${config.companyPackage}.hooks"},
     plugin = {"pretty", "json:target/cucumber-report.json"},
     tags = "@smoke or @regression"
 )
@@ -438,8 +439,8 @@ import io.cucumber.java.After;
 import net.serenitybdd.screenplay.actors.OnStage;
 import net.serenitybdd.screenplay.actors.OnlineCast;
 import net.serenitybdd.screenplay.rest.abilities.CallAnApi;
-import net.serenitybdd.model.environment.EnvironmentVariables;
-import net.serenitybdd.model.environment.SystemEnvironmentVariables;
+import net.thucydides.model.environment.SystemEnvironmentVariables;
+import net.thucydides.model.util.EnvironmentVariables;
 
 import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;

@@ -309,8 +309,8 @@ public class ${className} {
         // Verificar que el servicio esté disponible
     }
 
-    @Cuando("envío una petición ${request.metodo} a ${JSON.stringify(request.endpoint)}")
-    public void enviarPeticion() {
+    @Cuando("envío una petición ${request.metodo} a (.*)")
+    public void enviarPeticion(String recurso) {
         theActorInTheSpotlight().attemptsTo(
             ${taskName}.con(Constructor${request.huId.replace('API-HU-', '')}Request.conDatosValidos())
         );
@@ -418,14 +418,26 @@ function generateApiFeature(request: ApiHURequest): string {
     examples = `\n    Examples:\n${examples}`;
   }
 
+  // Extract resource ID from endpoint (e.g., "/api/character/99999" -> "99999")
+  const resourceId = extractResourceIdFromEndpoint(request.endpoint);
+
   return `Feature: ${request.nombre}
 
   @${request.huId}
   Scenario Outline: Operación ${request.metodo} exitosa
     Given el servicio está disponible
-    When envío una petición ${request.metodo} a "${request.endpoint}"
+    When envío una petición ${request.metodo} a ${resourceId}
     Then el código de respuesta debe ser 200
     And el body debe contener la información esperada${examples}`;
+}
+
+function extractResourceIdFromEndpoint(endpoint: string): string {
+  // Extract the last part of the endpoint, which is typically the resource ID
+  // e.g., "/api/character/99999" -> "99999"
+  // e.g., "/character/99999" -> "99999"
+  // e.g., "/users" -> "users"
+  const parts = endpoint.split('/').filter(p => p.length > 0);
+  return parts.length > 0 ? (parts[parts.length - 1] || endpoint) : endpoint;
 }
 
 function generateApiInteraction(request: ApiHURequest): string {
@@ -509,7 +521,7 @@ import org.junit.runner.RunWith;
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
     features = "src/test/resources/features",
-    glue = "com.screenplay.api.stepdefinitions",
+    glue = {"com.screenplay.api.stepdefinitions", "com.screenplay.api.hooks"},
     plugin = {"pretty", "json:target/cucumber-report.json"},
     tags = "@api"
 )
@@ -527,8 +539,8 @@ import io.cucumber.java.After;
 import net.serenitybdd.screenplay.actors.OnStage;
 import net.serenitybdd.screenplay.actors.OnlineCast;
 import net.serenitybdd.screenplay.rest.abilities.CallAnApi;
-import net.serenitybdd.model.environment.EnvironmentVariables;
-import net.serenitybdd.model.environment.SystemEnvironmentVariables;
+import net.thucydides.model.environment.SystemEnvironmentVariables;
+import net.thucydides.model.util.EnvironmentVariables;
 
 import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
