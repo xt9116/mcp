@@ -312,7 +312,8 @@ public class ${className} {
 
     @Cuando("envío una petición ${request.metodo} a {word}")
     public void enviarPeticion(String recurso) {
-        // Note: 'recurso' parameter captures the resource ID from the feature file
+        // Note: 'recurso' parameter captures the resource ID from the feature file (e.g., "99999", "users")
+        // The feature file extracts only the last segment of the endpoint path
         // Currently using builder pattern for test data, but parameter available for future use
         theActorInTheSpotlight().attemptsTo(
             ${taskName}.con(Constructor${request.huId.replace('API-HU-', '')}Request.conDatosValidos())
