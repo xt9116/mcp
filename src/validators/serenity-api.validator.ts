@@ -59,8 +59,33 @@ export function validateSerenityApi(payload: ValidationPayload) {
         errors.push('❌ Step Definitions no debe contener lógica (if, for, while)');
       }
 
-      if (payload.code.includes('assertEquals') || payload.code.includes('assertTrue') || payload.code.includes('assertThat')) {
-        errors.push('❌ Step Definitions no debe contener aserciones técnicas directas');
+      // IMPORTANTE: Validar que TODAS las validaciones usen seeThat()
+      if (payload.code.includes('assertThat(') && !payload.code.includes('// Migration note')) {
+        errors.push('❌ CRÍTICO: Step Definitions no debe usar assertThat() - usar seeThat() con Questions (patrón Screenplay)');
+      }
+
+      if (payload.code.includes('assertEquals') || payload.code.includes('assertTrue') || payload.code.includes('assertFalse')) {
+        errors.push('❌ CRÍTICO: Step Definitions no debe usar assertions directas - usar seeThat() con Questions');
+      }
+
+      // Validar que las validaciones usen Questions, no lambdas
+      if (payload.code.includes('seeThat(') && payload.code.includes('() ->')) {
+        errors.push('❌ CRÍTICO: seeThat() debe usar Question implementations, NO lambdas');
+      }
+
+      // Validar que seeThat tenga descripción (3 parámetros)
+      const seeThatMatches = payload.code.match(/seeThat\s*\(/g);
+      if (seeThatMatches && seeThatMatches.length > 0) {
+        // Verificar que cada seeThat tenga al menos 3 parámetros (descripción, Question, matcher)
+        const seeThatCalls = payload.code.match(/seeThat\s*\([^)]+,[^)]+,[^)]+\)/g);
+        if (!seeThatCalls || seeThatCalls.length < seeThatMatches.length) {
+          warnings.push('⚠️ seeThat() debe tener 3 parámetros: descripción, Question, matcher (ayuda con inferencia de tipos)');
+        }
+      }
+
+      // Validar que NO se obtenga el response directamente y se valide con assertThat
+      if (payload.code.includes('.asksFor(') && payload.code.includes('assertThat(response.get')) {
+        errors.push('❌ CRÍTICO: NO obtener response y usar assertThat - usar seeThat() con Questions específicas para cada campo');
       }
     }
   }

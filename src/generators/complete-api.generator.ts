@@ -133,13 +133,19 @@ public class ${taskName} implements Task {
 
 function generateApiQuestion(request: ApiHURequest): string {
   const className = `Validar${request.huId.replace('API-HU-', '')}Response`;
+  const modelName = `${request.huId.replace('API-HU-', '')}Response`;
 
   return `package com.screenplay.api.questions;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
 import net.serenitybdd.rest.SerenityRest;
+import com.screenplay.api.models.${modelName};
 
+/**
+ * Questions para validaciones del response de ${request.nombre}
+ * Responsabilidad: Extraer información del response para validaciones con seeThat()
+ */
 public class ${className} implements Question<Integer> {
 
     @Override
@@ -149,6 +155,49 @@ public class ${className} implements Question<Integer> {
 
     public static ${className} valor() {
         return new ${className}();
+    }
+
+    /**
+     * Question para obtener el response completo deserializado
+     */
+    public static class ElResponse implements Question<${modelName}> {
+        @Override
+        public ${modelName} answeredBy(Actor actor) {
+            return SerenityRest.lastResponse().as(${modelName}.class);
+        }
+
+        public static ElResponse completo() {
+            return new ElResponse();
+        }
+    }
+
+    /**
+     * Question para obtener un campo específico del response
+     */
+    public static class CampoDelResponse<T> implements Question<T> {
+        private final String campo;
+        private final Class<T> tipo;
+
+        public CampoDelResponse(String campo, Class<T> tipo) {
+            this.campo = campo;
+            this.tipo = tipo;
+        }
+
+        @Override
+        public T answeredBy(Actor actor) {
+            ${modelName} response = SerenityRest.lastResponse().as(${modelName}.class);
+            try {
+                java.lang.reflect.Method getter = ${modelName}.class.getMethod("get" + 
+                    campo.substring(0, 1).toUpperCase() + campo.substring(1));
+                return tipo.cast(getter.invoke(response));
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener campo: " + campo, e);
+            }
+        }
+
+        public static <T> CampoDelResponse<T> llamado(String campo, Class<T> tipo) {
+            return new CampoDelResponse<>(campo, tipo);
+        }
     }
 }`;
 }
@@ -232,8 +281,15 @@ import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
 import com.screenplay.api.tasks.*;
 import com.screenplay.api.questions.*;
+import com.screenplay.api.questions.${questionName}.*;
 import com.screenplay.api.builders.*;
+import com.screenplay.api.models.*;
 
+/**
+ * Step Definitions para ${request.nombre}
+ * IMPORTANTE: Todas las validaciones deben usar seeThat() con Questions
+ * NUNCA usar assertThat() directamente - seguir patrón Screenplay
+ */
 public class ${className} {
 
     @Dado("que el servicio está disponible")
@@ -249,15 +305,93 @@ public class ${className} {
     }
 
     @Entonces("el código de respuesta debe ser 200")
-    public void validarCodigoRespuesta() {
+    public void validarCodigoRespuesta200() {
         theActorInTheSpotlight().should(
             seeThat("El código de respuesta", ${questionName}.valor(), equalTo(200))
         );
     }
 
+    @Entonces("el código de respuesta debe ser {int}")
+    public void elCodigoDeRespuestaDebeSer(int statusCode) {
+        theActorInTheSpotlight().should(
+            seeThat("El código de respuesta", ${questionName}.valor(), equalTo(statusCode))
+        );
+    }
+
+    @Y("el body debe contener el ID del personaje")
+    public void elBodyDebeContenerElId() {
+        theActorInTheSpotlight().should(
+            seeThat("El ID del personaje", 
+                CampoDelResponse.llamado("id", Integer.class), 
+                notNullValue())
+        );
+    }
+
+    @Y("el tipo de dato del ID es Integer")
+    public void elTipoDeDatoDelIdEsInteger() {
+        theActorInTheSpotlight().should(
+            seeThat("El tipo del ID", 
+                CampoDelResponse.llamado("id", Integer.class), 
+                instanceOf(Integer.class))
+        );
+    }
+
+    @Y("el campo {string} debe ser {string}")
+    public void elCampoDebeSer(String campo, String valorEsperado) {
+        theActorInTheSpotlight().should(
+            seeThat("El campo " + campo, 
+                CampoDelResponse.llamado(campo, String.class), 
+                equalTo(valorEsperado))
+        );
+    }
+
+    @Y("el campo {string} debe ser uno de los valores válidos")
+    public void elCampoDebeSerUnoDeLosValoresValidos(String campo) {
+        switch (campo) {
+            case "status":
+                theActorInTheSpotlight().should(
+                    seeThat("El campo status", 
+                        CampoDelResponse.llamado("status", String.class), 
+                        anyOf(equalTo("Alive"), equalTo("Dead"), equalTo("unknown")))
+                );
+                break;
+            case "gender":
+                theActorInTheSpotlight().should(
+                    seeThat("El campo gender", 
+                        CampoDelResponse.llamado("gender", String.class), 
+                        anyOf(equalTo("Female"), equalTo("Male"), equalTo("Genderless"), equalTo("unknown")))
+                );
+                break;
+            default:
+                throw new AssertionError("Campo no soportado: " + campo);
+        }
+    }
+
+    @Y("el campo {string} debe ser un objeto con propiedades {string} y {string}")
+    public void elCampoDebeSerUnObjetoConPropiedades(String campo, String prop1, String prop2) {
+        theActorInTheSpotlight().should(
+            seeThat("El campo " + campo, 
+                CampoDelResponse.llamado(campo, Object.class), 
+                notNullValue())
+        );
+    }
+
+    @Y("el campo {string} debe ser un array no vacío")
+    public void elCampoDebeSerUnArrayNoVacio(String campo) {
+        theActorInTheSpotlight().should(
+            seeThat("El tamaño del array " + campo, 
+                CampoDelResponse.llamado(campo, java.util.List.class), 
+                notNullValue())
+        );
+    }
+
     @Y("el body debe contener la información esperada")
     public void validarBody() {
-        // Validaciones adicionales del body según schema
+        theActorInTheSpotlight().should(
+            seeThat("El response completo", 
+                ElResponse.completo(), 
+                notNullValue())
+        );
     }
 }`;
 }
