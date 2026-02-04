@@ -3,16 +3,19 @@ import type { ApiHURequest, GeneratedHU } from './types.js';
 import { httpMethodToPascalCase } from './naming.helper.js';
 
 export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
-  const taskCode = generateApiTask(request);
-  const questionCode = generateApiQuestion(request);
-  const modelCode = generateApiModel(request);
-  const stepCode = generateApiStepDefinitions(request);
+  // Use provided packageName or default to com.screenplay.api
+  const basePackage = request.packageName || 'com.screenplay.api';
+  
+  const taskCode = generateApiTask(request, basePackage);
+  const questionCode = generateApiQuestion(request, basePackage);
+  const modelCode = generateApiModel(request, basePackage);
+  const stepCode = generateApiStepDefinitions(request, basePackage);
   const featureCode = generateApiFeature(request);
-  const interactionCode = generateApiInteraction(request);
-  const builderCode = generateApiBuilder(request);
-  const endpointCode = generateApiEndpoints(request);
-  const runnerCode = generateApiRunner();
-  const hooksCode = generateApiHooks();
+  const interactionCode = generateApiInteraction(request, basePackage);
+  const builderCode = generateApiBuilder(request, basePackage);
+  const endpointCode = generateApiEndpoints(request, basePackage);
+  const runnerCode = generateApiRunner(basePackage);
+  const hooksCode = generateApiHooks(basePackage);
 
   const taskName = request.huId.replace('API-HU-', '');
   const questionName = `Validar${taskName}Response`;
@@ -94,21 +97,21 @@ ${featureCode}
   };
 }
 
-function generateApiTask(request: ApiHURequest): string {
+function generateApiTask(request: ApiHURequest, basePackage: string): string {
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const resource = getResourceFromEndpoint(request.endpoint);
   const endpointConstant = getEndpointConstantName(request.metodo, resource);
   const interactionClassName = `${httpMethodToPascalCase(request.metodo)}Request`;
 
-  return `package com.screenplay.api.tasks;
+  return `package ${basePackage}.tasks;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.Tasks;
-import com.screenplay.api.interactions.${interactionClassName};
-import com.screenplay.api.endpoints.${request.huId.replace('API-HU-', '')}Endpoints;
-import com.screenplay.api.models.${request.huId.replace('API-HU-', '')}Request;
-import static com.screenplay.api.endpoints.${request.huId.replace('API-HU-', '')}Endpoints.*;
+import ${basePackage}.interactions.${interactionClassName};
+import ${basePackage}.endpoints.${request.huId.replace('API-HU-', '')}Endpoints;
+import ${basePackage}.models.${request.huId.replace('API-HU-', '')}Request;
+import static ${basePackage}.endpoints.${request.huId.replace('API-HU-', '')}Endpoints.*;
 
 public class ${taskName} implements Task {
 
@@ -131,16 +134,16 @@ public class ${taskName} implements Task {
 }`;
 }
 
-function generateApiQuestion(request: ApiHURequest): string {
+function generateApiQuestion(request: ApiHURequest, basePackage: string): string {
   const className = `Validar${request.huId.replace('API-HU-', '')}Response`;
   const modelName = `${request.huId.replace('API-HU-', '')}Response`;
 
-  return `package com.screenplay.api.questions;
+  return `package ${basePackage}.questions;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
 import net.serenitybdd.rest.SerenityRest;
-import com.screenplay.api.models.${modelName};
+import ${basePackage}.models.${modelName};
 
 /**
  * Questions para validaciones del response de ${request.nombre}
@@ -214,10 +217,10 @@ public class ${className} implements Question<Integer> {
 }`;
 }
 
-function generateApiModel(request: ApiHURequest): string {
+function generateApiModel(request: ApiHURequest, basePackage: string): string {
   const className = `${request.huId.replace('API-HU-', '')}Response`;
 
-  return `package com.screenplay.api.models;
+  return `package ${basePackage}.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -231,12 +234,12 @@ public class ${className} {
 }`;
 }
 
-function generateApiBuilder(request: ApiHURequest): string {
+function generateApiBuilder(request: ApiHURequest, basePackage: string): string {
   const className = `Constructor${request.huId.replace('API-HU-', '')}Request`;
 
-  return `package com.screenplay.api.builders;
+  return `package ${basePackage}.builders;
 
-import com.screenplay.api.models.${request.huId.replace('API-HU-', '')}Request;
+import ${basePackage}.models.${request.huId.replace('API-HU-', '')}Request;
 
 public class ${className} {
 
@@ -258,12 +261,12 @@ public class ${className} {
 }`;
 }
 
-function generateApiEndpoints(request: ApiHURequest): string {
+function generateApiEndpoints(request: ApiHURequest, basePackage: string): string {
   const className = `${request.huId.replace('API-HU-', '')}Endpoints`;
   const resource = getResourceFromEndpoint(request.endpoint);
   const constantName = getEndpointConstantName(request.metodo, resource);
 
-  return `package com.screenplay.api.endpoints;
+  return `package ${basePackage}.endpoints;
 
 /**
  * Endpoints: ${className}
@@ -280,23 +283,23 @@ public class ${className} {
 }`;
 }
 
-function generateApiStepDefinitions(request: ApiHURequest): string {
+function generateApiStepDefinitions(request: ApiHURequest, basePackage: string): string {
   const className = `${request.huId.replace('API-HU-', '')}StepDefinitions`;
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const questionName = `Validar${request.huId.replace('API-HU-', '')}Response`;
 
-  return `package com.sistecredito.api.stepdefinitions;
+  return `package ${basePackage}.stepdefinitions;
 
 import io.cucumber.java.es.*;
 import static net.serenitybdd.screenplay.actors.OnStage.*;
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
-import com.screenplay.api.tasks.*;
-import com.screenplay.api.questions.*;
-import com.screenplay.api.questions.${questionName}.ElResponse;
-import com.screenplay.api.questions.${questionName}.CampoDelResponse;
-import com.screenplay.api.builders.*;
-import com.screenplay.api.models.*;
+import ${basePackage}.tasks.*;
+import ${basePackage}.questions.*;
+import ${basePackage}.questions.${questionName}.ElResponse;
+import ${basePackage}.questions.${questionName}.CampoDelResponse;
+import ${basePackage}.builders.*;
+import ${basePackage}.models.*;
 
 /**
  * Step Definitions para ${request.nombre}
@@ -444,13 +447,13 @@ function extractResourceIdFromEndpoint(endpoint: string): string {
   return parts.length > 0 ? parts[parts.length - 1]! : endpoint;
 }
 
-function generateApiInteraction(request: ApiHURequest): string {
+function generateApiInteraction(request: ApiHURequest, basePackage: string): string {
   const isGet = request.metodo === 'GET';
   const normalizedMethod = httpMethodToPascalCase(request.metodo);
   const className = `${normalizedMethod}Request`;
   const methodCall = isGet ? 'Get.resource(url)' : `${normalizedMethod}.to(url)`;
 
-  return `package com.screenplay.api.interactions;
+  return `package ${basePackage}.interactions;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.rest.interactions.${normalizedMethod};
@@ -511,8 +514,8 @@ function getEndpointConstantName(method: string, resource: string): string {
   return `${methodMap[methodUpper] || methodUpper}_${resourceUpper}`;
 }
 
-function generateApiRunner(): string {
-  return `package com.screenplay.api.runners;
+function generateApiRunner(basePackage: string): string {
+  return `package ${basePackage}.runners;
 
 import io.cucumber.junit.CucumberOptions;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
@@ -525,7 +528,7 @@ import org.junit.runner.RunWith;
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
     features = "src/test/resources/features",
-    glue = {"com.screenplay.api.stepdefinitions", "com.screenplay.api.hooks"},
+    glue = {"${basePackage}.stepdefinitions", "${basePackage}.hooks"},
     plugin = {"pretty", "json:target/cucumber-report.json"},
     tags = "@api"
 )
@@ -535,8 +538,8 @@ public class CucumberTestRunner {
 }`;
 }
 
-function generateApiHooks(): string {
-  return `package com.screenplay.api.hooks;
+function generateApiHooks(basePackage: string): string {
+  return `package ${basePackage}.hooks;
 
 import io.cucumber.java.Before;
 import io.cucumber.java.After;

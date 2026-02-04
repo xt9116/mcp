@@ -15,6 +15,7 @@ export interface ApiHURequest {
     steps: string[];
     examples: Record<string, string>[];
   };
+  packageName?: string; // Optional: Base package name for generated code (e.g., "co.com.rickandmorty")
 }
 
 export interface WebHURequest {
@@ -33,6 +34,7 @@ export interface WebHURequest {
   pasosFlujo: string[];
   validaciones: string[];
   gherkinScenario: string;
+  packageName?: string; // Optional: Base package name for generated code (e.g., "co.com.rickandmorty")
 }
 
 export interface GeneratedHU {

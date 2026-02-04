@@ -2,6 +2,9 @@
 import type { WebHURequest, GeneratedHU } from './types.js';
 
 export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
+  // Use provided packageName or default to com.screenplay.web
+  const basePackage = request.packageName || 'com.screenplay.web';
+  
   const uiClasses: string[] = [];
   const tasks: string[] = [];
   const questions: string[] = [];
@@ -9,26 +12,26 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
   const features: string[] = [];
 
   (request.paginas || []).forEach(page => {
-    const uiCode = generateWebUIFromPage(page, request.baseUrl);
+    const uiCode = generateWebUIFromPage(page, request.baseUrl, basePackage);
     uiClasses.push(uiCode);
   });
 
-  const taskCode = generateWebTaskFromFlow(request);
+  const taskCode = generateWebTaskFromFlow(request, basePackage);
   tasks.push(taskCode);
 
   (request.validaciones || []).forEach(validation => {
-    const questionCode = generateWebQuestionFromValidation(validation);
+    const questionCode = generateWebQuestionFromValidation(validation, basePackage);
     questions.push(questionCode);
   });
 
-  const stepCode = generateWebStepDefinitionsFromScenario(request);
+  const stepCode = generateWebStepDefinitionsFromScenario(request, basePackage);
   stepDefinitions.push(stepCode);
 
   const featureCode = generateWebFeatureFromScenario(request);
   features.push(featureCode);
 
-  const setTheStageCode = generateSetTheStage();
-  const runnerCode = generateWebRunner();
+  const setTheStageCode = generateSetTheStage(basePackage);
+  const runnerCode = generateWebRunner(basePackage);
 
   const output = uiClasses.map((code, index) =>
     `### UI: ${request.paginas[index]?.uiName || 'Unknown'}.java
@@ -87,7 +90,7 @@ ${featureCode}
   };
 }
 
-function generateWebUIFromPage(page: any, baseUrl: string): string {
+function generateWebUIFromPage(page: any, baseUrl: string, basePackage: string): string {
   const targetLines = page.elements.map((elem: any) => {
     const prefix = elem.prefix || 'ELEMENT';
     const description = elem.name || 'Elemento';
@@ -95,7 +98,7 @@ function generateWebUIFromPage(page: any, baseUrl: string): string {
         .locatedBy("${elem.selector}");`;
   }).join('\n');
 
-  return `package com.screenplay.web.userinterfaces;
+  return `package ${basePackage}.userinterfaces;
 
 import net.serenitybdd.annotations.DefaultUrl;
 import net.serenitybdd.core.pages.PageObject;
@@ -108,7 +111,7 @@ ${targetLines}
 }`;
 }
 
-function generateWebTaskFromFlow(request: WebHURequest): string {
+function generateWebTaskFromFlow(request: WebHURequest, basePackage: string): string {
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const uiClass = request.paginas && request.paginas.length > 0 && request.paginas[0] ? request.paginas[0].uiName : 'UIHome';
 
@@ -127,7 +130,7 @@ function generateWebTaskFromFlow(request: WebHURequest): string {
     return `            // ${step}`;
   }).join('\n');
 
-  return `package com.screenplay.web.tasks;
+  return `package ${basePackage}.tasks;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
@@ -135,8 +138,8 @@ import net.serenitybdd.screenplay.Tasks;
 import net.serenitybdd.screenplay.actions.*;
 import net.serenitybdd.screenplay.waits.WaitUntil;
 import net.serenitybdd.screenplay.matchers.WebElementStateMatchers;
-import com.screenplay.web.userinterfaces.${uiClass};
-import static com.screenplay.web.userinterfaces.${uiClass}.*;
+import ${basePackage}.userinterfaces.${uiClass};
+import static ${basePackage}.userinterfaces.${uiClass}.*;
 
 public class ${taskName} implements Task {
 
@@ -160,16 +163,16 @@ ${flowImplementation}
 }`;
 }
 
-function generateWebQuestionFromValidation(validation: string): string {
+function generateWebQuestionFromValidation(validation: string, basePackage: string): string {
   const questionName = `Verificar${validation.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '')}`;
 
-  return `package com.screenplay.web.questions;
+  return `package ${basePackage}.questions;
 
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
 import net.serenitybdd.screenplay.targets.Target;
-import com.screenplay.web.userinterfaces.UIHome;
-import static com.screenplay.web.userinterfaces.UIHome.LBL_CANTIDAD_CARRITO;
+import ${basePackage}.userinterfaces.UIHome;
+import static ${basePackage}.userinterfaces.UIHome.LBL_CANTIDAD_CARRITO;
 
 public class ${questionName} implements Question<Boolean> {
 
@@ -199,18 +202,18 @@ public class ${questionName} implements Question<Boolean> {
 }`;
 }
 
-function generateWebStepDefinitionsFromScenario(request: WebHURequest): string {
+function generateWebStepDefinitionsFromScenario(request: WebHURequest, basePackage: string): string {
   const className = `${request.huId.replace('WEB-HU-', '')}StepDefinitions`;
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
 
-  return `package com.sistecredito.web.stepdefinitions;
+  return `package ${basePackage}.stepdefinitions;
 
 import io.cucumber.java.es.*;
 import static net.serenitybdd.screenplay.actors.OnStage.*;
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
-import com.screenplay.web.tasks.*;
-import com.screenplay.web.questions.*;
+import ${basePackage}.tasks.*;
+import ${basePackage}.questions.*;
 
 public class ${className} {
 
@@ -252,8 +255,8 @@ function generateWebFeatureFromScenario(request: WebHURequest): string {
         | Laptop   |`;
 }
 
-function generateSetTheStage(): string {
-  return `package co.com.sistecredito.web.conf;
+function generateSetTheStage(basePackage: string): string {
+  return `package ${basePackage}.hooks;
 
 import io.cucumber.java.Before;
 import io.cucumber.java.After;
@@ -279,8 +282,8 @@ public class SetTheStage {
 }`;
 }
 
-function generateWebRunner(): string {
-  return `package com.screenplay.web.runners;
+function generateWebRunner(basePackage: string): string {
+  return `package ${basePackage}.runners;
 
 import io.cucumber.junit.CucumberOptions;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
@@ -293,7 +296,7 @@ import org.junit.runner.RunWith;
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
     features = "src/test/resources/features",
-    glue = {"com.screenplay.web.stepdefinitions", "com.screenplay.web.hooks"},
+    glue = {"${basePackage}.stepdefinitions", "${basePackage}.hooks"},
     plugin = {"pretty", "json:target/cucumber-report.json"},
     tags = "@web"
 )
