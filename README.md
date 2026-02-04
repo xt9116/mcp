@@ -163,6 +163,35 @@ Para usar este servidor MCP, necesitas configurarlo en tu cliente MCP. Agrega lo
 }
 ```
 
+## 📚 Documentación y Guías
+
+### Guías de Historias de Usuario
+
+Para asegurar que el código generado sea correcto desde el inicio, consulta nuestras **guías completas de ejemplos**:
+
+- **[📖 Guía de Ejemplos - Índice Principal](./documentos/ejemplos/README.md)** - Punto de entrada con plantillas rápidas y mejores prácticas
+- **[🔌 Ejemplo HU API REST](./documentos/ejemplos/EJEMPLO_HU_API.md)** - Cómo estructurar correctamente una Historia de Usuario API
+- **[🌐 Ejemplo HU Web UI](./documentos/ejemplos/EJEMPLO_HU_WEB.md)** - Cómo estructurar correctamente una Historia de Usuario Web
+
+**Incluyen:**
+- ✅ Plantillas completas para solicitar HUs
+- ✅ Ejemplos por tipo de request (GET, POST, PUT, DELETE)
+- ✅ Errores comunes y cómo evitarlos
+- ✅ Checklists de calidad pre-envío
+- ✅ Configuración técnica necesaria
+
+### Problemas Comunes y Soluciones
+
+El estándar API incluye una sección completa **"commonIssuesAndFixes"** que documenta:
+
+- ❌ **Tests no se detectan (Tests run: 0)** → Solución: Migración JUnit 4 a JUnit 5
+- ❌ **URLs malformadas** → Solución: Endpoints con paths relativos
+- ❌ **HTTP 403 Forbidden** → Solución: Simplificar interacciones
+- ❌ **No se generan reportes** → Solución: Plugins Maven correctos
+- 📋 **Quick Reference Card** para troubleshooting rápido
+
+Ver: [RESUMEN_CAMBIOS_FIXES.md](./RESUMEN_CAMBIOS_FIXES.md) para el resumen completo de todas las mejoras.
+
 ## Ejemplos de uso
 
 ### Generar HU API completa
