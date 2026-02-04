@@ -15,13 +15,16 @@ describe('Serenity BDD 4.3.4 Imports Validation', () => {
       
       const result = generateProjectStructure(config);
       
-      // Should use new Serenity BDD 4.x package for EnvironmentVariables
-      expect(result).toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
-      expect(result).toContain('import net.serenitybdd.model.environment.SystemEnvironmentVariables;');
+      // Should use Thucydides model package (correct for Serenity 4.x)
+      expect(result).toContain('import net.thucydides.model.environment.SystemEnvironmentVariables;');
+      expect(result).toContain('import net.thucydides.model.util.EnvironmentVariables;');
       
-      // Should NOT use old Thucydides package
+      // Should NOT use old core package
       expect(result).not.toContain('import net.thucydides.core.util.EnvironmentVariables;');
       expect(result).not.toContain('import net.thucydides.core.util.SystemEnvironmentVariables;');
+      // Should NOT use incorrect serenitybdd.model package
+      expect(result).not.toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
+      expect(result).not.toContain('import net.serenitybdd.model.environment.SystemEnvironmentVariables;');
     });
 
     it('should generate Hooks with correct Serenity 4.3.4 imports for Gradle API project', () => {
@@ -34,11 +37,11 @@ describe('Serenity BDD 4.3.4 Imports Validation', () => {
       
       const result = generateProjectStructure(config);
       
-      // Should use new Serenity BDD 4.x package
-      expect(result).toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
-      expect(result).toContain('import net.serenitybdd.model.environment.SystemEnvironmentVariables;');
+      // Should use Thucydides model package (correct for Serenity 4.x)
+      expect(result).toContain('import net.thucydides.model.environment.SystemEnvironmentVariables;');
+      expect(result).toContain('import net.thucydides.model.util.EnvironmentVariables;');
       
-      // Should NOT use old Thucydides package
+      // Should NOT use old core package
       expect(result).not.toContain('import net.thucydides.core.util.EnvironmentVariables;');
       expect(result).not.toContain('import net.thucydides.core.util.SystemEnvironmentVariables;');
     });
@@ -53,9 +56,9 @@ describe('Serenity BDD 4.3.4 Imports Validation', () => {
       
       const result = generateProjectStructure(config);
       
-      // Should use new Serenity BDD 4.x package
-      expect(result).toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
-      expect(result).toContain('import net.serenitybdd.model.environment.SystemEnvironmentVariables;');
+      // Should use Thucydides model package (correct for Serenity 4.x)
+      expect(result).toContain('import net.thucydides.model.environment.SystemEnvironmentVariables;');
+      expect(result).toContain('import net.thucydides.model.util.EnvironmentVariables;');
     });
 
     it('should NOT include EnvironmentVariables imports for Web-only project', () => {
@@ -70,8 +73,9 @@ describe('Serenity BDD 4.3.4 Imports Validation', () => {
       
       // Web-only projects don't need environment variables for API base URL
       // so they should not have these imports
-      expect(result).not.toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
+      expect(result).not.toContain('import net.thucydides.model.util.EnvironmentVariables;');
       expect(result).not.toContain('import net.thucydides.core.util.EnvironmentVariables;');
+      expect(result).not.toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
     });
   });
 
@@ -89,13 +93,16 @@ describe('Serenity BDD 4.3.4 Imports Validation', () => {
       
       const result = generateCompleteApiHU(request);
       
-      // Should use new Serenity BDD 4.x package
-      expect(result.output).toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
-      expect(result.output).toContain('import net.serenitybdd.model.environment.SystemEnvironmentVariables;');
+      // Should use Thucydides model package (correct for Serenity 4.x)
+      expect(result.output).toContain('import net.thucydides.model.environment.SystemEnvironmentVariables;');
+      expect(result.output).toContain('import net.thucydides.model.util.EnvironmentVariables;');
       
-      // Should NOT use old Thucydides package
+      // Should NOT use old core package
       expect(result.output).not.toContain('import net.thucydides.core.util.EnvironmentVariables;');
       expect(result.output).not.toContain('import net.thucydides.core.util.SystemEnvironmentVariables;');
+      // Should NOT use incorrect serenitybdd.model package
+      expect(result.output).not.toContain('import net.serenitybdd.model.environment.EnvironmentVariables;');
+      expect(result.output).not.toContain('import net.serenitybdd.model.environment.SystemEnvironmentVariables;');
     });
   });
 
