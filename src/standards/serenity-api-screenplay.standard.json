@@ -1581,5 +1581,494 @@
         "example": "❌ Then debe mostrar popup\n✅ Then response status es 201"
       }
     ]
+  },
+
+  "commonIssuesAndFixes": {
+    "description": "Problemas comunes encontrados en proyectos Serenity BDD y sus soluciones definitivas. Esta sección documenta errores frecuentes que pueden causar que las pruebas no se detecten, no compilen o fallen inesperadamente.",
+    "lastUpdated": "2026-02-04",
+    "sourceDocument": "Rick and Morty API - Documento de Solución de Problemas",
+
+    "criticalIssues": {
+      "testsNotDetected": {
+        "symptom": "Tests run: 0 - Las pruebas existen pero el runner no las ejecuta",
+        "rootCause": "Incompatibilidad entre JUnit 4 y JUnit 5. El runner está configurado con @RunWith (JUnit 4) pero el pom.xml usa JUnit 5",
+        "impact": "CRÍTICO - Las pruebas no se ejecutan en absoluto",
+        "solution": {
+          "summary": "Actualizar el runner de Cucumber de JUnit 4 a JUnit 5 Platform Suite",
+          "before": {
+            "file": "src/test/java/.../runners/CucumberTestRunner.java",
+            "code": "package co.com.rickandmorty.runners;\n\nimport io.cucumber.junit.CucumberOptions;\nimport net.serenitybdd.cucumber.CucumberWithSerenity;\nimport org.junit.runner.RunWith;\n\n@RunWith(CucumberWithSerenity.class)\n@CucumberOptions(\n    features = \"src/test/resources/features\",\n    glue = {\"co.com.rickandmorty.stepdefinitions\", \"co.com.rickandmorty.hooks\"},\n    plugin = {\"pretty\", \"json:target/cucumber-report.json\"},\n    tags = \"@API-HU-002\"\n)\npublic class CucumberTestRunner {\n    // Runner para ejecutar los features de API\n}",
+            "issues": [
+              "@RunWith es de JUnit 4",
+              "CucumberWithSerenity.class incompatible con JUnit 5",
+              "@CucumberOptions no funciona con JUnit Platform"
+            ]
+          },
+          "after": {
+            "file": "src/test/java/.../runners/CucumberTestRunner.java",
+            "code": "package co.com.rickandmorty.runners;\n\nimport io.cucumber.junit.platform.engine.Constants;\nimport org.junit.platform.suite.api.ConfigurationParameter;\nimport org.junit.platform.suite.api.IncludeEngines;\nimport org.junit.platform.suite.api.SelectClasspathResource;\nimport org.junit.platform.suite.api.Suite;\n\n@Suite\n@IncludeEngines(\"cucumber\")\n@SelectClasspathResource(\"features\")\n@ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = \"co.com.rickandmorty.stepdefinitions,co.com.rickandmorty.hooks\")\n@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = \"@API-HU-002\")\n@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = \"pretty,json:target/cucumber-report.json\")\npublic class CucumberTestRunner {\n    // Runner para ejecutar los features de API\n}",
+            "changes": [
+              "Eliminado @RunWith(CucumberWithSerenity.class)",
+              "Agregado @Suite (JUnit 5)",
+              "Agregado @IncludeEngines(\"cucumber\")",
+              "Reemplazado @CucumberOptions por @ConfigurationParameter",
+              "Cambiado features path de 'src/test/resources/features' a 'features'",
+              "Imports actualizados a JUnit Platform Suite API"
+            ]
+          },
+          "requiredDependencies": [
+            {
+              "groupId": "io.cucumber",
+              "artifactId": "cucumber-junit-platform-engine",
+              "version": "7.18.0",
+              "scope": "test",
+              "reason": "Necesaria para ejecutar Cucumber con JUnit 5"
+            },
+            {
+              "groupId": "org.junit.platform",
+              "artifactId": "junit-platform-suite",
+              "version": "1.9.2",
+              "scope": "test",
+              "reason": "Necesaria para el @Suite annotation"
+            }
+          ],
+          "verification": [
+            "mvn clean compile → BUILD SUCCESS",
+            "mvn clean test → Tests run: 1 (o más)",
+            "En el output debe aparecer: 'Running ...CucumberTestRunner'",
+            "En el output deben aparecer los scenarios ejecutados"
+          ]
+        }
+      },
+
+      "missingMavenPlugins": {
+        "symptom": "No se generan reportes de Serenity o las pruebas de integración no se ejecutan",
+        "rootCause": "Faltan plugins esenciales de Maven para Serenity BDD",
+        "impact": "MEDIO - Las pruebas se ejecutan pero no se generan reportes completos",
+        "solution": {
+          "summary": "Agregar serenity-maven-plugin y maven-failsafe-plugin al pom.xml",
+          "requiredPlugins": [
+            {
+              "name": "serenity-maven-plugin",
+              "purpose": "Genera reportes HTML de Serenity BDD",
+              "configuration": {
+                "groupId": "net.serenity-bdd.maven.plugins",
+                "artifactId": "serenity-maven-plugin",
+                "version": "${serenity.version}",
+                "executions": {
+                  "execution": {
+                    "id": "serenity-reports",
+                    "phase": "post-integration-test",
+                    "goals": ["aggregate"]
+                  }
+                }
+              },
+              "usage": "mvn clean verify → Genera reportes en target/site/serenity/"
+            },
+            {
+              "name": "maven-failsafe-plugin",
+              "purpose": "Ejecuta pruebas de integración",
+              "configuration": {
+                "groupId": "org.apache.maven.plugins",
+                "artifactId": "maven-failsafe-plugin",
+                "version": "3.0.0",
+                "configuration": {
+                  "includes": ["**/runners/**/*.java"],
+                  "argLine": "--add-opens java.base/java.lang=ALL-UNNAMED"
+                },
+                "executions": {
+                  "execution": {
+                    "goals": ["integration-test", "verify"]
+                  }
+                }
+              },
+              "usage": "mvn clean verify → Ejecuta tests de integración"
+            }
+          ],
+          "pomXmlExample": "<build>\n  <plugins>\n    <plugin>\n      <groupId>org.apache.maven.plugins</groupId>\n      <artifactId>maven-surefire-plugin</artifactId>\n      <version>3.0.0</version>\n      <configuration>\n        <includes>\n          <include>**/runners/**/*.java</include>\n        </includes>\n        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>\n      </configuration>\n    </plugin>\n    <plugin>\n      <groupId>net.serenity-bdd.maven.plugins</groupId>\n      <artifactId>serenity-maven-plugin</artifactId>\n      <version>${serenity.version}</version>\n      <executions>\n        <execution>\n          <id>serenity-reports</id>\n          <phase>post-integration-test</phase>\n          <goals>\n            <goal>aggregate</goal>\n          </goals>\n        </execution>\n      </executions>\n    </plugin>\n    <plugin>\n      <groupId>org.apache.maven.plugins</groupId>\n      <artifactId>maven-failsafe-plugin</artifactId>\n      <version>3.0.0</version>\n      <configuration>\n        <includes>\n          <include>**/runners/**/*.java</include>\n        </includes>\n        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>\n      </configuration>\n      <executions>\n        <execution>\n          <goals>\n            <goal>integration-test</goal>\n            <goal>verify</goal>\n          </goals>\n        </execution>\n      </executions>\n    </plugin>\n  </plugins>\n</build>"
+        }
+      },
+
+      "incorrectEndpointUrlConstruction": {
+        "symptom": "URLs duplicadas o malformadas en las peticiones HTTP",
+        "rootCause": "El endpoint incluye la URL base completa cuando el Hook ya la configura con CallAnApi.at()",
+        "impact": "ALTO - Las peticiones fallan con URLs incorrectas",
+        "solution": {
+          "summary": "Los endpoints deben devolver solo el path relativo, NO la URL completa",
+          "antipattern": {
+            "file": "src/main/java/.../endpoints/PersonajeEndpoints.java",
+            "code": "public class PersonajeEndpoints {\n    public static final String BASE_URL = \"https://rickandmortyapi.com\";\n    public static final String CHARACTER_BY_ID = \"/api/character/%d\";\n\n    public static String obtenerPersonajePorId(int id) {\n        return BASE_URL + String.format(CHARACTER_BY_ID, id);\n    }\n}",
+            "problem": "BASE_URL se duplica porque el Hook ya configura baseURL con CallAnApi.at()"
+          },
+          "correctPattern": {
+            "file": "src/main/java/.../endpoints/PersonajeEndpoints.java",
+            "code": "public class PersonajeEndpoints {\n    public static final String CHARACTER_BY_ID = \"/api/character/%d\";\n\n    public static String obtenerPersonajePorId(int id) {\n        return String.format(CHARACTER_BY_ID, id);\n    }\n}",
+            "explanation": [
+              "NO incluir BASE_URL en la clase de endpoints",
+              "El baseURL se configura en Hooks.java con CallAnApi.at(baseUrl)",
+              "Los endpoints solo devuelven el path relativo",
+              "Serenity concatena automáticamente baseURL + relativePath"
+            ]
+          },
+          "hooksConfiguration": {
+            "file": "src/test/java/.../hooks/Hooks.java",
+            "code": "@Before(order = 0)\npublic void configuracionBaseUrl() {\n    OnStage.setTheStage(new OnlineCast());\n    theActorCalled(\"Usuario\");\n    EnvironmentVariables environmentVariables = SystemEnvironmentVariables.currentEnvironmentVariables();\n    String theRestApiBaseUrl = environmentVariables.optionalProperty(\"URL_QA\")\n        .orElse(\"https://rickandmortyapi.com\");\n    theActorInTheSpotlight().whoCan(CallAnApi.at(theRestApiBaseUrl));\n}",
+            "explanation": "El Hook configura el baseURL, por eso los endpoints NO deben incluirlo"
+          }
+        }
+      },
+
+      "overlyComplexInteractions": {
+        "symptom": "Errores HTTP 403 Forbidden o conflictos con contentType/headers",
+        "rootCause": "Interacciones sobrecargadas con configuraciones innecesarias que causan conflictos",
+        "impact": "MEDIO - Las peticiones funcionan para algunos endpoints pero fallan para otros",
+        "solution": {
+          "summary": "Simplificar las interacciones eliminando configuraciones innecesarias",
+          "antipattern": {
+            "file": "src/main/java/.../interactions/GetRequest.java",
+            "code": "public class GetRequest implements Interaction {\n    private final String url;\n\n    public GetRequest(String url) {\n        this.url = url;\n    }\n\n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            Get.resource(url)\n                .with(request -> request.contentType(ContentType.JSON))\n        );\n    }\n\n    public static GetRequest to(String url) {\n        return Tasks.instrumented(GetRequest.class, url);\n    }\n}",
+            "problems": [
+              "contentType(ContentType.JSON) puede causar conflictos con APIs que no lo requieren",
+              "Tasks.instrumented() es innecesario para interacciones simples",
+              "Constructor público expone implementación"
+            ]
+          },
+          "correctPattern": {
+            "file": "src/main/java/.../interactions/GetRequest.java",
+            "code": "public class GetRequest implements Interaction {\n    private final String resource;\n\n    private GetRequest(String resource) {\n        this.resource = resource;\n    }\n\n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(Get.resource(resource));\n    }\n\n    public static Interaction to(String resource) {\n        return new GetRequest(resource);\n    }\n}",
+            "improvements": [
+              "Constructor privado (mejor práctica de encapsulación)",
+              "Eliminado contentType - dejar que Serenity lo maneje",
+              "Eliminado Tasks.instrumented() - innecesario",
+              "Factory method retorna Interaction (más genérico)",
+              "Implementación más simple y robusta"
+            ]
+          },
+          "whenToAddHeaders": {
+            "rule": "Solo agregar headers cuando la API explícitamente los requiere",
+            "examples": {
+              "needed": [
+                "Authorization: Bearer token",
+                "X-API-Key: apikey123",
+                "Custom-Header requerido por la API"
+              ],
+              "notNeeded": [
+                "Content-Type (Serenity lo maneja automáticamente)",
+                "Accept (generalmente innecesario)",
+                "User-Agent (puede causar bloqueos)"
+              ]
+            }
+          }
+        }
+      },
+
+      "loggingAndDebugging": {
+        "symptom": "Difícil debuggear problemas porque no hay visibilidad de las peticiones/respuestas",
+        "rootCause": "Logging deshabilitado o configurado en modo QUIET",
+        "impact": "BAJO - No afecta funcionalidad pero dificulta troubleshooting",
+        "solution": {
+          "summary": "Configurar logging verbose en serenity.properties para desarrollo/debugging",
+          "serenityPropertiesRecommended": {
+            "file": "serenity.properties",
+            "configuration": "serenity.project.name=co.com.rickandmorty.api\nserenity.test.root=net.serenitybdd.junit5\nwebdriver.driver=chrome\nserenity.take.screenshots=FOR_FAILURES\nserenity.reports.show.step.details=true\nserenity.console.headings=normal\nserenity.logging=VERBOSE\nrestassured.log=ALL\nURL_QA=http://localhost:8080/api",
+            "keySettings": {
+              "serenity.logging": {
+                "development": "VERBOSE",
+                "production": "NORMAL",
+                "ci": "QUIET"
+              },
+              "restassured.log": {
+                "development": "ALL",
+                "production": "NONE",
+                "explanation": "Muestra todas las peticiones y respuestas HTTP"
+              }
+            }
+          },
+          "debuggingInStepDefinitions": {
+            "description": "Agregar debug temporal en step definitions para ver request/response",
+            "example": "@Cuando(\"envío una petición GET a {int}\")\npublic void envioUnaPeticionGETA(int id) {\n    this.id = id;\n    OnStage.theActorInTheSpotlight().attemptsTo(\n        ObtenerInformacionDeUnPersonaje.conId(id)\n    );\n    // Debug temporal - eliminar después\n    System.out.println(\"=== DEBUG ===\");\n    System.out.println(\"URL: \" + SerenityRest.lastResponse().then().extract().request().getURI());\n    System.out.println(\"Status: \" + SerenityRest.lastResponse().statusCode());\n    System.out.println(\"Body: \" + SerenityRest.lastResponse().body().asString());\n    System.out.println(\"=============\");\n}",
+            "warning": "Eliminar código de debug antes de commit final"
+          }
+        }
+      }
+    },
+
+    "dependenciesReference": {
+      "description": "Dependencias correctas para Serenity BDD + Cucumber + JUnit 5",
+      "minimumRequired": {
+        "serenity": [
+          {
+            "groupId": "net.serenity-bdd",
+            "artifactId": "serenity-core",
+            "version": "${serenity.version}",
+            "required": true
+          },
+          {
+            "groupId": "net.serenity-bdd",
+            "artifactId": "serenity-cucumber",
+            "version": "${serenity.version}",
+            "required": true
+          },
+          {
+            "groupId": "net.serenity-bdd",
+            "artifactId": "serenity-rest-assured",
+            "version": "${serenity.version}",
+            "required": true,
+            "scope": "API projects only"
+          },
+          {
+            "groupId": "net.serenity-bdd",
+            "artifactId": "serenity-screenplay",
+            "version": "${serenity.version}",
+            "required": true
+          },
+          {
+            "groupId": "net.serenity-bdd",
+            "artifactId": "serenity-screenplay-rest",
+            "version": "${serenity.version}",
+            "required": true,
+            "scope": "API projects only"
+          }
+        ],
+        "cucumber": [
+          {
+            "groupId": "io.cucumber",
+            "artifactId": "cucumber-java",
+            "version": "7.18.0",
+            "required": true
+          },
+          {
+            "groupId": "io.cucumber",
+            "artifactId": "cucumber-junit-platform-engine",
+            "version": "7.18.0",
+            "scope": "test",
+            "required": true,
+            "reason": "CRÍTICO para JUnit 5"
+          }
+        ],
+        "junit5": [
+          {
+            "groupId": "org.junit.platform",
+            "artifactId": "junit-platform-suite",
+            "version": "1.9.2",
+            "scope": "test",
+            "required": true,
+            "reason": "CRÍTICO para @Suite annotation"
+          },
+          {
+            "groupId": "org.junit.jupiter",
+            "artifactId": "junit-jupiter-api",
+            "version": "5.9.2",
+            "scope": "test",
+            "required": true
+          },
+          {
+            "groupId": "org.junit.jupiter",
+            "artifactId": "junit-jupiter-engine",
+            "version": "5.9.2",
+            "scope": "test",
+            "required": true
+          }
+        ],
+        "restAssured": [
+          {
+            "groupId": "io.rest-assured",
+            "artifactId": "rest-assured",
+            "version": "5.3.0",
+            "required": true,
+            "scope": "API projects only"
+          }
+        ]
+      },
+      "versionCompatibility": {
+        "serenityVersion": "4.3.4",
+        "cucumberVersion": "7.18.0",
+        "junitVersion": "5.9.2",
+        "restAssuredVersion": "5.3.0",
+        "warning": "Mantener versiones compatibles. No mezclar JUnit 4 y JUnit 5."
+      }
+    },
+
+    "mavenCommandsReference": {
+      "description": "Comandos Maven esenciales para trabajar con Serenity BDD",
+      "commands": [
+        {
+          "command": "mvn clean compile",
+          "purpose": "Compilar el proyecto",
+          "when": "Después de cambios en código fuente",
+          "expectedOutput": "BUILD SUCCESS"
+        },
+        {
+          "command": "mvn clean test",
+          "purpose": "Ejecutar solo pruebas unitarias",
+          "when": "Desarrollo rápido, verificar que tests se detectan",
+          "expectedOutput": "Tests run: X, Failures: Y"
+        },
+        {
+          "command": "mvn clean verify",
+          "purpose": "Ejecutar pruebas de integración y generar reportes Serenity",
+          "when": "Antes de commit, para reportes completos",
+          "expectedOutput": "BUILD SUCCESS + reportes en target/site/serenity/"
+        },
+        {
+          "command": "mvn serenity:aggregate",
+          "purpose": "Generar solo reportes Serenity (sin ejecutar tests)",
+          "when": "Ya ejecutaste tests y solo quieres regenerar reportes",
+          "expectedOutput": "Reportes actualizados en target/site/serenity/"
+        },
+        {
+          "command": "mvn clean test -Dcucumber.filter.tags=\"@API-HU-001\"",
+          "purpose": "Ejecutar solo tests con tag específico",
+          "when": "Quieres ejecutar una HU específica",
+          "expectedOutput": "Solo scenarios con ese tag se ejecutan"
+        },
+        {
+          "command": "mvn clean test -Dserenity.verbose=true",
+          "purpose": "Ejecutar con logging verbose",
+          "when": "Debugging de problemas",
+          "expectedOutput": "Output detallado de Serenity y REST Assured"
+        }
+      ],
+      "troubleshootingCommands": [
+        {
+          "problem": "Tests run: 0",
+          "commands": [
+            "mvn clean test -X",
+            "Verificar que el runner use JUnit 5 (@Suite)",
+            "Verificar que existan las dependencias JUnit 5"
+          ]
+        },
+        {
+          "problem": "No se generan reportes",
+          "commands": [
+            "mvn clean verify",
+            "Verificar que existe serenity-maven-plugin en pom.xml",
+            "Verificar target/site/serenity/"
+          ]
+        }
+      ]
+    },
+
+    "projectStructureReference": {
+      "description": "Estructura correcta para proyectos Serenity Screenplay API",
+      "structure": "co.com.{company}.api/\n├── pom.xml\n├── serenity.properties\n├── src/\n│   ├── main/java/co/com/{company}/\n│   │   ├── endpoints/\n│   │   │   └── {Resource}Endpoints.java\n│   │   ├── interactions/\n│   │   │   ├── GetRequest.java\n│   │   │   ├── PostRequest.java\n│   │   │   ├── PutRequest.java\n│   │   │   └── DeleteRequest.java\n│   │   ├── models/\n│   │   │   ├── {Resource}Request.java\n│   │   │   └── {Resource}Response.java\n│   │   ├── questions/\n│   │   │   ├── ResponseStatusCode.java\n│   │   │   └── ResponseField.java\n│   │   ├── tasks/\n│   │   │   └── {BusinessAction}.java\n│   │   └── builders/\n│   │       └── {Resource}RequestBuilder.java\n│   └── test/\n│       ├── java/co/com/{company}/\n│       │   ├── hooks/\n│       │   │   └── Hooks.java\n│       │   ├── runners/\n│       │   │   └── CucumberTestRunner.java (JUnit 5!)\n│       │   └── stepdefinitions/\n│       │       └── {Resource}StepDefinitions.java\n│       └── resources/\n│           └── features/\n│               └── {resource}.feature",
+      "criticalFiles": {
+        "CucumberTestRunner.java": {
+          "location": "src/test/java/.../runners/",
+          "mustUse": "JUnit 5 Platform Suite (@Suite, @IncludeEngines)",
+          "mustNotUse": "JUnit 4 (@RunWith)"
+        },
+        "Hooks.java": {
+          "location": "src/test/java/.../hooks/",
+          "purpose": "Configurar baseURL con CallAnApi.at()",
+          "mustHave": "@Before para OnStage setup"
+        },
+        "pom.xml": {
+          "mustHave": [
+            "serenity-cucumber dependency",
+            "cucumber-junit-platform-engine dependency",
+            "junit-platform-suite dependency",
+            "serenity-maven-plugin",
+            "maven-failsafe-plugin"
+          ]
+        },
+        "serenity.properties": {
+          "mustHave": [
+            "serenity.project.name",
+            "serenity.test.root=net.serenitybdd.junit5",
+            "URL_QA (o variable de ambiente para baseURL)"
+          ]
+        }
+      }
+    },
+
+    "checklistBeforeDeployment": {
+      "description": "Checklist para verificar que un proyecto está correctamente configurado",
+      "items": [
+        {
+          "category": "Runner Configuration",
+          "checks": [
+            "✓ Runner usa @Suite (JUnit 5) NO @RunWith (JUnit 4)",
+            "✓ Runner tiene @IncludeEngines(\"cucumber\")",
+            "✓ Features path es 'features' NO 'src/test/resources/features'",
+            "✓ Glue packages están correctos",
+            "✓ Tags están configurados si es necesario"
+          ]
+        },
+        {
+          "category": "Dependencies",
+          "checks": [
+            "✓ cucumber-junit-platform-engine está en pom.xml",
+            "✓ junit-platform-suite está en pom.xml",
+            "✓ NO hay dependencias de JUnit 4 (junit:junit:4.x)",
+            "✓ Versiones de Serenity son consistentes (usar ${serenity.version})"
+          ]
+        },
+        {
+          "category": "Maven Plugins",
+          "checks": [
+            "✓ maven-surefire-plugin configurado",
+            "✓ serenity-maven-plugin agregado",
+            "✓ maven-failsafe-plugin agregado"
+          ]
+        },
+        {
+          "category": "Endpoints",
+          "checks": [
+            "✓ Endpoints devuelven paths relativos (NO URLs completas)",
+            "✓ Hook configura baseURL con CallAnApi.at()",
+            "✓ No hay duplicación de BASE_URL"
+          ]
+        },
+        {
+          "category": "Interactions",
+          "checks": [
+            "✓ Interacciones son simples (no sobrecargadas)",
+            "✓ No hay contentType innecesarios",
+            "✓ Constructor es privado",
+            "✓ Factory method retorna Interaction"
+          ]
+        },
+        {
+          "category": "Compilation & Execution",
+          "checks": [
+            "✓ mvn clean compile → BUILD SUCCESS",
+            "✓ mvn clean test → Tests run > 0",
+            "✓ mvn clean verify → Genera reportes en target/site/serenity/",
+            "✓ Tests se detectan y ejecutan correctamente"
+          ]
+        }
+      ]
+    },
+
+    "quickReferenceCard": {
+      "description": "Tarjeta de referencia rápida para problemas comunes",
+      "problems": [
+        {
+          "symptom": "Tests run: 0",
+          "quickFix": "Runner debe usar @Suite (JUnit 5) NO @RunWith. Agregar cucumber-junit-platform-engine y junit-platform-suite al pom.xml"
+        },
+        {
+          "symptom": "No se generan reportes Serenity",
+          "quickFix": "Agregar serenity-maven-plugin al pom.xml y ejecutar 'mvn clean verify'"
+        },
+        {
+          "symptom": "URL duplicada o malformada",
+          "quickFix": "Endpoints deben devolver solo path relativo. Hook configura baseURL con CallAnApi.at()"
+        },
+        {
+          "symptom": "HTTP 403 Forbidden",
+          "quickFix": "Simplificar interacción: eliminar contentType y headers innecesarios. Usar solo Get.resource(endpoint)"
+        },
+        {
+          "symptom": "Cannot find symbol @RunWith",
+          "quickFix": "Estás mezclando JUnit 4 y 5. Usar @Suite en lugar de @RunWith"
+        },
+        {
+          "symptom": "No tests were found",
+          "quickFix": "Verificar que features path sea 'features' NO 'src/test/resources/features' en JUnit 5"
+        }
+      ]
+    }
   }
 }
