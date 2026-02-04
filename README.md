@@ -6,6 +6,20 @@
 
 Un MCP Server profesional para la validación y generación de código Java, OOP/SOLID, y Serenity Screenplay (API/Web). Este servidor ayuda a los equipos de desarrollo a mantener altos estándares de calidad en su código mediante validación automática y generación de código siguiendo las mejores prácticas.
 
+## 🌟 Proyecto de Referencia
+
+📚 **[Ver Proyecto de Referencia Completo](./PROYECTO_REFERENCIA_SERENITY.md)** - Implementación perfecta de Serenity Screenplay
+
+Hemos creado un **proyecto de referencia completo** (`co.com.dummyjson.api`) que demuestra todas las mejores prácticas:
+- ✅ Puntuación 100/100 en diagnóstico Serenity
+- ✅ Patrón Screenplay correctamente implementado (OnStage, Actor, attemptsTo, asksFor)
+- ✅ Builder Pattern en Models
+- ✅ Documentación Javadoc completa
+- ✅ Ejemplos de GET y POST requests
+- ✅ Todas las dependencias correctas (Serenity 4.3.4, JUnit 4.13.2)
+
+[📖 Documentación Completa](./co.com.dummyjson.api/README.md) | [📊 Reporte de Diagnóstico](./co.com.dummyjson.api/REPORTE_DIAGNOSTICO_MEJORADO.md)
+
 ## Características
 
 ### Generación de Código Avanzada
