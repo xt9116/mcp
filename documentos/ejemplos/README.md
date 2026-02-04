@@ -8,7 +8,43 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ## 📂 Contenido
 
-### 1. [Ejemplo HU API REST](./EJEMPLO_HU_API.md)
+### 1. [🚀 Guía Rápida API](./GUIA_RAPIDA_API.md) ⚡ **NUEVO**
+**Referencia rápida con checklist y plantilla ultra-compacta**
+
+**Incluye:**
+- ✅ Checklist rápido de 14 puntos
+- ✅ Plantilla ultra-rápida lista para copiar
+- ✅ 5 reglas de oro para especificaciones perfectas
+- ✅ Tabla de tipos de datos y códigos HTTP
+- ✅ Semáforo de calidad (listo/revisar/no enviar)
+- ✅ Soluciones a problemas comunes
+
+**Ideal para:**
+- Consulta rápida mientras escribes
+- Validación antes de enviar
+- Referencia de tipos y códigos HTTP
+
+---
+
+### 2. [📝 Plantilla de Especificación API](./PLANTILLA_ESPECIFICACION_API.md) ⭐
+**Plantilla completa y fácil de usar para especificar HUs de API**
+
+**Incluye:**
+- ✅ Plantilla lista para copiar y completar
+- ✅ Ejemplo completo basado en Rick and Morty API
+- ✅ Checklist de calidad antes de enviar
+- ✅ Tips para especificaciones perfectas
+- ✅ Guía paso a paso de cómo usar la plantilla
+- ✅ Secciones detalladas: Headers, Parámetros, Respuestas, Validaciones, Gherkin
+
+**Ideal para:**
+- Analistas QA que necesitan especificar HUs
+- Equipos que trabajan con agentes AI/MCP
+- Cualquiera que quiera una plantilla estructurada y completa
+
+---
+
+### 3. [Ejemplo HU API REST](./EJEMPLO_HU_API.md)
 **Automatización de APIs REST con Serenity Screenplay**
 
 **Incluye:**
@@ -29,7 +65,7 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ---
 
-### 2. [Ejemplo HU Web UI](./EJEMPLO_HU_WEB.md)
+### 3. [Ejemplo HU Web UI](./EJEMPLO_HU_WEB.md)
 **Automatización de interfaces web con Serenity Screenplay + Selenium**
 
 **Incluye:**
