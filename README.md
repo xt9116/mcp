@@ -181,10 +181,13 @@ Para usar este servidor MCP, necesitas configurarlo en tu cliente MCP. Agrega lo
 Para asegurar que el código generado sea correcto desde el inicio, consulta nuestras **guías completas de ejemplos**:
 
 - **[📖 Guía de Ejemplos - Índice Principal](./documentos/ejemplos/README.md)** - Punto de entrada con plantillas rápidas y mejores prácticas
+- **[📝 Plantilla de Especificación API](./documentos/ejemplos/PLANTILLA_ESPECIFICACION_API.md)** ⭐ **NUEVO** - Plantilla completa lista para copiar y usar
 - **[🔌 Ejemplo HU API REST](./documentos/ejemplos/EJEMPLO_HU_API.md)** - Cómo estructurar correctamente una Historia de Usuario API
 - **[🌐 Ejemplo HU Web UI](./documentos/ejemplos/EJEMPLO_HU_WEB.md)** - Cómo estructurar correctamente una Historia de Usuario Web
 
 **Incluyen:**
+- ✅ Plantilla completa lista para copiar y completar (NUEVO)
+- ✅ Ejemplo real basado en Rick and Morty API
 - ✅ Plantillas completas para solicitar HUs
 - ✅ Ejemplos por tipo de request (GET, POST, PUT, DELETE)
 - ✅ Errores comunes y cómo evitarlos
