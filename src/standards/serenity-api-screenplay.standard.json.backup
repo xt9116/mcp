@@ -200,34 +200,35 @@
                 "Booleans → validar true/false según lógica de negocio"
               ],
               "recommended": "Especificar validaciones explícitas aunque el schema las implique"
-            }
-          },
-          "crossReferences": {
-            "description": "Referencias a estándares relacionados para consistencia",
-            "webStandard": {
-              "file": "serenity-web-screenplay.standard.json",
-              "version": "1.3.0",
-              "sharedSections": [
-                "principles.screenplayFirst",
-                "namingConventions.language",
-                "projectStructure.buildTools",
-                "gherkinStandards (similar pero adaptado a Web)"
-              ],
-              "differences": [
-                "API: Enfoque en HTTP methods y JSON",
-                "Web: Enfoque en UI interactions y locators",
-                "Ambos: Mismo patrón Screenplay y estructura de proyecto"
-              ]
-            },
-            "consistencyRules": [
-              "Mismos principios de Screenplay en API y Web",
-              "Convenciones de naming consistentes",
-              "Estructura de proyecto similar",
-              "Mismo approach para Gherkin (modular by default)",
-              "Validaciones similares de patrones"
-            ]
-          }
-        }
+    }
+  },
+
+  "crossReferences": {
+    "description": "Referencias a estándares relacionados para consistencia",
+    "webStandard": {
+      "file": "serenity-web-screenplay.standard.json",
+      "version": "1.3.0",
+      "sharedSections": [
+        "principles.screenplayFirst",
+        "namingConventions.language",
+        "projectStructure.buildTools",
+        "gherkinStandards (similar pero adaptado a Web)"
+      ],
+      "differences": [
+        "API: Enfoque en HTTP methods y JSON",
+        "Web: Enfoque en UI interactions y locators",
+        "Ambos: Mismo patrón Screenplay y estructura de proyecto"
+      ]
+    },
+    "consistencyRules": [
+      "Mismos principios de Screenplay en API y Web",
+      "Convenciones de naming consistentes",
+      "Estructura de proyecto similar",
+      "Mismo approach para Gherkin (modular by default)",
+      "Validaciones similares de patrones"
+    ]
+  }
+}
       },
       "FEATURE": {
         "name": "Feature sin API",
@@ -667,12 +668,7 @@
         "withInvalidEmail()",
         "withMissingField()",
         "withEmptyData()"
-      ],
-      "javadocRequirement": {
-        "description": "Todos los Builders deben tener documentación Javadoc",
-        "required": true,
-        "example": "/**\n * Builder para construir requests de creación de usuario\n * Responsabilidad: Generar datos de prueba para diferentes escenarios\n * \n * @author Equipo QA\n * @version 1.0\n */\npublic class UserBuilder {\n    \n    /**\n     * Crea un request con datos válidos\n     * @return CreateUserRequest con todos los campos válidos\n     */\n    public static CreateUserRequest withValidData() {\n        return new CreateUserRequest(\n            \"John Doe\",\n            \"john.doe@example.com\",\n            \"password123\"\n        );\n    }\n    \n    /**\n     * Crea un request con email inválido\n     * @return CreateUserRequest con email en formato incorrecto\n     */\n    public static CreateUserRequest withInvalidEmail() {\n        return new CreateUserRequest(\n            \"John Doe\",\n            \"invalid-email\",\n            \"password123\"\n        );\n    }\n}"
-      }
+      ]
     },
     "interactions": {
       "rules": [
@@ -1065,28 +1061,6 @@
         "wrong": "public class UserStepDefinitions {\n    @Before\n    public void setTheStage() { // ❌ MAL - No hacer esto\n        OnStage.setTheStage(new OnlineCast());\n    }\n}",
         "right": "// Hooks.java - Clase SEPARADA\npublic class Hooks {\n    @Before\n    public void setTheStage() { // ✅ BIEN\n        OnStage.setTheStage(new OnlineCast());\n    }\n}\n\n// UserStepDefinitions.java - Sin @Before/@After\npublic class UserStepDefinitions {\n    @When(\"...\")\n    public void step() { // ✅ BIEN - Solo steps\n        theActorCalled(\"Usuario\")...;\n    }\n}"
       }
-    },
-    "stepDefinitionsExamples": {
-      "description": "Ejemplos completos de StepDefinitions usando el patrón Actor correctamente",
-      "basicExample": "package com.screenplay.api.stepdefinitions;\n\nimport io.cucumber.java.es.*;\nimport static net.serenitybdd.screenplay.actors.OnStage.*;\nimport static net.serenitybdd.screenplay.GivenWhenThen.seeThat;\nimport static org.hamcrest.Matchers.*;\nimport net.serenitybdd.screenplay.rest.abilities.CallAnApi;\n\n/**\n * Step Definitions para gestión de usuarios\n * Responsabilidad: Orquestar Tasks y Questions usando Actor\n * CRÍTICO: Máximo 3 líneas por método, sin lógica\n */\npublic class UserStepDefinitions {\n\n    @Dado(\"que el servicio de usuarios está disponible\")\n    public void serviceIsAvailable() {\n        theActorCalled(\"Usuario\")\n            .whoCan(CallAnApi.at(UserEndpoints.BASE_URL));\n    }\n\n    @Cuando(\"el usuario crea un nuevo usuario con datos válidos\")\n    public void createUser() {\n        theActorInTheSpotlight()\n            .attemptsTo(CreateUser.with(UserBuilder.withValidData()));\n    }\n\n    @Entonces(\"el código de respuesta debe ser {int}\")\n    public void validateStatusCode(int expectedStatus) {\n        theActorInTheSpotlight()\n            .should(seeThat(\"El código de respuesta\", ResponseStatusCode.value(), equalTo(expectedStatus)));\n    }\n\n    @Y(\"el response debe contener el campo {string}\")\n    public void validateFieldExists(String fieldName) {\n        theActorInTheSpotlight()\n            .should(seeThat(\"El campo \" + fieldName + \" existe\", ResponseBodyField.called(fieldName), notNullValue()));\n    }\n}",
-      "advancedExample": "package com.screenplay.api.stepdefinitions;\n\nimport io.cucumber.java.es.*;\nimport static net.serenitybdd.screenplay.actors.OnStage.*;\nimport static net.serenitybdd.screenplay.GivenWhenThen.seeThat;\nimport static org.hamcrest.Matchers.*;\nimport net.serenitybdd.screenplay.rest.abilities.CallAnApi;\n\npublic class CharacterStepDefinitions {\n\n    @Dado(\"que el usuario puede acceder a la API de Rick and Morty\")\n    public void setupApiAccess() {\n        theActorCalled(\"Consumidor\")\n            .whoCan(CallAnApi.at(\"https://rickandmortyapi.com/api\"));\n    }\n\n    @Cuando(\"el usuario consulta todos los personajes\")\n    public void getAllCharacters() {\n        theActorInTheSpotlight()\n            .attemptsTo(GetAllCharacters.from());\n    }\n\n    @Entonces(\"la respuesta debe tener código {int}\")\n    public void validateStatus(int status) {\n        theActorInTheSpotlight()\n            .should(seeThat(\"Status code\", ResponseStatusCode.value(), equalTo(status)));\n    }\n\n    @Y(\"el campo {string} debe existir\")\n    public void fieldExists(String field) {\n        theActorInTheSpotlight()\n            .should(seeThat(\"Campo \" + field, ResponseBodyField.called(field), notNullValue()));\n    }\n\n    @Y(\"el campo {string} debe contener al menos {int} elemento(s)\")\n    public void fieldHasMinElements(String field, int minElements) {\n        theActorInTheSpotlight()\n            .should(seeThat(\"Tamaño de \" + field, ResponseArraySize.of(field), greaterThanOrEqualTo(minElements)));\n    }\n}",
-      "commonMistakes": {
-        "mistake1": {
-          "title": "❌ NO usar Actor directamente",
-          "wrong": "public class UserStepDefinitions {\n    private Actor actor = Actor.named(\"Usuario\"); // ❌ MAL\n    \n    @When(\"...\")\n    public void step() {\n        actor.attemptsTo(...); // ❌ Actor no gestionado\n    }\n}",
-          "right": "public class UserStepDefinitions {\n    // ✅ NO declarar Actor como field\n    \n    @When(\"...\")\n    public void step() {\n        theActorInTheSpotlight() // ✅ Usar OnStage\n            .attemptsTo(...);\n    }\n}"
-        },
-        "mistake2": {
-          "title": "❌ NO poner lógica en StepDefinitions",
-          "wrong": "@Then(\"validar respuesta\")\npublic void validate() {\n    Response response = actor.asksFor(LastResponse.received());\n    if (response.statusCode() == 200) { // ❌ Lógica\n        // validaciones...\n    }\n}",
-          "right": "@Then(\"el código de respuesta debe ser {int}\")\npublic void validateStatus(int status) {\n    theActorInTheSpotlight()\n        .should(seeThat(\"Status\", ResponseStatusCode.value(), equalTo(status)));\n    // ✅ Sin lógica, solo orquestación\n}"
-        },
-        "mistake3": {
-          "title": "❌ NO usar assertThat directamente",
-          "wrong": "@Then(\"validar campo\")\npublic void validate() {\n    String value = actor.asksFor(ResponseField.called(\"name\"));\n    assertThat(value, equalTo(\"expected\")); // ❌ assertThat directo\n}",
-          "right": "@Then(\"el campo {string} debe ser {string}\")\npublic void validateField(String field, String expected) {\n    theActorInTheSpotlight()\n        .should(seeThat(\"Campo \" + field, ResponseField.called(field), equalTo(expected)));\n    // ✅ Usar seeThat con Question\n}"
-        }
-      }
     }
   },
   "jacksonAnnotations": {
@@ -1333,14 +1307,16 @@
       "testsPassed": true
     }
   },
+
   "gherkinStandards": {
     "description": "Estándares para escribir escenarios Gherkin modulares y descriptivos según el tipo de HU",
-    "version": "1.1.0",
+  "version": "1.1.0",
     "philosophy": {
       "modularByDefault": "Los escenarios DEBEN ser modulares por defecto para favorecer reutilización y mantenimiento",
       "descriptiveWhenRequired": "Usar escenarios descriptivos solo cuando la HU específicamente lo requiera para comunicación con negocio",
       "businessReadable": "Los escenarios deben ser legibles para negocio, pero técnicamente ejecutables"
     },
+
     "scenarioTypes": {
       "modularScenarios": {
         "description": "Escenarios modulares enfocados en acciones técnicas reutilizables",
@@ -1392,6 +1368,7 @@
           }
         }
       },
+
       "descriptiveScenarios": {
         "description": "Escenarios descriptivos enfocados en valor de negocio y legibilidad",
         "whenToUse": [
@@ -1435,6 +1412,7 @@
         }
       }
     },
+
     "gherkinBestPractices": {
       "structure": {
         "feature": {
@@ -1457,6 +1435,7 @@
           "maxLength": "Máximo 3 líneas por step para mantener legibilidad"
         }
       },
+
       "stepPatterns": {
         "givenPatterns": [
           "Given el servicio está disponible",
@@ -1477,6 +1456,7 @@
           "Then el sistema debe <acción esperada>"
         ]
       },
+
       "dataDriven": {
         "whenToUse": [
           "Múltiples combinaciones de datos",
@@ -1492,6 +1472,7 @@
           "No más de 5-7 columnas por tabla"
         ]
       },
+
       "tagsStrategy": {
         "featureLevel": [
           "@HU-XXX - Identificador único de HU",
@@ -1515,6 +1496,7 @@
         ]
       }
     },
+
     "modularVsDescriptive": {
       "decisionMatrix": {
         "chooseModularWhen": [
@@ -1533,6 +1515,7 @@
         ],
         "hybridApproach": "Usar modular para la implementación técnica y descriptive para casos de negocio específicos"
       },
+
       "migrationGuide": {
         "fromDescriptiveToModular": {
           "steps": [
@@ -1556,6 +1539,7 @@
         }
       }
     },
+
     "validationRules": {
       "syntaxValidation": [
         "Feature debe tener nombre descriptivo",
@@ -1577,6 +1561,7 @@
         "Tags deben estar configurados en runners"
       ]
     },
+
     "commonPitfalls": [
       {
         "problem": "Steps demasiado técnicos",
@@ -1600,10 +1585,12 @@
       }
     ]
   },
+
   "commonIssuesAndFixes": {
     "description": "Problemas comunes encontrados en proyectos Serenity BDD y sus soluciones definitivas. Esta sección documenta errores frecuentes que pueden causar que las pruebas no se detecten, no compilen o fallen inesperadamente.",
     "lastUpdated": "2026-02-04",
     "sourceDocument": "Rick and Morty API - Documento de Solución de Problemas",
+
     "criticalIssues": {
       "testsNotDetected": {
         "symptom": "Tests run: 0 - Las pruebas existen pero el runner no las ejecuta",
@@ -1656,6 +1643,7 @@
           ]
         }
       },
+
       "missingMavenPlugins": {
         "symptom": "No se generan reportes de Serenity o las pruebas de integración no se ejecutan",
         "rootCause": "Faltan plugins esenciales de Maven para Serenity BDD",
@@ -1674,9 +1662,7 @@
                   "execution": {
                     "id": "serenity-reports",
                     "phase": "post-integration-test",
-                    "goals": [
-                      "aggregate"
-                    ]
+                    "goals": ["aggregate"]
                   }
                 }
               },
@@ -1690,17 +1676,12 @@
                 "artifactId": "maven-failsafe-plugin",
                 "version": "3.0.0",
                 "configuration": {
-                  "includes": [
-                    "**/runners/**/*.java"
-                  ],
+                  "includes": ["**/runners/**/*.java"],
                   "argLine": "--add-opens java.base/java.lang=ALL-UNNAMED"
                 },
                 "executions": {
                   "execution": {
-                    "goals": [
-                      "integration-test",
-                      "verify"
-                    ]
+                    "goals": ["integration-test", "verify"]
                   }
                 }
               },
@@ -1710,6 +1691,7 @@
           "pomXmlExample": "<build>\n  <plugins>\n    <plugin>\n      <groupId>org.apache.maven.plugins</groupId>\n      <artifactId>maven-surefire-plugin</artifactId>\n      <version>3.0.0</version>\n      <configuration>\n        <includes>\n          <include>**/runners/**/*.java</include>\n        </includes>\n        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>\n      </configuration>\n    </plugin>\n    <plugin>\n      <groupId>net.serenity-bdd.maven.plugins</groupId>\n      <artifactId>serenity-maven-plugin</artifactId>\n      <version>${serenity.version}</version>\n      <executions>\n        <execution>\n          <id>serenity-reports</id>\n          <phase>post-integration-test</phase>\n          <goals>\n            <goal>aggregate</goal>\n          </goals>\n        </execution>\n      </executions>\n    </plugin>\n    <plugin>\n      <groupId>org.apache.maven.plugins</groupId>\n      <artifactId>maven-failsafe-plugin</artifactId>\n      <version>3.0.0</version>\n      <configuration>\n        <includes>\n          <include>**/runners/**/*.java</include>\n        </includes>\n        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>\n      </configuration>\n      <executions>\n        <execution>\n          <goals>\n            <goal>integration-test</goal>\n            <goal>verify</goal>\n          </goals>\n        </execution>\n      </executions>\n    </plugin>\n  </plugins>\n</build>"
         }
       },
+
       "incorrectEndpointUrlConstruction": {
         "symptom": "URLs duplicadas o malformadas en las peticiones HTTP",
         "rootCause": "El endpoint incluye la URL base completa cuando el Hook ya la configura con CallAnApi.at()",
@@ -1738,6 +1720,7 @@
           }
         }
       },
+
       "overlyComplexInteractions": {
         "symptom": "Errores HTTP 403 Forbidden o conflictos con contentType/headers",
         "rootCause": "Interacciones sobrecargadas con configuraciones innecesarias que causan conflictos",
@@ -1781,6 +1764,7 @@
           }
         }
       },
+
       "loggingAndDebugging": {
         "symptom": "Difícil debuggear problemas porque no hay visibilidad de las peticiones/respuestas",
         "rootCause": "Logging deshabilitado o configurado en modo QUIET",
@@ -1811,51 +1795,42 @@
         }
       }
     },
+
     "dependenciesReference": {
-      "description": "Dependencias correctas para Serenity BDD + Cucumber + JUnit 4 (REQUERIDO para @RunWith)",
-      "criticalNote": "⚠️ IMPORTANTE: JUnit 4.13.2 es OBLIGATORIO para usar @RunWith(CucumberWithSerenity.class). JUnit 5 NO soporta @RunWith.",
+      "description": "Dependencias correctas para Serenity BDD + Cucumber + JUnit 5",
       "minimumRequired": {
         "serenity": [
           {
             "groupId": "net.serenity-bdd",
             "artifactId": "serenity-core",
-            "version": "4.3.4",
-            "required": true,
-            "criticalForDiagnostic": true,
-            "reason": "Core framework de Serenity BDD"
+            "version": "${serenity.version}",
+            "required": true
           },
           {
             "groupId": "net.serenity-bdd",
             "artifactId": "serenity-cucumber",
-            "version": "4.3.4",
-            "required": true,
-            "criticalForDiagnostic": true,
-            "reason": "Integración con Cucumber para BDD"
+            "version": "${serenity.version}",
+            "required": true
           },
           {
             "groupId": "net.serenity-bdd",
             "artifactId": "serenity-rest-assured",
-            "version": "4.3.4",
+            "version": "${serenity.version}",
             "required": true,
-            "criticalForDiagnostic": true,
-            "scope": "API projects only",
-            "reason": "Soporte para pruebas de API REST"
+            "scope": "API projects only"
           },
           {
             "groupId": "net.serenity-bdd",
             "artifactId": "serenity-screenplay",
-            "version": "4.3.4",
-            "required": true,
-            "reason": "Patrón Screenplay (Actor, Task, Question)"
+            "version": "${serenity.version}",
+            "required": true
           },
           {
             "groupId": "net.serenity-bdd",
             "artifactId": "serenity-screenplay-rest",
-            "version": "4.3.4",
+            "version": "${serenity.version}",
             "required": true,
-            "criticalForDiagnostic": true,
-            "scope": "API projects only",
-            "reason": "Screenplay REST capabilities (CallAnApi, etc)"
+            "scope": "API projects only"
           }
         ],
         "cucumber": [
@@ -1863,20 +1838,39 @@
             "groupId": "io.cucumber",
             "artifactId": "cucumber-java",
             "version": "7.18.0",
-            "required": true,
-            "reason": "Lenguaje Java para step definitions"
-          }
-        ],
-        "junit4": [
+            "required": true
+          },
           {
-            "groupId": "junit",
-            "artifactId": "junit",
-            "version": "4.13.2",
+            "groupId": "io.cucumber",
+            "artifactId": "cucumber-junit-platform-engine",
+            "version": "7.18.0",
             "scope": "test",
             "required": true,
-            "criticalForDiagnostic": true,
-            "reason": "CRÍTICO: Requerido para @RunWith(CucumberWithSerenity.class). JUnit 5 NO soporta @RunWith.",
-            "mustHave": true
+            "reason": "CRÍTICO para JUnit 5"
+          }
+        ],
+        "junit5": [
+          {
+            "groupId": "org.junit.platform",
+            "artifactId": "junit-platform-suite",
+            "version": "1.9.2",
+            "scope": "test",
+            "required": true,
+            "reason": "CRÍTICO para @Suite annotation"
+          },
+          {
+            "groupId": "org.junit.jupiter",
+            "artifactId": "junit-jupiter-api",
+            "version": "5.9.2",
+            "scope": "test",
+            "required": true
+          },
+          {
+            "groupId": "org.junit.jupiter",
+            "artifactId": "junit-jupiter-engine",
+            "version": "5.9.2",
+            "scope": "test",
+            "required": true
           }
         ],
         "restAssured": [
@@ -1885,21 +1879,19 @@
             "artifactId": "rest-assured",
             "version": "5.3.0",
             "required": true,
-            "scope": "API projects only",
-            "reason": "Cliente HTTP para pruebas de API"
+            "scope": "API projects only"
           }
         ]
       },
       "versionCompatibility": {
         "serenityVersion": "4.3.4",
         "cucumberVersion": "7.18.0",
-        "junit4Version": "4.13.2",
+        "junitVersion": "5.9.2",
         "restAssuredVersion": "5.3.0",
-        "warning": "⚠️ USAR JUnit 4.13.2 (NO JUnit 5) para compatibilidad con @RunWith(CucumberWithSerenity.class)"
-      },
-      "mavenExample": "<properties>\n    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>\n    <serenity.version>4.3.4</serenity.version>\n    <cucumber.version>7.18.0</cucumber.version>\n    <junit4.version>4.13.2</junit4.version>\n</properties>\n\n<dependencies>\n    <!-- Serenity BDD Core -->\n    <dependency>\n        <groupId>net.serenity-bdd</groupId>\n        <artifactId>serenity-core</artifactId>\n        <version>${serenity.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- Serenity Cucumber Integration -->\n    <dependency>\n        <groupId>net.serenity-bdd</groupId>\n        <artifactId>serenity-cucumber</artifactId>\n        <version>${serenity.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- Serenity Screenplay -->\n    <dependency>\n        <groupId>net.serenity-bdd</groupId>\n        <artifactId>serenity-screenplay</artifactId>\n        <version>${serenity.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- Serenity REST Assured (API Testing) -->\n    <dependency>\n        <groupId>net.serenity-bdd</groupId>\n        <artifactId>serenity-rest-assured</artifactId>\n        <version>${serenity.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- Serenity Screenplay REST -->\n    <dependency>\n        <groupId>net.serenity-bdd</groupId>\n        <artifactId>serenity-screenplay-rest</artifactId>\n        <version>${serenity.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- Cucumber Java -->\n    <dependency>\n        <groupId>io.cucumber</groupId>\n        <artifactId>cucumber-java</artifactId>\n        <version>${cucumber.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- JUnit 4 - CRÍTICO para @RunWith -->\n    <dependency>\n        <groupId>junit</groupId>\n        <artifactId>junit</artifactId>\n        <version>${junit4.version}</version>\n        <scope>test</scope>\n    </dependency>\n    \n    <!-- REST Assured -->\n    <dependency>\n        <groupId>io.rest-assured</groupId>\n        <artifactId>rest-assured</artifactId>\n        <version>5.3.0</version>\n        <scope>test</scope>\n    </dependency>\n</dependencies>",
-      "gradleExample": "ext {\n    serenityVersion = '4.3.4'\n    cucumberVersion = '7.18.0'\n    junit4Version = '4.13.2'\n    restAssuredVersion = '5.3.0'\n}\n\ndependencies {\n    // Serenity BDD Core\n    testImplementation \"net.serenity-bdd:serenity-core:${serenityVersion}\"\n    \n    // Serenity Cucumber Integration\n    testImplementation \"net.serenity-bdd:serenity-cucumber:${serenityVersion}\"\n    \n    // Serenity Screenplay\n    testImplementation \"net.serenity-bdd:serenity-screenplay:${serenityVersion}\"\n    \n    // Serenity REST Assured (API Testing)\n    testImplementation \"net.serenity-bdd:serenity-rest-assured:${serenityVersion}\"\n    \n    // Serenity Screenplay REST\n    testImplementation \"net.serenity-bdd:serenity-screenplay-rest:${serenityVersion}\"\n    \n    // Cucumber Java\n    testImplementation \"io.cucumber:cucumber-java:${cucumberVersion}\"\n    \n    // JUnit 4 - CRÍTICO para @RunWith\n    testImplementation \"junit:junit:${junit4Version}\"\n    \n    // REST Assured\n    testImplementation \"io.rest-assured:rest-assured:${restAssuredVersion}\"\n}"
+        "warning": "Mantener versiones compatibles. No mezclar JUnit 4 y JUnit 5."
+      }
     },
+
     "mavenCommandsReference": {
       "description": "Comandos Maven esenciales para trabajar con Serenity BDD",
       "commands": [
@@ -1959,6 +1951,7 @@
         }
       ]
     },
+
     "projectStructureReference": {
       "description": "Estructura correcta para proyectos Serenity Screenplay API",
       "structure": "co.com.{company}.api/\n├── pom.xml\n├── serenity.properties\n├── src/\n│   ├── main/java/co/com/{company}/\n│   │   ├── endpoints/\n│   │   │   └── {Resource}Endpoints.java\n│   │   ├── interactions/\n│   │   │   ├── GetRequest.java\n│   │   │   ├── PostRequest.java\n│   │   │   ├── PutRequest.java\n│   │   │   └── DeleteRequest.java\n│   │   ├── models/\n│   │   │   ├── {Resource}Request.java\n│   │   │   └── {Resource}Response.java\n│   │   ├── questions/\n│   │   │   ├── ResponseStatusCode.java\n│   │   │   └── ResponseField.java\n│   │   ├── tasks/\n│   │   │   └── {BusinessAction}.java\n│   │   └── builders/\n│   │       └── {Resource}RequestBuilder.java\n│   └── test/\n│       ├── java/co/com/{company}/\n│       │   ├── hooks/\n│       │   │   └── Hooks.java\n│       │   ├── runners/\n│       │   │   └── CucumberTestRunner.java (JUnit 5!)\n│       │   └── stepdefinitions/\n│       │       └── {Resource}StepDefinitions.java\n│       └── resources/\n│           └── features/\n│               └── {resource}.feature",
@@ -1991,6 +1984,7 @@
         }
       }
     },
+
     "checklistBeforeDeployment": {
       "description": "Checklist para verificar que un proyecto está correctamente configurado",
       "items": [
@@ -2049,6 +2043,7 @@
         }
       ]
     },
+
     "quickReferenceCard": {
       "description": "Tarjeta de referencia rápida para problemas comunes",
       "problems": [
@@ -2077,82 +2072,6 @@
           "quickFix": "Verificar que features path sea 'features' NO 'src/test/resources/features' en JUnit 5"
         }
       ]
-    }
-  },
-  "dependencies": {
-    "description": "Dependencias obligatorias para proyectos Serenity Screenplay API",
-    "framework": "Serenity BDD 4.3.4",
-    "testRunner": "JUnit 4.13.2 (OBLIGATORIO para @RunWith)",
-    "bddTool": "Cucumber 7.18.0",
-    "criticalDependencies": [
-      {
-        "name": "Serenity BDD 4.3.4",
-        "artifacts": [
-          "serenity-core",
-          "serenity-cucumber",
-          "serenity-rest-assured",
-          "serenity-screenplay",
-          "serenity-screenplay-rest"
-        ],
-        "criticalForDiagnostic": true
-      },
-      {
-        "name": "JUnit 4.13.2",
-        "artifact": "junit:junit",
-        "criticalForDiagnostic": true,
-        "reason": "OBLIGATORIO para @RunWith(CucumberWithSerenity.class)"
-      },
-      {
-        "name": "Cucumber 7.18.0",
-        "artifact": "cucumber-java",
-        "criticalForDiagnostic": false
-      },
-      {
-        "name": "REST Assured 5.3.0",
-        "artifact": "rest-assured",
-        "criticalForDiagnostic": false
-      }
-    ],
-    "diagnosticChecklist": {
-      "description": "Validaciones que realiza la herramienta de diagnóstico",
-      "checks": [
-        "✅ Serenity BDD 4.3.4 está configurado",
-        "✅ JUnit 4.13.2 está configurado",
-        "✅ serenity-cucumber está configurado",
-        "✅ serenity-rest-assured está configurado",
-        "✅ serenity-screenplay-rest está configurado"
-      ]
-    }
-  },
-  "documentationRequirements": {
-    "description": "Requisitos de documentación Javadoc para todos los componentes",
-    "mandatory": true,
-    "reason": "Mejorar mantenibilidad y comprensión del código",
-    "requiredForComponents": [
-      "Tasks",
-      "Interactions",
-      "Questions",
-      "Models",
-      "Builders",
-      "Endpoints",
-      "StepDefinitions"
-    ],
-    "minimumRequirements": {
-      "classLevel": [
-        "Descripción de la responsabilidad de la clase",
-        "Tag @author (opcional)",
-        "Tag @version (opcional)"
-      ],
-      "methodLevel": [
-        "Descripción de qué hace el método",
-        "Tag @param para cada parámetro",
-        "Tag @return si retorna valor"
-      ]
-    },
-    "examples": {
-      "Task": "/**\n * Task para crear un usuario en el sistema\n * Responsabilidad: Enviar request POST con datos de usuario\n * \n * @author Equipo QA\n */\npublic class CreateUser implements Task {\n    \n    private final CreateUserRequest request;\n    \n    /**\n     * Constructor privado\n     * @param request Datos del usuario a crear\n     */\n    private CreateUser(CreateUserRequest request) {\n        this.request = request;\n    }\n    \n    /**\n     * Factory method para crear instancia del Task\n     * @param request Datos del usuario\n     * @return Task instrumentado por Serenity\n     */\n    public static CreateUser with(CreateUserRequest request) {\n        return Tasks.instrumented(CreateUser.class, request);\n    }\n    \n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n            PostRequest.to(UserEndpoints.CREATE_USER).with(req -> req.body(request))\n        );\n    }\n}",
-      "Question": "/**\n * Question para obtener el código de estado de la respuesta HTTP\n * Responsabilidad: Extraer status code del último response\n * \n * @author Equipo QA\n */\npublic class ResponseStatusCode implements Question<Integer> {\n    \n    /**\n     * Factory method para crear instancia\n     * @return Question que retorna el status code\n     */\n    public static Question<Integer> value() {\n        return new ResponseStatusCode();\n    }\n    \n    /**\n     * Obtiene el status code del response\n     * @param actor Actor que ejecuta la consulta\n     * @return Código de estado HTTP\n     */\n    @Override\n    public Integer answeredBy(Actor actor) {\n        return SerenityRest.lastResponse().statusCode();\n    }\n}",
-      "Model": "/**\n * Modelo de request para crear usuario\n * Responsabilidad: Estructura de datos para POST /users\n * \n * @author Equipo QA\n */\n@JsonIgnoreProperties(ignoreUnknown = true)\npublic class CreateUserRequest {\n    \n    private String name;\n    private String email;\n    private String password;\n    \n    /**\n     * Constructor completo\n     * @param name Nombre del usuario\n     * @param email Email del usuario\n     * @param password Contraseña del usuario\n     */\n    public CreateUserRequest(String name, String email, String password) {\n        this.name = name;\n        this.email = email;\n        this.password = password;\n    }\n    \n    // Getters y setters...\n}"
     }
   }
 }
