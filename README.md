@@ -382,7 +382,7 @@ El nombre se usará tal cual para el directorio del proyecto, artifact ID en Mav
   "arguments": {
     "projectPath": "/path/to/my-serenity-project",
     "projectType": "api",
-    "projectStructure": "📦 my-api-project/\n├── pom.xml (contains serenity-core:4.3.4, junit:4.13.2)\n├── src/\n│   ├── main/java/com/example/\n│   │   ├── tasks/ (CreateUserTask.java)\n│   │   ├── interactions/ (SendPostRequest.java)\n│   │   ├── questions/ (StatusCodeQuestion.java)\n│   │   └── models/ (UserModel.java)\n│   └── test/java/com/example/\n│       ├── runners/ (CucumberTestRunner.java with @RunWith)\n│       ├── hooks/ (Hooks.java with OnStage)\n│       └── stepdefinitions/ (UserStepDefinitions.java with Actor)\n└── src/test/resources/\n    ├── features/ (user-creation.feature)\n    └── serenity.properties"
+    "projectStructure": "📦 my-api-project/\n├── pom.xml (contains serenity-core:4.3.4, junit:4.13.2)\n├── serenity.properties\n├── src/\n│   ├── main/java/com/example/\n│   │   ├── tasks/ (CreateUserTask.java)\n│   │   ├── interactions/ (SendPostRequest.java)\n│   │   ├── questions/ (StatusCodeQuestion.java)\n│   │   └── models/ (UserModel.java)\n│   └── test/java/com/example/\n│       ├── runners/ (CucumberTestRunner.java with @RunWith)\n│       ├── hooks/ (Hooks.java with OnStage)\n│       └── stepdefinitions/ (UserStepDefinitions.java with Actor)\n└── src/test/resources/\n    └── features/ (user-creation.feature)"
   }
 }
 ```
