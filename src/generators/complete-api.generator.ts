@@ -293,7 +293,8 @@ import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
 import com.screenplay.api.tasks.*;
 import com.screenplay.api.questions.*;
-import com.screenplay.api.questions.${questionName}.*;
+import com.screenplay.api.questions.${questionName}.ElResponse;
+import com.screenplay.api.questions.${questionName}.CampoDelResponse;
 import com.screenplay.api.builders.*;
 import com.screenplay.api.models.*;
 
@@ -309,7 +310,7 @@ public class ${className} {
         // Verificar que el servicio esté disponible
     }
 
-    @Cuando("envío una petición ${request.metodo} a (.*)")
+    @Cuando("envío una petición ${request.metodo} a {word}")
     public void enviarPeticion(String recurso) {
         // Note: 'recurso' parameter captures the resource ID from the feature file
         // Currently using builder pattern for test data, but parameter available for future use
