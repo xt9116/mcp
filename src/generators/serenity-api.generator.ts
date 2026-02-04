@@ -22,7 +22,7 @@ export interface Field {
 
 export function generateAPITask(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -106,13 +106,13 @@ export function generateAPITask(config: APIComponentConfig): string {
 
 export function generateAPIInteraction(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate and normalize the HTTP method to PascalCase for class name
   const httpMethod = config.httpMethod ? httpMethodToPascalCase(config.httpMethod) : 'Get';
-  
+
   // Use provided className or generate from HTTP method
   const className = config.className || `${httpMethod}Request`;
-  
+
   // Validate the class name before generation
   const nameErrors = getClassNameValidationErrors(className);
   if (nameErrors.length > 0) {
@@ -182,7 +182,7 @@ export function generateAPIInteraction(config: APIComponentConfig): string {
 
 export function generateAPIQuestion(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -219,7 +219,7 @@ export function generateAPIQuestion(config: APIComponentConfig): string {
 
 export function generateAPIModel(config: APIComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -289,7 +289,7 @@ export function generateAPIModel(config: APIComponentConfig): string {
 export function generateAPIEndpoints(config: APIComponentConfig): string {
   const lines: string[] = [];
   const resource = config.resource || config.className.replace('Endpoints', '');
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -322,7 +322,7 @@ export function generateAPIEndpoints(config: APIComponentConfig): string {
 export function generateAPIBuilder(config: APIComponentConfig): string {
   const lines: string[] = [];
   const modelType = config.className.replace('Constructor', '').replace('Builder', '');
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {

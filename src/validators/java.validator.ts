@@ -71,7 +71,7 @@ export function validateJavaCode(payload: JavaValidationPayload) {
     const classNameErrors = getClassNameValidationErrors(payload.className);
     errors.push(...classNameErrors.filter(e => e.startsWith('❌')));
     warnings.push(...classNameErrors.filter(e => e.startsWith('⚠️')));
-    
+
     // Additional legacy checks
     if (payload.className.length > 25) {
       warnings.push('⚠️ CLASS NAME: Nombre de clase demasiado largo (>25 caracteres)');

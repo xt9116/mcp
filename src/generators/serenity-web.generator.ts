@@ -22,7 +22,7 @@ export interface WebTarget {
 
 export function generateWebUI(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -81,7 +81,7 @@ export function generateWebUI(config: WebComponentConfig): string {
 
 export function generateWebTask(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -153,7 +153,7 @@ export function generateWebTask(config: WebComponentConfig): string {
 
 export function generateWebQuestion(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -208,7 +208,7 @@ export function generateWebQuestion(config: WebComponentConfig): string {
 
 export function generateWebInteraction(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {
@@ -267,7 +267,7 @@ export function generateWebInteraction(config: WebComponentConfig): string {
 
 export function generateWebStepDefinitions(config: WebComponentConfig): string {
   const lines: string[] = [];
-  
+
   // Validate class name
   const nameErrors = getClassNameValidationErrors(config.className);
   if (nameErrors.length > 0) {

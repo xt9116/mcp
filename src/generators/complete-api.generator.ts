@@ -526,21 +526,32 @@ import io.cucumber.java.Before;
 import io.cucumber.java.After;
 import net.serenitybdd.screenplay.actors.OnStage;
 import net.serenitybdd.screenplay.actors.OnlineCast;
+import net.serenitybdd.screenplay.rest.abilities.CallAnApi;
+import net.thucydides.core.util.EnvironmentVariables;
+import net.thucydides.core.util.SystemEnvironmentVariables;
+
+import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
+import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
 
 /**
  * Hooks: Configuración de actores antes y después de cada escenario API
- * Responsabilidad: Inicializar OnStage y liberar recursos
+ * Responsabilidad: Inicializar OnStage y configurar base URL para API REST
  * CRÍTICO: Debe ejecutarse antes de cualquier StepDefinition
  */
 public class Hooks {
 
     /**
      * Configuración inicial del escenario
-     * Inicializa el cast de actores para el patrón Screenplay
+     * Inicializa el cast de actores y configura la base URL de la API
      */
     @Before(order = 0)
-    public void setTheStage() {
+    public void configuracionBaseUrl() {
         OnStage.setTheStage(new OnlineCast());
+        theActorCalled("Actor");
+        EnvironmentVariables environmentVariables = SystemEnvironmentVariables.currentEnvironmentVariables();
+        String theRestApiBaseUrl = environmentVariables.optionalProperty("URL_QA")
+            .orElse("http://localhost:8080/api");
+        theActorInTheSpotlight().whoCan(CallAnApi.at(theRestApiBaseUrl));
     }
 
     /**
