@@ -37,6 +37,14 @@ interface ValidationPayload {
   usesCorrectBuilderPattern?: boolean;
   usesCorrectEndpointConstants?: boolean;
   usesCorrectFactoryMethods?: boolean;
+
+  // Validaciones de Actor/OnStage pattern (nuevo)
+  usesOnStage?: boolean;
+  usesTheActorCalled?: boolean;
+  usesTheActorInTheSpotlight?: boolean;
+  usesActorDirectly?: boolean;
+  hasJavadoc?: boolean;
+  hasProperImports?: boolean;
 }
 
 export function validateSerenityApi(payload: ValidationPayload) {
@@ -86,6 +94,41 @@ export function validateSerenityApi(payload: ValidationPayload) {
       // Validar que NO se obtenga el response directamente y se valide con assertThat
       if (payload.code.includes('.asksFor(') && payload.code.includes('assertThat(response.get')) {
         errors.push('❌ CRÍTICO: NO obtener response y usar assertThat - usar seeThat() con Questions específicas para cada campo');
+      }
+
+      // ✅ Validaciones de Actor/OnStage pattern (CRÍTICO)
+      if (payload.usesActorDirectly) {
+        errors.push('❌ CRÍTICO: NO usar Actor.named() directamente - usar OnStage.theActorCalled() o theActorInTheSpotlight()');
+      }
+
+      if (!payload.usesOnStage && !payload.code.includes('// Test example')) {
+        errors.push('❌ CRÍTICO: StepDefinitions debe usar OnStage para gestionar actores (import static net.serenitybdd.screenplay.actors.OnStage.*)');
+      }
+
+      if (!payload.usesTheActorCalled && !payload.usesTheActorInTheSpotlight) {
+        warnings.push('⚠️ Se recomienda usar theActorCalled() para crear actores y theActorInTheSpotlight() para acceder al actor actual');
+      }
+
+      // Validar que no se declare Actor como field
+      if (payload.code.includes('private Actor ') || payload.code.includes('private final Actor ')) {
+        errors.push('❌ CRÍTICO: NO declarar Actor como field - usar OnStage methods en cada step');
+      }
+
+      // Validar que tenga imports correctos
+      if (!payload.hasProperImports) {
+        warnings.push('⚠️ Verificar imports: debe incluir "import static net.serenitybdd.screenplay.actors.OnStage.*"');
+      }
+
+      // Validar attemptsTo() usage
+      if (!payload.code.includes('attemptsTo(')) {
+        warnings.push('⚠️ StepDefinitions debe ejecutar Tasks con actor.attemptsTo(Task.method())');
+      }
+
+      // Validar should(seeThat()) for validations
+      if (payload.code.includes('@Then') || payload.code.includes('@Entonces')) {
+        if (!payload.code.includes('should(seeThat(')) {
+          warnings.push('⚠️ Las validaciones (@Then/@Entonces) deben usar actor.should(seeThat(...)) con Questions');
+        }
       }
     }
   }
@@ -239,7 +282,23 @@ export function validateSerenityApi(payload: ValidationPayload) {
     warnings.push('⚠️ RECOMENDADO: El escenario debe validar al menos un campo del body');
   }
 
-  // ✅ 10. Validaciones de nombres según convenciones (actualizado)
+  // ✅ 10. Validaciones de Javadoc (nuevo)
+  if (payload.code && !payload.hasJavadoc) {
+    const componentsRequiringJavadoc = ['Task', 'Interaction', 'Question', 'Model', 'Builder', 'Endpoint'];
+    if (payload.type && componentsRequiringJavadoc.includes(payload.type)) {
+      warnings.push(`⚠️ ${payload.type} debe tener documentación Javadoc (/** ... */) en clase y métodos públicos`);
+    }
+  }
+
+  // Validar Javadoc mínimo en Tasks, Questions y Builders
+  if (payload.code && payload.hasJavadoc && (payload.type === 'Task' || payload.type === 'Question' || payload.type === 'Builder')) {
+    // Verificar que tenga descripción de responsabilidad
+    if (!payload.code.includes('Responsabilidad:') && !payload.code.includes('Responsibility:')) {
+      warnings.push('⚠️ Javadoc debe incluir descripción de Responsabilidad de la clase');
+    }
+  }
+
+  // ✅ 11. Validaciones de nombres según convenciones (actualizado)
   if (payload.className && payload.type) {
     const namingValidation = validateNamingConvention(payload.className, payload.type);
     if (!namingValidation.valid) {
@@ -405,7 +464,20 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
         }
       });
     }
+
+    // Detectar patrones Actor/OnStage
+    payload.usesOnStage = code.includes('OnStage.') || code.includes('import static net.serenitybdd.screenplay.actors.OnStage');
+    payload.usesTheActorCalled = code.includes('theActorCalled(');
+    payload.usesTheActorInTheSpotlight = code.includes('theActorInTheSpotlight()');
+    payload.usesActorDirectly = code.includes('Actor.named(') || /private\s+(final\s+)?Actor\s+/.test(code);
+    
+    // Detectar imports correctos
+    payload.hasProperImports = code.includes('import static net.serenitybdd.screenplay.actors.OnStage') ||
+                              code.includes('import net.serenitybdd.screenplay.actors.OnStage');
   }
+
+  // Detectar Javadoc
+  payload.hasJavadoc = code.includes('/**') && code.includes('*/');
 
   return validateSerenityApi(payload);
 }
