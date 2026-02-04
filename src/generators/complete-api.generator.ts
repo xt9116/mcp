@@ -527,8 +527,8 @@ import io.cucumber.java.After;
 import net.serenitybdd.screenplay.actors.OnStage;
 import net.serenitybdd.screenplay.actors.OnlineCast;
 import net.serenitybdd.screenplay.rest.abilities.CallAnApi;
-import net.thucydides.core.util.EnvironmentVariables;
-import net.thucydides.core.util.SystemEnvironmentVariables;
+import net.serenitybdd.model.environment.EnvironmentVariables;
+import net.serenitybdd.model.environment.SystemEnvironmentVariables;
 
 import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
