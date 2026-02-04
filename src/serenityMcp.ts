@@ -313,6 +313,10 @@ const tools: Tool[] = [
             examples: { type: 'array', items: { type: 'object' } }
           },
           description: 'Escenario de prueba Gherkin'
+        },
+        packageName: { 
+          type: 'string', 
+          description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay.api"'
         }
       },
       required: ['huId', 'nombre', 'urlBase', 'endpoint', 'metodo']
@@ -359,7 +363,11 @@ const tools: Tool[] = [
           items: { type: 'string' },
           description: 'Validaciones requeridas'
         },
-        gherkinScenario: { type: 'string', description: 'Escenario Gherkin completo' }
+        gherkinScenario: { type: 'string', description: 'Escenario Gherkin completo' },
+        packageName: { 
+          type: 'string', 
+          description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay.web"'
+        }
       },
       required: ['huId', 'nombre', 'baseUrl', 'paginas']
     }
