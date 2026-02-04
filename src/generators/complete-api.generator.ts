@@ -190,8 +190,20 @@ public class ${className} implements Question<Integer> {
                 java.lang.reflect.Method getter = ${modelName}.class.getMethod("get" + 
                     campo.substring(0, 1).toUpperCase() + campo.substring(1));
                 return tipo.cast(getter.invoke(response));
+            } catch (NoSuchMethodException e) {
+                // Intenta con 'is' prefix para campos booleanos
+                try {
+                    java.lang.reflect.Method isGetter = ${modelName}.class.getMethod("is" + 
+                        campo.substring(0, 1).toUpperCase() + campo.substring(1));
+                    return tipo.cast(isGetter.invoke(response));
+                } catch (Exception ex) {
+                    throw new RuntimeException("No se encontró getter para campo: " + campo + 
+                        ". Verifica que exista get" + campo.substring(0, 1).toUpperCase() + campo.substring(1) + 
+                        "() o is" + campo.substring(0, 1).toUpperCase() + campo.substring(1) + "()", ex);
+                }
             } catch (Exception e) {
-                throw new RuntimeException("Error al obtener campo: " + campo, e);
+                throw new RuntimeException("Error al obtener campo '" + campo + "': " + 
+                    e.getClass().getSimpleName() + " - " + e.getMessage(), e);
             }
         }
 
@@ -363,7 +375,8 @@ public class ${className} {
                 );
                 break;
             default:
-                throw new AssertionError("Campo no soportado: " + campo);
+                throw new AssertionError("Campo no soportado: " + campo + 
+                    ". Valores válidos: 'status', 'gender'");
         }
     }
 
