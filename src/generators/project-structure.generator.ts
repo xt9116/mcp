@@ -39,7 +39,6 @@ ${projectType !== 'api' ? `│   │           ├── 📁 userinterfaces/
  │   │           │   └── 📁 navigation/
  │   │           └── 📁 questions/` : ''}
 ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
- │   │           │   └── 📁 api/
  │   │           ├── 📁 models/
  │   │           ├── 📁 tasks/
  │   │           └── 📁 questions/` : ''}
@@ -94,7 +93,6 @@ ${projectType !== 'api' ? `│   │           ├── 📁 userinterfaces/
  │   │           │   └── 📁 navigation/
  │   │           └── 📁 questions/` : ''}
 ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
- │   │           │   └── 📁 api/
  │   │           ├── 📁 models/
  │   │           ├── 📁 tasks/
  │   │           └── 📁 questions/` : ''}
