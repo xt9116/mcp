@@ -1177,7 +1177,7 @@
 
   "serenityWebConfiguration": {
     "description": "Configuración obligatoria de Serenity para pruebas WEB",
-    "file": "src/test/resources/serenity.properties",
+    "file": "serenity.properties (raíz del proyecto, fuera de src/)",
     "required": true,
     "mandatoryProperties": {
       "webdriver.driver": {

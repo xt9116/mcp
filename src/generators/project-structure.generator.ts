@@ -22,6 +22,7 @@ function generateGradleStructure(config: ProjectStructureConfig): string {
  ├── 📄 build.gradle
  ├── 📄 settings.gradle
  ├── 📄 gradle.properties
+ ├── 📄 serenity.properties
  ├── 📄 README.md
  ├── 📁 gradle/
  │   └── 📁 wrapper/
@@ -49,7 +50,6 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
  │       │       ├── 📁 hooks/
  │       │       └── 📁 runners/
  │       └── 📁 resources/
- │           ├── 📄 serenity.properties
  │           ├── 📄 logback-test.xml
  │           └── 📁 features/
  └── 📁 target/`;
@@ -82,6 +82,7 @@ function generateMavenStructure(config: ProjectStructureConfig): string {
   const structure = `
 📦 ${config.projectName}/
  ├── 📄 pom.xml
+ ├── 📄 serenity.properties
  ├── 📄 README.md
  ├── 📁 src/
  │   ├── 📁 main/
@@ -104,7 +105,6 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
  │       │       ├── 📁 hooks/
  │       │       └── 📁 runners/
  │       └── 📁 resources/
- │           ├── 📄 serenity.properties
  │           ├── 📄 logback-test.xml
  │           └── 📁 features/
  └── 📁 target/`;

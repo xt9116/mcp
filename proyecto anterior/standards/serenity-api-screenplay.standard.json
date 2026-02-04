@@ -472,8 +472,11 @@
             "user_management.feature",
             "policy_creation.feature"
           ]
-        },
-        "serenity.properties": "Configuración de Serenity BDD"
+        }
+      },
+      "serenity.properties": {
+        "location": "Raíz del proyecto (fuera de src/)",
+        "description": "Configuración de Serenity BDD - DEBE estar en la raíz del proyecto"
       }
     },
     "notes": [
@@ -481,7 +484,7 @@
       "builders/ para construcción de datos de prueba (opcional)",
       "endpoints/ separado para URLs de la API",
       "utils/ solo para utilidades generales (opcional)",
-      "serenity.properties DEBE estar en src/test/resources/",
+      "serenity.properties DEBE estar en la raíz del proyecto (fuera de src/), tanto en Maven como en Gradle",
       "stepdefinitions en minúscula (convención)",
       "Order: tasks -> interactions -> questions -> models -> builders -> endpoints -> utils"
     ]
