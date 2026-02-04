@@ -10,6 +10,7 @@ describe('Diagnostic Tool', () => {
     const projectStructure = `
       📦 api-automation/
       ├── pom.xml
+      ├── serenity.properties
       ├── <serenity.version>4.3.4</serenity.version>
       ├── junit:junit:4.13.2
       ├── serenity-cucumber
@@ -25,8 +26,7 @@ describe('Diagnostic Tool', () => {
       │   ├── hooks/Hooks.java with OnStage
       │   └── stepdefinitions/UserSteps.java with Actor and attemptsTo and asksFor
       └── src/test/resources/
-          ├── features/create-user.feature
-          └── serenity.properties
+          └── features/create-user.feature
       ├── /** Javadoc comments */
       └── net.serenitybdd.screenplay imports
     `;
