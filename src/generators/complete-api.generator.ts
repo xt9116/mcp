@@ -311,6 +311,8 @@ public class ${className} {
 
     @Cuando("envío una petición ${request.metodo} a (.*)")
     public void enviarPeticion(String recurso) {
+        // Note: 'recurso' parameter captures the resource ID from the feature file
+        // Currently using builder pattern for test data, but parameter available for future use
         theActorInTheSpotlight().attemptsTo(
             ${taskName}.con(Constructor${request.huId.replace('API-HU-', '')}Request.conDatosValidos())
         );
@@ -437,7 +439,7 @@ function extractResourceIdFromEndpoint(endpoint: string): string {
   // e.g., "/character/99999" -> "99999"
   // e.g., "/users" -> "users"
   const parts = endpoint.split('/').filter(p => p.length > 0);
-  return parts.length > 0 ? (parts[parts.length - 1] || endpoint) : endpoint;
+  return parts.length > 0 ? parts[parts.length - 1]! : endpoint;
 }
 
 function generateApiInteraction(request: ApiHURequest): string {
