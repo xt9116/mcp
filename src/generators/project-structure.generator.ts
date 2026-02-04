@@ -70,7 +70,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
          `### serenity.conf\n\`\`\`properties\n${serenityConf}\n\`\`\`\n\n` +
          `### logback-test.xml\n\`\`\`xml\n${logbackTest}\n\`\`\`\n\n` +
          `### README.md\n\`\`\`markdown\n${readme}\n\`\`\`\n\n` +
-         `## 📄 Archivos Java Básicos\n\n` +
+         '## 📄 Archivos Java Básicos\n\n' +
          `### Runner Class (${config.companyPackage.replace(/\./g, '/')}/runners/CucumberTestRunner.java)\n\`\`\`java\n${runnerClass}\n\`\`\`\n\n` +
          `### Hooks Class (${config.companyPackage.replace(/\./g, '/')}/hooks/Hooks.java)\n\`\`\`java\n${hooksClass}\n\`\`\``;
 }
@@ -121,7 +121,7 @@ ${projectType !== 'web' ? `│   │           ├── 📁 interactions/
          `### serenity.conf\n\`\`\`properties\n${serenityConf}\n\`\`\`\n\n` +
          `### logback-test.xml\n\`\`\`xml\n${logbackTest}\n\`\`\`\n\n` +
          `### README.md\n\`\`\`markdown\n${readme}\n\`\`\`\n\n` +
-         `## 📄 Archivos Java Básicos\n\n` +
+         '## 📄 Archivos Java Básicos\n\n' +
          `### Runner Class (${config.companyPackage.replace(/\./g, '/')}/runners/CucumberTestRunner.java)\n\`\`\`java\n${runnerClass}\n\`\`\`\n\n` +
          `### Hooks Class (${config.companyPackage.replace(/\./g, '/')}/hooks/Hooks.java)\n\`\`\`java\n${hooksClass}\n\`\`\``;
 }
@@ -334,13 +334,23 @@ ${projectType !== 'api' ? `        <dependency>
 }
 
 function generateSerenityConf(config: ProjectStructureConfig): string {
-  return `serenity.project.name=${config.projectName}
+  const projectType = config.type || 'both';
+  const isApi = projectType === 'api' || projectType === 'both';
+
+  const baseConfig = `serenity.project.name=${config.projectName}
 serenity.test.root=net.serenitybdd.junit5
 webdriver.driver=chrome
 serenity.take.screenshots=FOR_FAILURES
 serenity.reports.show.step.details=true
 serenity.console.headings=normal
 serenity.logging=QUIET`;
+
+  if (isApi) {
+    return `${baseConfig}
+URL_QA=http://localhost:8080/api`;
+  }
+
+  return baseConfig;
 }
 
 function generateLogbackTest(): string {
@@ -419,7 +429,54 @@ public class CucumberTestRunner {
 function generateHooksClass(config: ProjectStructureConfig): string {
   const projectType = config.type || 'both';
   const isApi = projectType === 'api' || projectType === 'both';
-  
+
+  if (isApi) {
+    return `package ${config.companyPackage}.hooks;
+
+import io.cucumber.java.Before;
+import io.cucumber.java.After;
+import net.serenitybdd.screenplay.actors.OnStage;
+import net.serenitybdd.screenplay.actors.OnlineCast;
+import net.serenitybdd.screenplay.rest.abilities.CallAnApi;
+import net.thucydides.model.util.EnvironmentVariables;
+
+import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
+import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
+
+/**
+ * Hooks: Configuración de actores antes y después de cada escenario API
+ * Responsabilidad: Inicializar OnStage y configurar base URL para API REST
+ * CRÍTICO: Debe ejecutarse antes de cualquier StepDefinition
+ */
+public class Hooks {
+
+    private EnvironmentVariables environmentVariables;
+
+    /**
+     * Configuración inicial del escenario
+     * Inicializa el cast de actores y configura la base URL de la API
+     */
+    @Before(order = 0)
+    public void configuracionBaseUrl() {
+        OnStage.setTheStage(new OnlineCast());
+        theActorCalled("Actor");
+        String theRestApiBaseUrl = environmentVariables.optionalProperty("URL_QA")
+            .orElse("http://localhost:8080/api");
+        theActorInTheSpotlight().whoCan(CallAnApi.at(theRestApiBaseUrl));
+    }
+
+    /**
+     * Limpieza después de cada escenario
+     * Libera recursos de API y cierra conexiones
+     * IMPORTANTE: drawTheCurtain() es obligatorio para evitar memory leaks
+     */
+    @After(order = 1)
+    public void tearDown() {
+        OnStage.drawTheCurtain();
+    }
+}`;
+  }
+
   return `package ${config.companyPackage}.hooks;
 
 import io.cucumber.java.Before;
@@ -445,7 +502,7 @@ public class Hooks {
 
     /**
      * Limpieza después de cada escenario
-     * Cierra el navegador${isApi ? ' y libera recursos de API' : ''}
+     * Cierra el navegador
      * IMPORTANTE: drawTheCurtain() es obligatorio para evitar memory leaks
      */
     @After(order = 1)

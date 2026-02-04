@@ -10,8 +10,10 @@ const MAX_RECOMMENDED_CLASS_NAME_LENGTH = 25; // Recommended max length for clas
  * @returns PascalCase version (Get, Post, Put, Delete, Patch)
  */
 export function httpMethodToPascalCase(method: string): string {
-  if (!method) return '';
-  
+  if (!method) {
+    return '';
+  }
+
   // Convert to lowercase first, then capitalize first letter
   const normalized = method.toLowerCase();
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
@@ -23,21 +25,23 @@ export function httpMethodToPascalCase(method: string): string {
  * @returns true if valid, false otherwise
  */
 export function isValidJavaClassName(className: string): boolean {
-  if (!className) return false;
-  
+  if (!className) {
+    return false;
+  }
+
   // Must start with uppercase letter, followed by letters/numbers
   // No underscores, no all caps (except acronyms of 2 letters max)
   const pascalCaseRegex = /^[A-Z][a-zA-Z0-9]*$/;
-  
+
   if (!pascalCaseRegex.test(className)) {
     return false;
   }
-  
+
   // Check that it's not all uppercase (except very short names like IO, UI)
   if (className.length > MAX_ACRONYM_LENGTH && className === className.toUpperCase()) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -48,8 +52,10 @@ export function isValidJavaClassName(className: string): boolean {
  * @returns true if they match, false otherwise
  */
 export function validateFilenameMatchesClassName(filename: string, className: string): boolean {
-  if (!filename || !className) return false;
-  
+  if (!filename || !className) {
+    return false;
+  }
+
   // Remove .java extension if present and compare with class name
   return filename.replace(/\.java$/, '') === className;
 }
@@ -61,30 +67,30 @@ export function validateFilenameMatchesClassName(filename: string, className: st
  */
 export function getClassNameValidationErrors(className: string): string[] {
   const errors: string[] = [];
-  
+
   if (!className) {
     errors.push('❌ CLASS NAME: Class name cannot be empty');
     return errors;
   }
-  
+
   if (!isValidJavaClassName(className)) {
     if (!/^[A-Z]/.test(className)) {
       errors.push(`❌ CLASS NAME: '${className}' must start with an uppercase letter (PascalCase)`);
     }
-    
+
     if (!/^[A-Za-z0-9]+$/.test(className)) {
       errors.push(`❌ CLASS NAME: '${className}' contains invalid characters (only letters and numbers allowed)`);
     }
-    
+
     if (className.length > MAX_ACRONYM_LENGTH && className === className.toUpperCase()) {
       errors.push(`❌ CLASS NAME: '${className}' is all uppercase - use PascalCase instead (e.g., '${httpMethodToPascalCase(className)}Request')`);
     }
   }
-  
+
   if (className.length > MAX_RECOMMENDED_CLASS_NAME_LENGTH) {
     errors.push(`⚠️ CLASS NAME: '${className}' is too long (${className.length} characters, recommended max ${MAX_RECOMMENDED_CLASS_NAME_LENGTH})`);
   }
-  
+
   return errors;
 }
 
@@ -96,12 +102,12 @@ export function getClassNameValidationErrors(className: string): string[] {
  */
 export function getFilenameValidationErrors(filename: string, className: string): string[] {
   const errors: string[] = [];
-  
+
   if (!validateFilenameMatchesClassName(filename, className)) {
     errors.push(
       `❌ FILENAME MISMATCH: File '${filename}' must match class name '${className}' (expected '${className}.java')`
     );
   }
-  
+
   return errors;
 }
