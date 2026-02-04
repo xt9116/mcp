@@ -251,7 +251,7 @@ public class ${className} {
     @Entonces("el código de respuesta debe ser 200")
     public void validarCodigoRespuesta() {
         theActorInTheSpotlight().should(
-            seeThat(${questionName}.valor(), equalTo(200))
+            seeThat("El código de respuesta", ${questionName}.valor(), equalTo(200))
         );
     }
 

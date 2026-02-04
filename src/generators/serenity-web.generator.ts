@@ -316,7 +316,7 @@ export function generateWebStepDefinitions(config: WebComponentConfig): string {
   lines.push('    @Entonces("debe visualizar el resultado")');
   lines.push('    public void debeVisualizarResultado() {');
   lines.push('        theActorInTheSpotlight().should(');
-  lines.push('            seeThat(VerificarElemento.en(TARGET), is(true))');
+  lines.push('            seeThat("El resultado", VerificarElemento.en(TARGET), is(true))');
   lines.push('        );');
   lines.push('    }');
   lines.push('}');
