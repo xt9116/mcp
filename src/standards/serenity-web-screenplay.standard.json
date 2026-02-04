@@ -212,9 +212,9 @@
     },
     "dependencies_mobile": {
       "serenity": {
-        "version": "4.2.33",
-        "description": "Versión de Serenity BDD usada en rimac-auto-mobile",
-        "note": "Versión estable probada en producción."
+        "version": "4.3.4",
+        "description": "Versión de Serenity BDD recomendada para proyectos mobile",
+        "note": "Versión estable actualizada a 4.3.4"
       },
       "selenium": {
         "java": "4.33.0",

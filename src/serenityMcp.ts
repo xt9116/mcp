@@ -23,6 +23,10 @@ import { generateCompleteWebHU } from './generators/complete-web.generator.js';
 import { generateProjectStructure as generateProjectStructureGen } from './generators/project-structure.generator.js';
 import { validateGeneratedCode } from './generators/validation.helper.js';
 
+// Importar diagnostics
+import { diagnoseSerenityRobot, generateMarkdownReport } from './diagnostics/robot-diagnostic.js';
+import type { DiagnosticConfig } from './diagnostics/robot-diagnostic.js';
+
 // Importar estándares
 import javaStandard from './standards/java.standard.json' with { type: 'json' };
 import oopSolidStandard from './standards/oop-solid.standard.json' with { type: 'json' };
@@ -404,6 +408,31 @@ const tools: Tool[] = [
       },
       required: ['standard']
     }
+  },
+
+  // ═══ DIAGNOSTIC TOOLS ═══
+  {
+    name: 'diagnose_serenity_robot',
+    description: 'Diagnostica un proyecto Serenity BDD existente y genera un reporte .md con análisis completo del patrón Screenplay, dependencias, estructura y mejores prácticas. Ideal para auditar robots ya creados.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectStructure: {
+          type: 'string',
+          description: 'Estructura completa del proyecto como texto (archivos pom.xml/build.gradle, estructura de directorios, código de ejemplo). Puede obtenerse con `tree` o `find` commands concatenados con contenido de archivos clave.'
+        },
+        projectPath: {
+          type: 'string',
+          description: 'Ruta del proyecto a diagnosticar (para identificación en el reporte)'
+        },
+        projectType: {
+          type: 'string',
+          enum: ['api', 'web', 'both'],
+          description: 'Tipo de proyecto Serenity (api para REST APIs, web para Web UI, both para ambos)'
+        }
+      },
+      required: ['projectStructure', 'projectPath', 'projectType']
+    }
   }
 ];
 
@@ -730,6 +759,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [{
           type: 'text',
           text: JSON.stringify(standardData, null, 2)
+        }]
+      };
+    }
+
+    // ═══ DIAGNOSTIC HANDLER ═══
+    case 'diagnose_serenity_robot': {
+      const { projectStructure, projectPath, projectType } = args as any;
+
+      const config: DiagnosticConfig = {
+        projectPath,
+        projectType,
+        checkDependencies: true,
+        checkStructure: true,
+        checkPatterns: true
+      };
+
+      const diagnosticResult = diagnoseSerenityRobot(projectStructure, config);
+      const markdownReport = generateMarkdownReport(diagnosticResult);
+
+      return {
+        content: [{
+          type: 'text',
+          text: markdownReport
         }]
       };
     }

@@ -111,6 +111,17 @@ npm run dev
 
 - `get_standard` - Obtiene un estándar completo (Java, OOP/SOLID, Serenity API o Web)
 
+### Diagnóstico de Robots 🔍
+
+- `diagnose_serenity_robot` - Diagnostica proyectos Serenity BDD existentes y genera un reporte completo en formato Markdown (.md) con:
+  - ✅ Validación de dependencias (Serenity 4.3.4, JUnit 4.13.2)
+  - ✅ Análisis de estructura del proyecto
+  - ✅ Verificación de implementación del patrón Screenplay
+  - ✅ Detección de anti-patrones comunes
+  - ✅ Evaluación de mejores prácticas
+  - ✅ Recomendaciones específicas para correcciones
+  - ✅ Puntuación general del proyecto (0-100)
+
 ## Arquitectura
 
 ```
@@ -347,6 +358,85 @@ El nombre se usará tal cual para el directorio del proyecto, artifact ID en Mav
 ### Obtener estándar Java
 
 ```json
+{
+  "tool": "get_standard",
+  "arguments": {
+    "standard": "java"
+  }
+}
+```
+
+### Diagnosticar un robot Serenity existente
+
+**Cómo usar la herramienta de diagnóstico:**
+
+1. **Recopilar información del proyecto**: Usar comandos `tree`, `cat`, o similar para obtener la estructura y contenido de archivos clave
+2. **Invocar la herramienta** con la información recopilada
+3. **Revisar el reporte** generado en formato Markdown con análisis completo
+
+**Ejemplo de uso:**
+
+```json
+{
+  "tool": "diagnose_serenity_robot",
+  "arguments": {
+    "projectPath": "/path/to/my-serenity-project",
+    "projectType": "api",
+    "projectStructure": "📦 my-api-project/\n├── pom.xml (contains serenity-core:4.3.4, junit:4.13.2)\n├── src/\n│   ├── main/java/com/example/\n│   │   ├── tasks/ (CreateUserTask.java)\n│   │   ├── interactions/ (SendPostRequest.java)\n│   │   ├── questions/ (StatusCodeQuestion.java)\n│   │   └── models/ (UserModel.java)\n│   └── test/java/com/example/\n│       ├── runners/ (CucumberTestRunner.java with @RunWith)\n│       ├── hooks/ (Hooks.java with OnStage)\n│       └── stepdefinitions/ (UserStepDefinitions.java with Actor)\n└── src/test/resources/\n    ├── features/ (user-creation.feature)\n    └── serenity.properties"
+  }
+}
+```
+
+**El reporte generado incluirá:**
+
+- 📊 Puntuación general del proyecto (0-100)
+- ✅/❌ Estado de aprobación
+- 🔴 Errores críticos encontrados
+- ⚠️ Advertencias y recomendaciones
+- 📋 Análisis detallado de:
+  - Dependencias (versiones correctas de Serenity y JUnit)
+  - Estructura del proyecto (Runner, Hooks, StepDefinitions, Features)
+  - Patrón Screenplay (uso correcto de Actor, Tasks, Questions)
+  - Mejores prácticas (naming conventions, documentación, organización)
+- 💡 Recomendaciones específicas para mejorar
+- 📝 Conclusión con próximos pasos si hay issues
+
+**Ejemplo de reporte generado:**
+
+```markdown
+# 🔍 Reporte de Diagnóstico - Serenity Robot
+
+## Información General
+- **Proyecto:** my-api-project
+- **Tipo:** API
+- **Estado:** ✅ APROBADO
+- **Puntuación General:** 🟢 **85/100**
+
+## 📊 Resumen de Issues
+| Tipo | Cantidad |
+|------|----------|
+| 🔴 Errores | 0 |
+| ⚠️  Advertencias | 2 |
+| ℹ️  Información | 1 |
+
+## 📋 Análisis Detallado
+
+### ✅ Dependencias
+**Puntuación:** 100/100 ██████████
+- ✅ Serenity BDD 4.3.4 detectado
+- ✅ JUnit 4.13.2 (estable) detectado
+- ✅ Serenity Cucumber configurado
+...
+
+## 💡 Recomendaciones
+1. ⭐ Mejorar calidad del código: agregar documentación Javadoc
+2. 📚 Consultar documentación oficial de Serenity Screenplay
+
+## 📝 Conclusión
+✅ **El proyecto ha pasado el diagnóstico.** El patrón Screenplay está correctamente implementado...
+```
+
+## Contribución
 {
   "tool": "get_standard",
   "arguments": {
