@@ -149,6 +149,7 @@ repositories {
 ext {
     serenityVersion = '4.3.4'
     serenityCucumberVersion = '4.3.4'
+    junit4Version = '4.13.2'
     junitVersion = '5.9.2'
     assertjVersion = '3.24.2'
 }
@@ -157,6 +158,8 @@ dependencies {
     testImplementation "net.serenity-bdd:serenity-core:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-junit:\${serenityVersion}"
     testImplementation "net.serenity-bdd:serenity-cucumber:\${serenityCucumberVersion}"
+    // JUnit 4 - Required for @RunWith(CucumberWithSerenity.class)
+    testImplementation "junit:junit:\${junit4Version}"
 ${projectType !== 'web' ? `    // Serenity REST dependencies for API testing
     // Using 'implementation' scope because Interactions/Questions are in src/main/java
     implementation "net.serenity-bdd:serenity-rest-assured:\${serenityVersion}"
@@ -226,6 +229,7 @@ function generatePomXml(config: ProjectStructureConfig): string {
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <serenity.version>4.3.4</serenity.version>
+        <junit4.version>4.13.2</junit4.version>
         <junit.version>5.9.2</junit.version>
         <assertj.version>3.24.2</assertj.version>
     </properties>
@@ -249,6 +253,13 @@ function generatePomXml(config: ProjectStructureConfig): string {
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-cucumber</artifactId>
             <version>\${serenity.version}</version>
+        </dependency>
+        <!-- JUnit 4 - Required for @RunWith(CucumberWithSerenity.class) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>\${junit4.version}</version>
+            <scope>test</scope>
         </dependency>
 ${projectType !== 'web' ? `        <!-- Serenity REST dependencies for API testing -->
         <dependency>
