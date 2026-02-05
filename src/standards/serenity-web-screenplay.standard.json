@@ -1,6 +1,7 @@
 {
   "name": "Estándar Serenity Screenplay - WEB UI (Alineado con Robots Rimac)",
   "version": "1.4.0",
+  "versionNote": "Updated with ByteBuddy requirements, Actor Management patterns, Serenity 4.x migration, and mandatory validations aligned with API standard",
   "purpose": "Definir los estándares de automatización web usando Serenity BDD + Screenplay + Selenium WebDriver según las prácticas establecidas en los proyectos Rimac (rimac-auto-web, rimac-auto-mobile)",
   "framework": "Serenity BDD",
   "pattern": "Screenplay",
@@ -61,6 +62,45 @@
         "rules": {
           "generateAll": true,
           "validateBusiness": true
+        }
+      },
+      "FEATURE": {
+        "name": "Feature",
+        "description": "Agregar nueva funcionalidad sin necesidad de una HU completa. Puede ser una página nueva, un task nuevo, o una interaction nueva.",
+        "requires": [
+          "descripción clara de la funcionalidad",
+          "tipo de componente (page/task/interaction/question)"
+        ],
+        "generates": [
+          "Componentes específicos solicitados"
+        ],
+        "notRequires": [
+          "feature completo",
+          "stepDefinitions si no son necesarios"
+        ],
+        "rules": {
+          "generateOnlyRequested": true,
+          "validateBusiness": false
+        }
+      },
+      "REFACTOR": {
+        "name": "Refactor",
+        "description": "Mejora de código existente sin cambiar funcionalidad. Puede incluir renombrado, reorganización, mejora de patrones.",
+        "requires": [
+          "descripción del refactor",
+          "archivos afectados"
+        ],
+        "generates": [
+          "Código mejorado sin cambios funcionales"
+        ],
+        "notRequires": [
+          "nuevas funcionalidades",
+          "nuevos tests"
+        ],
+        "rules": {
+          "noFunctionalChanges": true,
+          "maintainTests": true,
+          "improveCodeQuality": true
         }
       }
     }
@@ -124,6 +164,292 @@
           "noSendLogic": true
         }
       }
+    }
+  },
+  "byteBuddyRequirements": {
+    "description": "ByteBuddy es usado por Serenity para instrumentar clases (Tasks, Interactions, PageObjects). Estos requisitos son CRÍTICOS para que funcione la instrumentación.",
+    "required": {
+      "publicConstructors": {
+        "description": "TODAS las clases de UI, Tasks, Interactions y Questions DEBEN tener constructores públicos",
+        "reason": "ByteBuddy necesita poder instanciar las clases para instrumentarlas",
+        "severity": "CRITICAL",
+        "examples": {
+          "correct": "public class DiligenciarFormulario implements Task {\n    private final String nombre;\n    \n    public DiligenciarFormulario(String nombre) {\n        this.nombre = nombre;\n    }\n}",
+          "incorrect": "public class DiligenciarFormulario implements Task {\n    private final String nombre;\n    \n    private DiligenciarFormulario(String nombre) { // ❌ PRIVATE\n        this.nombre = nombre;\n    }\n}"
+        }
+      },
+      "nonFinalClasses": {
+        "description": "Las clases NO deben ser final",
+        "reason": "ByteBuddy necesita extender las clases para instrumentarlas",
+        "severity": "CRITICAL",
+        "examples": {
+          "correct": "public class ClickearBoton implements Interaction { }",
+          "incorrect": "public final class ClickearBoton implements Interaction { } // ❌ FINAL"
+        }
+      }
+    },
+    "instantiationPatterns": {
+      "tasks": {
+        "correct": "Tasks.instrumented(MiTask.class, param1, param2)",
+        "incorrect": "new MiTask(param1, param2)",
+        "description": "NUNCA usar 'new' para Tasks - SIEMPRE usar Tasks.instrumented()",
+        "reason": "Tasks.instrumented() crea un proxy instrumentado que registra acciones en el reporte",
+        "severity": "CRITICAL"
+      },
+      "interactions": {
+        "correct": "Interaction.where(\"{actor} clicks button\", actor -> actor.attemptsTo(Click.on(target)))",
+        "alternativeCorrect": "public static Interaction clickOn(Target target) { return Tasks.instrumented(ClickOn.class, target); }",
+        "incorrect": "new ClickOn(target)",
+        "description": "NUNCA usar 'new' para Interactions - usar Interaction.where() o Tasks.instrumented()",
+        "reason": "Interactions también se instrumentan para el reporte",
+        "severity": "CRITICAL"
+      },
+      "questions": {
+        "correct": "new VerificarElemento(target)",
+        "description": "Questions SIEMPRE usan 'new' directamente",
+        "reason": "Questions no se instrumentan de la misma manera, usan 'new' directamente",
+        "severity": "MEDIUM",
+        "note": "A diferencia de Tasks/Interactions, Questions SÍ usan 'new' en sus factory methods"
+      },
+      "pageObjects": {
+        "correct": "PageObject classes extended automatically by Serenity",
+        "description": "PageObjects (UI classes) son instrumentados automáticamente por Serenity cuando extends PageObject",
+        "requirement": "DEBE tener constructor público",
+        "severity": "CRITICAL"
+      }
+    },
+    "factoryMethods": {
+      "description": "Factory methods para encapsular la creación de instancias",
+      "tasks": {
+        "pattern": "public static {TaskName} {factoryMethod}({params}) { return Tasks.instrumented({TaskName}.class, {params}); }",
+        "examples": [
+          "public static DiligenciarFormulario con(String nombre) { return Tasks.instrumented(DiligenciarFormulario.class, nombre); }",
+          "public static AbrirPagina en(PageObject page) { return Tasks.instrumented(AbrirPagina.class, page); }"
+        ]
+      },
+      "interactions": {
+        "pattern": "public static Interaction {factoryMethod}({params}) { return Tasks.instrumented({InteractionName}.class, {params}); }",
+        "examples": [
+          "public static Interaction clickOn(Target target) { return Tasks.instrumented(ClickOn.class, target); }",
+          "public static Interaction enterValue(Target target, String value) { return Tasks.instrumented(EnterValue.class, target, value); }"
+        ]
+      },
+      "questions": {
+        "pattern": "public static {QuestionName} as({params}) { return new {QuestionName}({params}); }",
+        "examples": [
+          "public static VerificarElemento as(Target target) { return new VerificarElemento(target); }",
+          "public static VerificarTexto del(Target target) { return new VerificarTexto(target); }"
+        ],
+        "note": "Questions usan 'new' directamente en el factory method"
+      }
+    },
+    "commonErrors": {
+      "privateConstructor": {
+        "error": "Cannot instantiate class - constructor is not accessible",
+        "solution": "Cambiar constructor de private a public"
+      },
+      "finalClass": {
+        "error": "Cannot subclass final class",
+        "solution": "Remover 'final' de la declaración de la clase"
+      },
+      "usingNewForTasks": {
+        "error": "Task no aparece en reporte Serenity",
+        "solution": "Usar Tasks.instrumented() en lugar de 'new'"
+      },
+      "usingNewForInteractions": {
+        "error": "Interaction no aparece en reporte Serenity",
+        "solution": "Usar Tasks.instrumented() o Interaction.where() en lugar de 'new'"
+      }
+    }
+  },
+  "actorManagement": {
+    "description": "Gestión correcta de actores en Serenity Screenplay usando OnStage",
+    "mandatory": {
+      "separateHooksClass": {
+        "description": "OBLIGATORIO: Crear una clase separada Hooks.java para @Before y @After",
+        "severity": "CRITICAL",
+        "reason": "Los hooks de inicialización (@Before) y limpieza (@After) DEBEN estar en una clase separada, NO en StepDefinitions",
+        "location": "src/test/java/{package}/stepdefinitions/Hooks.java"
+      }
+    },
+    "hooksTemplate": {
+      "description": "Template para la clase Hooks con OnStage",
+      "code": "package rimac.auto.web.stepdefinitions;\n\nimport io.cucumber.java.Before;\nimport io.cucumber.java.After;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport net.serenitybdd.screenplay.actors.Cast;\n\npublic class Hooks {\n\n    @Before\n    public void setTheStage() {\n        OnStage.setTheStage(new Cast());\n    }\n\n    @After\n    public void drawTheCurtain() {\n        OnStage.drawTheCurtain();\n    }\n}",
+      "required": [
+        "OnStage.setTheStage(new Cast()) en @Before",
+        "OnStage.drawTheCurtain() en @After"
+      ]
+    },
+    "stepDefinitionsTemplate": {
+      "description": "Template para StepDefinitions usando actores",
+      "code": "package rimac.auto.web.stepdefinitions;\n\nimport io.cucumber.java.en.*;\nimport net.serenitybdd.screenplay.actors.OnStage;\nimport static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;\nimport static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;\n\npublic class LoginStepDefinitions {\n\n    @Given(\"{string} abre la página de login\")\n    public void abrePaginaLogin(String actor) {\n        theActorCalled(actor).attemptsTo(\n            AbrirPaginaLogin.go()\n        );\n    }\n\n    @When(\"ingresa sus credenciales\")\n    public void ingresaCredenciales() {\n        theActorInTheSpotlight().attemptsTo(\n            IngresarCredenciales.con(\"usuario\", \"password\")\n        );\n    }\n\n    @Then(\"debe ver el dashboard\")\n    public void debeVerDashboard() {\n        theActorInTheSpotlight().should(\n            seeThat(\"El dashboard debe estar visible\", DashboardVisibility.check(), equalTo(true))\n        );\n    }\n}",
+      "patterns": {
+        "firstStep": "theActorCalled(actor) - usado en el primer step para crear/obtener actor",
+        "subsequentSteps": "theActorInTheSpotlight() - usado en steps siguientes para obtener el actor activo"
+      }
+    },
+    "forbiddenPatterns": {
+      "actorNamed": {
+        "pattern": "Actor.named(\"nombre\")",
+        "severity": "CRITICAL",
+        "reason": "NO usar Actor.named() - usar theActorCalled() de OnStage",
+        "correct": "theActorCalled(\"nombre\")"
+      },
+      "beforeInStepDefinitions": {
+        "pattern": "@Before en StepDefinitions",
+        "severity": "CRITICAL",
+        "reason": "NUNCA poner @Before/@After en StepDefinitions - crear clase Hooks separada",
+        "correct": "Clase Hooks.java separada con @Before/@After"
+      },
+      "manualCastManagement": {
+        "pattern": "Cast cast = new Cast(); Actor actor = cast.actorNamed(\"nombre\");",
+        "severity": "HIGH",
+        "reason": "NO gestionar Cast manualmente - usar OnStage",
+        "correct": "OnStage.setTheStage(new Cast()) en @Before, theActorCalled() en steps"
+      }
+    },
+    "correctPatterns": {
+      "initialization": {
+        "where": "Hooks.java - @Before",
+        "code": "OnStage.setTheStage(new Cast());"
+      },
+      "cleanup": {
+        "where": "Hooks.java - @After",
+        "code": "OnStage.drawTheCurtain();"
+      },
+      "firstInteraction": {
+        "where": "StepDefinitions - primer step del escenario",
+        "code": "theActorCalled(\"Juan\").attemptsTo(AbrirPagina.go());"
+      },
+      "subsequentInteractions": {
+        "where": "StepDefinitions - steps siguientes",
+        "code": "theActorInTheSpotlight().attemptsTo(Clickear.en(BTN_LOGIN));"
+      }
+    },
+    "criticalRules": {
+      "rule1": "NUNCA poner @Before/@After en StepDefinitions - SIEMPRE en clase Hooks separada",
+      "rule2": "SIEMPRE usar theActorCalled() en el primer step de un escenario",
+      "rule3": "SIEMPRE usar theActorInTheSpotlight() en los steps siguientes",
+      "rule4": "NUNCA usar Actor.named() - usar theActorCalled()",
+      "rule5": "SIEMPRE llamar OnStage.setTheStage() en @Before del Hooks",
+      "rule6": "SIEMPRE llamar OnStage.drawTheCurtain() en @After del Hooks"
+    }
+  },
+  "serenityBdd4Migration": {
+    "description": "Cambios necesarios para Serenity BDD 4.x (aplica tanto a proyectos WEB como API)",
+    "runnerClass": {
+      "deprecated": {
+        "class": "CucumberSerenityRunner",
+        "import": "import net.serenitybdd.cucumber.CucumberSerenityRunner;"
+      },
+      "current": {
+        "class": "CucumberWithSerenity",
+        "import": "import io.cucumber.junit.CucumberWithSerenity;"
+      },
+      "severity": "HIGH",
+      "description": "CucumberSerenityRunner está deprecated en Serenity 4.x - usar CucumberWithSerenity"
+    },
+    "runnerTemplate": {
+      "code": "package rimac.auto.web;\n\nimport io.cucumber.junit.CucumberOptions;\nimport io.cucumber.junit.CucumberWithSerenity;\nimport org.junit.runner.RunWith;\n\n@RunWith(CucumberWithSerenity.class)\n@CucumberOptions(\n    features = \"src/test/resources/features\",\n    glue = \"rimac.auto.web.stepdefinitions\",\n    plugin = {\"pretty\", \"json:target/cucumber-reports/cucumber.json\"},\n    snippets = io.cucumber.junit.CucumberOptions.SnippetType.CAMELCASE\n)\npublic class RunnerTags { }",
+      "requiredImports": [
+        "io.cucumber.junit.CucumberOptions",
+        "io.cucumber.junit.CucumberWithSerenity",
+        "org.junit.runner.RunWith"
+      ]
+    }
+  },
+  "serenityWebChanges": {
+    "description": "Cambios específicos de Serenity Web para la versión 4.x",
+    "stablePatterns": {
+      "targetLocators": {
+        "description": "Los Target locators permanecen estables en Serenity 4.x",
+        "patterns": [
+          "Target.the(\"description\").locatedBy(\"selector\")",
+          "Target.the(\"description\").located(By.xpath(\"xpath\"))",
+          "Target.the(\"description\").located(By.cssSelector(\"css\"))"
+        ],
+        "note": "No hay cambios en la forma de definir Target locators"
+      },
+      "webInteractions": {
+        "description": "Las interacciones web básicas permanecen estables",
+        "interactions": [
+          "Click.on(target)",
+          "Enter.theValue(value).into(target)",
+          "Clear.field(target)",
+          "SelectFromOptions.byVisibleText(text).from(target)",
+          "Open.browserOn().the(pageObject)"
+        ],
+        "note": "No hay cambios en las interacciones web estándar de Serenity"
+      },
+      "webQuestions": {
+        "description": "Las questions web permanecen estables",
+        "questions": [
+          "Text.of(target)",
+          "Visibility.of(target)",
+          "Value.of(target)",
+          "Attribute.of(target).named(attributeName)"
+        ],
+        "note": "No hay cambios en las questions web estándar de Serenity"
+      }
+    },
+    "pageObjectPattern": {
+      "description": "PageObjects siguen usando el mismo patrón en Serenity 4.x",
+      "template": "public class UiLoginPage extends PageObject {\n    public static final Target TXT_USERNAME = Target.the(\"campo username\").locatedBy(\"#username\");\n    public static final Target BTN_LOGIN = Target.the(\"botón login\").locatedBy(\"//button[@type='submit']\");\n}",
+      "note": "El patrón PageObject permanece sin cambios en Serenity 4.x"
+    }
+  },
+  "mandatoryValidations": {
+    "description": "Validaciones obligatorias que DEBEN incluirse en cada escenario",
+    "minimumRequired": {
+      "elementValidation": {
+        "description": "Validar visibilidad o presencia de elementos clave",
+        "severity": "HIGH",
+        "examples": [
+          "actor.should(seeThat(\"El botón debe estar visible\", Visibility.of(BTN_LOGIN), equalTo(true)))",
+          "actor.should(seeThat(\"El mensaje debe estar presente\", Text.of(LBL_MESSAGE), containsString(\"Bienvenido\")))"
+        ]
+      },
+      "businessValidation": {
+        "description": "Al menos UNA validación de negocio por escenario",
+        "severity": "CRITICAL",
+        "examples": [
+          "actor.should(seeThat(\"El usuario debe ver el dashboard\", DashboardVisibility.check(), equalTo(true)))",
+          "actor.should(seeThat(\"El formulario debe procesarse correctamente\", FormSubmissionStatus.check(), equalTo(\"SUCCESS\")))"
+        ]
+      },
+      "errorValidation": {
+        "description": "Validar mensajes de error cuando aplique (escenarios negativos)",
+        "severity": "HIGH",
+        "examples": [
+          "actor.should(seeThat(\"El mensaje de error debe mostrarse\", Text.of(LBL_ERROR), equalTo(\"Usuario o contraseña incorrectos\")))",
+          "actor.should(seeThat(\"El campo debe marcar error de validación\", Visibility.of(LBL_FIELD_ERROR), equalTo(true)))"
+        ]
+      }
+    },
+    "validationPattern": {
+      "correct": "actor.should(seeThat(\"DESCRIPCIÓN\", question, matcher))",
+      "incorrect": "actor.should(seeThat(question, matcher))",
+      "description": "SIEMPRE usar seeThat() con descripción como PRIMER parámetro",
+      "severity": "HIGH",
+      "reason": "La descripción mejora los reportes y ayuda con la inferencia de tipos en el compilador",
+      "examples": {
+        "correct": [
+          "actor.should(seeThat(\"El elemento debe estar visible\", ElementVisibility.of(target), equalTo(true)))",
+          "actor.should(seeThat(\"El texto debe contener el nombre\", Text.of(LBL_NAME), containsString(\"Juan\")))",
+          "actor.should(seeThat(\"La página debe cargar correctamente\", PageLoadStatus.check(), equalTo(\"LOADED\")))"
+        ],
+        "incorrect": [
+          "actor.should(seeThat(ElementVisibility.of(target), equalTo(true)))",
+          "actor.should(seeThat(Text.of(LBL_NAME), containsString(\"Juan\")))"
+        ]
+      }
+    },
+    "webSpecificValidations": {
+      "visibility": "Visibility.of(target) - validar que elementos estén visibles",
+      "text": "Text.of(target) - validar texto de elementos",
+      "value": "Value.of(target) - validar valores de campos",
+      "attribute": "Attribute.of(target).named(name) - validar atributos HTML",
+      "customQuestions": "Questions personalizadas que implementen Question<T>"
     }
   },
   "namingConventions": {
@@ -390,7 +716,18 @@
       },
       "returnType": "Boolean o valor",
       "actorValidation": "actor.should(seeThat(\"descripción\", question, matcher))",
-      "description": "Usar seeThat() con descripción para validaciones (mejora reportes y ayuda con inferencia de tipos)"
+      "description": "Usar seeThat() con descripción como PRIMER parámetro para validaciones (mejora reportes y ayuda con inferencia de tipos)",
+      "validationExamples": {
+        "correct": [
+          "actor.should(seeThat(\"El botón debe estar visible\", Visibility.of(BTN_LOGIN), equalTo(true)))",
+          "actor.should(seeThat(\"El mensaje debe contener bienvenida\", Text.of(LBL_MESSAGE), containsString(\"Bienvenido\")))",
+          "actor.should(seeThat(\"La página debe cargar\", PageLoadStatus.check(), equalTo(true)))"
+        ],
+        "incorrect": [
+          "actor.should(seeThat(Visibility.of(BTN_LOGIN), equalTo(true)))",
+          "actor.should(seeThat(Text.of(LBL_MESSAGE), containsString(\"Bienvenido\")))"
+        ]
+      }
     },
     "stepDefinitions": {
       "maxLines": 3,
