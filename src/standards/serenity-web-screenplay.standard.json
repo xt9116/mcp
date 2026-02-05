@@ -608,6 +608,12 @@
         "name": "questions",
         "pattern": "src/main/java/rimac/auto/web/questions/",
         "description": "Questions para validaciones"
+      },
+      "models": {
+        "name": "models",
+        "pattern": "src/main/java/rimac/auto/web/models/",
+        "description": "Carpeta para modelos de datos que manejan DataTables",
+        "note": "NOTA: Los modelos se usan para convertir datos de tablas en features a objetos Java"
       }
     }
   },
@@ -625,7 +631,8 @@
           "UiGerencia",
           "UiSegurosViajes",
           "UIAlerts",
-          "TransversalUI"
+          "TransversalUI",
+          "UiPagina"
         ],
         "alternatives": [
           "UISoatDigital",
@@ -642,14 +649,49 @@
       },
       "extends": {
         "value": "PageObject",
-        "description": "Todas las clases UI deben extender PageObject"
+        "description": "Todas las clases UI deben extender PageObject",
+        "mandatory": true,
+        "reason": "Necesario para usar @DefaultUrl y para la instrumentación de Serenity BDD"
       },
       "annotations": {
         "defaultUrl": {
           "name": "@DefaultUrl",
-          "description": "Anotación opcional para URL base de la página",
-          "note": "Usado en varias UI classes de proyectos Rimac"
+          "description": "Anotación para URL base de la página",
+          "mandatory": true,
+          "usage": "@DefaultUrl(\"https://www.example.com/\")",
+          "note": "OBLIGATORIO: Siempre se debe usar @DefaultUrl en la clase UI principal que contiene la URL del sitio web. Esto permite usar Open.browserOn(uiPage) en las Tasks."
         }
+      },
+      "imports": {
+        "description": "Imports obligatorios para clases UI",
+        "mandatory": [
+          "net.serenitybdd.annotations.DefaultUrl",
+          "net.serenitybdd.core.pages.PageObject",
+          "net.serenitybdd.screenplay.targets.Target",
+          "org.openqa.selenium.By"
+        ],
+        "note": "Estos imports son OBLIGATORIOS para la estructura correcta de las clases UI"
+      },
+      "structure": {
+        "description": "Estructura obligatoria de las clases UI",
+        "template": "import net.serenitybdd.annotations.DefaultUrl;\nimport net.serenitybdd.core.pages.PageObject;\nimport net.serenitybdd.screenplay.targets.Target;\nimport org.openqa.selenium.By;\n\n@DefaultUrl(\"https://www.ejemplo.com/\")\npublic class UiPagina extends PageObject {\n\n    // Elementos de la pagina\n    public static final Target BTN_INCREMENTAR = Target.the(\"Boton incrementar\").located(By.xpath(\"//button[@id='ejemplo']\"));\n    \n}",
+        "elements": [
+          {
+            "name": "Annotation",
+            "value": "@DefaultUrl",
+            "mandatory": true
+          },
+          {
+            "name": "Class declaration",
+            "value": "public class Ui{PageName} extends PageObject",
+            "mandatory": true
+          },
+          {
+            "name": "Target elements",
+            "value": "public static final Target {PREFIX}_{NAME}",
+            "mandatory": true
+          }
+        ]
       },
       "locators": {
         "prefixes": [
@@ -664,17 +706,19 @@
           "TBL_"
         ],
         "description": "Prefijos para constantes de Target",
+        "pattern": "public static final Target {PREFIX}_{ELEMENT_NAME} = Target.the(\"{description}\").located(By.{locator}(...));",
         "note": "En proyectos Rimac se usan todos estos prefijos"
       },
       "strategies": {
-        "preferred": ".locatedBy()",
-        "description": "Método preferido para Target",
+        "preferred": ".located(By.xpath(...))",
+        "description": "Método preferido para Target usando By locators",
         "alternatives": [
           ".located(By.xpath(...))",
           ".located(By.cssSelector(...))",
-          ".located(By.id(...))"
+          ".located(By.id(...))",
+          ".locatedBy(\"xpath-string\")"
         ],
-        "note": "En proyectos Rimac se usa un enfoque mixto. Se prefiere .locatedBy() pero también se acepta .located(By.*)"
+        "note": "PREFERENCIA: Se debe usar .located(By.*) para mayor claridad y consistencia. También se acepta .locatedBy() pero se prefiere By.*"
       }
     },
     "tasks": {
@@ -684,16 +728,62 @@
       },
       "factoryMethod": {
         "pattern": "Tasks.instrumented()",
-        "method": "llamado",
-        "description": "Factory method para Tasks según prácticas Rimac",
+        "method": "urlWeb",
+        "alternativeMethods": [
+          "llamado",
+          "con",
+          "ir",
+          "go"
+        ],
+        "description": "Factory method para Tasks - el nombre puede variar según el contexto",
         "examples": [
+          "AbrirPagina.urlWeb()",
           "OpenPagePublicWeb.ir(new UiSoatDigital())",
           "DiligenciarDatosPlan.go(plan, medioPago, false)"
         ],
-        "note": "NOTA: El método factory se llama 'llamado' según prácticas Rimac. 'con' también es aceptado."
+        "note": "NOTA: El método factory puede tener diferentes nombres según el contexto: 'urlWeb', 'llamado', 'con', 'ir', 'go', etc. Todos son aceptados."
       },
       "actorActions": "actor.attemptsTo()",
-      "description": "Todos los tasks deben usar actor.attemptsTo()"
+      "description": "Todos los tasks deben usar actor.attemptsTo()",
+      "openBrowserPattern": {
+        "description": "Patrón para abrir navegador con URL desde clase UI",
+        "mandatory": true,
+        "structure": {
+          "privateField": {
+            "description": "Campo privado para la clase UI",
+            "pattern": "private UiPagina uiPagina;",
+            "mandatory": true,
+            "note": "Este campo NO se inicializa en el constructor, Serenity lo inyecta automáticamente"
+          },
+          "performAs": {
+            "description": "Método performAs que usa Open.browserOn()",
+            "pattern": "actor.attemptsTo(Open.browserOn(uiPagina));",
+            "mandatory": true,
+            "note": "Open.browserOn(uiPagina) abre el navegador en la URL especificada en @DefaultUrl de la clase UI"
+          },
+          "factoryMethod": {
+            "description": "Factory method estático",
+            "pattern": "public static AbrirPagina urlWeb() { return Tasks.instrumented(AbrirPagina.class); }",
+            "mandatory": true
+          }
+        },
+        "template": "package com.sistecredito.web.tasks;\n\nimport com.sistecredito.web.userinterfaces.UiPagina;\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.screenplay.Task;\nimport net.serenitybdd.screenplay.Tasks;\nimport net.serenitybdd.screenplay.actions.Click;\nimport net.serenitybdd.screenplay.actions.Open;\nimport net.serenitybdd.screenplay.waits.WaitUntil;\n\nimport static com.sistecredito.web.userinterfaces.UiMenu.BTN_CERRAR_MODAL;\nimport static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isClickable;\n\npublic class AbrirPagina implements Task {\n    private UiPagina uiPagina;\n\n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n                Open.browserOn(uiPagina),\n\n                // Puede tener acciones como en este ejemplo de esperar y cerrar un modal\n                WaitUntil.the(BTN_CERRAR_MODAL, isClickable()).forNoMoreThan(120).seconds(),\n                Click.on(BTN_CERRAR_MODAL)\n        );\n    }\n\n    public static AbrirPagina urlWeb() {\n        return Tasks.instrumented(AbrirPagina.class);\n    }\n}",
+        "imports": {
+          "description": "Imports necesarios para Tasks que abren páginas",
+          "mandatory": [
+            "net.serenitybdd.screenplay.Actor",
+            "net.serenitybdd.screenplay.Task",
+            "net.serenitybdd.screenplay.Tasks",
+            "net.serenitybdd.screenplay.actions.Open",
+            "{package}.userinterfaces.UiPagina"
+          ]
+        },
+        "usage": {
+          "description": "Cómo usar el Task en StepDefinitions",
+          "example": "actor.attemptsTo(AbrirPagina.urlWeb());",
+          "note": "El actor ejecuta el task que abre el navegador en la URL definida en @DefaultUrl de UiPagina"
+        }
+      }
     },
     "questions": {
       "factoryMethod": {
@@ -760,6 +850,56 @@
       },
       "actorActions": "actor.attemptsTo()",
       "description": "Todos los interactions deben usar actor.attemptsTo()"
+    },
+    "models": {
+      "description": "Componente para manejo de datos de prueba desde DataTables en archivos .feature",
+      "mandatory": true,
+      "purpose": "Los modelos se usan para convertir datos de tablas en archivos .feature a objetos Java usando Jackson",
+      "structure": {
+        "fields": {
+          "description": "Campos privados con getters y setters",
+          "pattern": "private String {fieldName};",
+          "mandatory": true,
+          "note": "Todos los campos deben ser privados y tener métodos getter y setter públicos"
+        },
+        "gettersSetters": {
+          "description": "Métodos getter y setter para cada campo",
+          "mandatory": true,
+          "pattern": "public String get{FieldName}() { return {fieldName}; }\npublic void set{FieldName}(String {fieldName}) { this.{fieldName} = {fieldName}; }"
+        },
+        "setDataMethod": {
+          "description": "Método estático para convertir DataTable a List de objetos del modelo",
+          "mandatory": true,
+          "pattern": "public static List<{ModelName}> setData(DataTable dataTable) {\n    List<{ModelName}> dates = new ArrayList<>();\n    List<Map<String, String>> mapInfo = dataTable.asMaps();\n    for (Map<String, String> map : mapInfo) {\n        dates.add(new ObjectMapper().convertValue(map, {ModelName}.class));\n    }\n    return dates;\n}",
+          "note": "Este método es OBLIGATORIO para convertir DataTable de Cucumber a objetos Java"
+        }
+      },
+      "imports": {
+        "description": "Imports obligatorios para modelos",
+        "mandatory": [
+          "com.fasterxml.jackson.databind.ObjectMapper",
+          "io.cucumber.datatable.DataTable",
+          "java.util.ArrayList",
+          "java.util.List",
+          "java.util.Map"
+        ],
+        "note": "Estos imports son necesarios para el manejo de DataTables con Jackson"
+      },
+      "template": "package rimac.auto.web.models;\n\nimport com.fasterxml.jackson.databind.ObjectMapper;\nimport io.cucumber.datatable.DataTable;\n\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Map;\n\npublic class AdultoExistenteDos {\n\n    private String tipoDocumenAdultoDosExiste;\n    private String numDocumenAdultoDosExiste;\n    private String tipoDocumenAdultoTresExiste;\n    private String numDocumenAdultoTresExiste;\n    private String tipoDocumenAdultoCuatroExiste;\n    private String numDocumenAdultoCuatroExiste;\n\n    public String getTipoDocumenAdultoDosExiste() {\n        return tipoDocumenAdultoDosExiste;\n    }\n\n    public void setTipoDocumenAdultoDosExiste(String tipoDocumenAdultoDosExiste) {\n        this.tipoDocumenAdultoDosExiste = tipoDocumenAdultoDosExiste;\n    }\n\n    public String getNumDocumenAdultoDosExiste() {\n        return numDocumenAdultoDosExiste;\n    }\n\n    public void setNumDocumenAdultoDosExiste(String numDocumenAdultoDosExiste) {\n        this.numDocumenAdultoDosExiste = numDocumenAdultoDosExiste;\n    }\n\n    public String getTipoDocumenAdultoTresExiste() {\n        return tipoDocumenAdultoTresExiste;\n    }\n\n    public void setTipoDocumenAdultoTresExiste(String tipoDocumenAdultoTresExiste) {\n        this.tipoDocumenAdultoTresExiste = tipoDocumenAdultoTresExiste;\n    }\n\n    public String getNumDocumenAdultoTresExiste() {\n        return numDocumenAdultoTresExiste;\n    }\n\n    public void setNumDocumenAdultoTresExiste(String numDocumenAdultoTresExiste) {\n        this.numDocumenAdultoTresExiste = numDocumenAdultoTresExiste;\n    }\n\n    public String getTipoDocumenAdultoCuatroExiste() {\n        return tipoDocumenAdultoCuatroExiste;\n    }\n\n    public void setTipoDocumenAdultoCuatroExiste(String tipoDocumenAdultoCuatroExiste) {\n        this.tipoDocumenAdultoCuatroExiste = tipoDocumenAdultoCuatroExiste;\n    }\n\n    public String getNumDocumenAdultoCuatroExiste() {\n        return numDocumenAdultoCuatroExiste;\n    }\n\n    public void setNumDocumenAdultoCuatroExiste(String numDocumenAdultoCuatroExiste) {\n        this.numDocumenAdultoCuatroExiste = numDocumenAdultoCuatroExiste;\n    }\n\n    public static List<AdultoExistenteDos> setData(DataTable dataTable) {\n        List<AdultoExistenteDos> dates = new ArrayList<>();\n        List<Map<String, String>> mapInfo = dataTable.asMaps();\n        for (Map<String, String> map : mapInfo) {\n            dates.add(new ObjectMapper().convertValue(map, AdultoExistenteDos.class));\n        }\n        return dates;\n    }\n}",
+      "usage": {
+        "description": "Cómo usar el modelo en StepDefinitions",
+        "example": "List<AdultoExistenteDos> datos = AdultoExistenteDos.setData(dataTable);",
+        "note": "El método setData convierte automáticamente la DataTable del feature a una lista de objetos del modelo"
+      },
+      "featureExample": {
+        "description": "Ejemplo de DataTable en archivo .feature",
+        "example": "Scenario: Ejemplo con datos\n  When el usuario ingresa los siguientes datos:\n    | tipoDocumenAdultoDosExiste | numDocumenAdultoDosExiste |\n    | DNI                        | 12345678                  |\n    | CE                         | 87654321                  |"
+      },
+      "location": {
+        "folder": "models",
+        "pattern": "src/main/java/{basePackage}/models/",
+        "description": "Carpeta donde se deben ubicar los modelos"
+      }
     }
   },
   "validation": {
