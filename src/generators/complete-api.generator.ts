@@ -1,16 +1,32 @@
 // Generador completo para HU de API REST - Alineado con Estándares actualizados
 import type { ApiHURequest, GeneratedHU } from './types.js';
 import { httpMethodToPascalCase } from './naming.helper.js';
+import { 
+  determineLanguage, 
+  getCucumberImport, 
+  getGherkinKeywords,
+  getGivenAnnotation,
+  getWhenAnnotation,
+  getThenAnnotation,
+  getAndAnnotation,
+  type Language
+} from './language.helper.js';
 
 export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
   // Use provided packageName or default to com.screenplay
   const basePackage = request.packageName || 'com.screenplay';
   
+  // Determine language for step definitions and feature files
+  const language = determineLanguage(
+    request.language,
+    request.escenarioPrueba?.steps
+  );
+  
   const taskCode = generateApiTask(request, basePackage);
   const questionCode = generateApiQuestion(request, basePackage);
   const modelCode = generateApiModel(request, basePackage);
-  const stepCode = generateApiStepDefinitions(request, basePackage);
-  const featureCode = generateApiFeature(request);
+  const stepCode = generateApiStepDefinitions(request, basePackage, language);
+  const featureCode = generateApiFeature(request, language);
   const interactionCode = generateApiInteraction(request, basePackage);
   const builderCode = generateApiBuilder(request, basePackage);
   const endpointCode = generateApiEndpoints(request, basePackage);
@@ -283,14 +299,49 @@ public class ${className} {
 }`;
 }
 
-function generateApiStepDefinitions(request: ApiHURequest, basePackage: string): string {
+function generateApiStepDefinitions(request: ApiHURequest, basePackage: string, language: Language): string {
   const className = `${request.huId.replace('API-HU-', '')}StepDefinitions`;
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const questionName = `Validar${request.huId.replace('API-HU-', '')}Response`;
+  
+  const cucumberImport = getCucumberImport(language);
+  const givenAnnotation = getGivenAnnotation(language);
+  const whenAnnotation = getWhenAnnotation(language);
+  const thenAnnotation = getThenAnnotation(language);
+  const andAnnotation = getAndAnnotation(language);
+  
+  // Use language-appropriate step text
+  const stepTexts = language === 'en' 
+    ? {
+        serviceAvailable: 'the service is available',
+        sendRequest: `I send a ${request.metodo} request to {word}`,
+        responseCode200: 'the response code should be 200',
+        responseCodeInt: 'the response code should be {int}',
+        bodyContainsId: 'the body should contain the character ID',
+        idDataType: 'the ID data type is Integer',
+        fieldShouldBe: 'the field {string} should be {string}',
+        fieldValidValues: 'the field {string} should be one of the valid values',
+        fieldIsObject: 'the field {string} should be an object with properties {string} and {string}',
+        fieldIsArray: 'the field {string} should be a non-empty array',
+        bodyContainsExpectedInfo: 'the body should contain the expected information'
+      }
+    : {
+        serviceAvailable: 'que el servicio está disponible',
+        sendRequest: `envío una petición ${request.metodo} a {word}`,
+        responseCode200: 'el código de respuesta debe ser 200',
+        responseCodeInt: 'el código de respuesta debe ser {int}',
+        bodyContainsId: 'el body debe contener el ID del personaje',
+        idDataType: 'el tipo de dato del ID es Integer',
+        fieldShouldBe: 'el campo {string} debe ser {string}',
+        fieldValidValues: 'el campo {string} debe ser uno de los valores válidos',
+        fieldIsObject: 'el campo {string} debe ser un objeto con propiedades {string} y {string}',
+        fieldIsArray: 'el campo {string} debe ser un array no vacío',
+        bodyContainsExpectedInfo: 'el body debe contener la información esperada'
+      };
 
   return `package ${basePackage}.stepdefinitions;
 
-import io.cucumber.java.es.*;
+import ${cucumberImport};
 import static net.serenitybdd.screenplay.actors.OnStage.*;
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.*;
@@ -308,12 +359,12 @@ import ${basePackage}.models.*;
  */
 public class ${className} {
 
-    @Dado("que el servicio está disponible")
+    ${givenAnnotation}("${stepTexts.serviceAvailable}")
     public void servicioDisponible() {
         // Verificar que el servicio esté disponible
     }
 
-    @Cuando("envío una petición ${request.metodo} a {word}")
+    ${whenAnnotation}("${stepTexts.sendRequest}")
     public void enviarPeticion(String recurso) {
         // Note: 'recurso' parameter captures the resource ID from the feature file (e.g., "99999", "users")
         // The feature file extracts only the last segment of the endpoint path
@@ -323,21 +374,21 @@ public class ${className} {
         );
     }
 
-    @Entonces("el código de respuesta debe ser 200")
+    ${thenAnnotation}("${stepTexts.responseCode200}")
     public void validarCodigoRespuesta200() {
         theActorInTheSpotlight().should(
             seeThat("El código de respuesta", ${questionName}.valor(), equalTo(200))
         );
     }
 
-    @Entonces("el código de respuesta debe ser {int}")
+    ${thenAnnotation}("${stepTexts.responseCodeInt}")
     public void elCodigoDeRespuestaDebeSer(int statusCode) {
         theActorInTheSpotlight().should(
             seeThat("El código de respuesta", ${questionName}.valor(), equalTo(statusCode))
         );
     }
 
-    @Y("el body debe contener el ID del personaje")
+    ${andAnnotation}("${stepTexts.bodyContainsId}")
     public void elBodyDebeContenerElId() {
         theActorInTheSpotlight().should(
             seeThat("El ID del personaje", 
@@ -346,7 +397,7 @@ public class ${className} {
         );
     }
 
-    @Y("el tipo de dato del ID es Integer")
+    ${andAnnotation}("${stepTexts.idDataType}")
     public void elTipoDeDatoDelIdEsInteger() {
         theActorInTheSpotlight().should(
             seeThat("El tipo del ID", 
@@ -355,7 +406,7 @@ public class ${className} {
         );
     }
 
-    @Y("el campo {string} debe ser {string}")
+    ${andAnnotation}("${stepTexts.fieldShouldBe}")
     public void elCampoDebeSer(String campo, String valorEsperado) {
         theActorInTheSpotlight().should(
             seeThat("El campo " + campo, 
@@ -364,7 +415,7 @@ public class ${className} {
         );
     }
 
-    @Y("el campo {string} debe ser uno de los valores válidos")
+    ${andAnnotation}("${stepTexts.fieldValidValues}")
     public void elCampoDebeSerUnoDeLosValoresValidos(String campo) {
         switch (campo) {
             case "status":
@@ -387,7 +438,7 @@ public class ${className} {
         }
     }
 
-    @Y("el campo {string} debe ser un objeto con propiedades {string} y {string}")
+    ${andAnnotation}("${stepTexts.fieldIsObject}")
     public void elCampoDebeSerUnObjetoConPropiedades(String campo, String prop1, String prop2) {
         theActorInTheSpotlight().should(
             seeThat("El campo " + campo, 
@@ -396,7 +447,7 @@ public class ${className} {
         );
     }
 
-    @Y("el campo {string} debe ser un array no vacío")
+    ${andAnnotation}("${stepTexts.fieldIsArray}")
     public void elCampoDebeSerUnArrayNoVacio(String campo) {
         theActorInTheSpotlight().should(
             seeThat("El tamaño del array " + campo, 
@@ -405,7 +456,7 @@ public class ${className} {
         );
     }
 
-    @Y("el body debe contener la información esperada")
+    ${andAnnotation}("${stepTexts.bodyContainsExpectedInfo}")
     public void validarBody() {
         theActorInTheSpotlight().should(
             seeThat("El response completo", 
@@ -416,7 +467,7 @@ public class ${className} {
 }`;
 }
 
-function generateApiFeature(request: ApiHURequest): string {
+function generateApiFeature(request: ApiHURequest, language: Language): string {
   let examples = '';
   if (request.escenarioPrueba && request.escenarioPrueba.examples && request.escenarioPrueba.examples.length > 0) {
     examples = request.escenarioPrueba.examples
@@ -427,15 +478,32 @@ function generateApiFeature(request: ApiHURequest): string {
 
   // Extract resource ID from endpoint (e.g., "/api/character/99999" -> "99999")
   const resourceId = extractResourceIdFromEndpoint(request.endpoint);
+  
+  const keywords = getGherkinKeywords(language);
+  
+  // Use language-appropriate step text
+  const stepTexts = language === 'en' 
+    ? {
+        serviceAvailable: 'the service is available',
+        sendRequest: `I send a ${request.metodo} request to ${resourceId}`,
+        responseCode200: 'the response code should be 200',
+        bodyContainsExpectedInfo: 'the body should contain the expected information'
+      }
+    : {
+        serviceAvailable: 'el servicio está disponible',
+        sendRequest: `envío una petición ${request.metodo} a ${resourceId}`,
+        responseCode200: 'el código de respuesta debe ser 200',
+        bodyContainsExpectedInfo: 'el body debe contener la información esperada'
+      };
 
-  return `Feature: ${request.nombre}
+  return `${keywords.feature}: ${request.nombre}
 
   @${request.huId}
-  Scenario Outline: Operación ${request.metodo} exitosa
-    Given el servicio está disponible
-    When envío una petición ${request.metodo} a ${resourceId}
-    Then el código de respuesta debe ser 200
-    And el body debe contener la información esperada${examples}`;
+  ${keywords.scenarioOutline}: Operación ${request.metodo} exitosa
+    ${keywords.given} ${stepTexts.serviceAvailable}
+    ${keywords.when} ${stepTexts.sendRequest}
+    ${keywords.then} ${stepTexts.responseCode200}
+    ${keywords.and} ${stepTexts.bodyContainsExpectedInfo}${examples}`;
 }
 
 function extractResourceIdFromEndpoint(endpoint: string): string {

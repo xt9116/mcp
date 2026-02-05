@@ -365,6 +365,11 @@ const tools: Tool[] = [
         packageName: { 
           type: 'string', 
           description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay"'
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'es'],
+          description: 'Language for feature files and step definitions. "en" for English (Given/When/Then), "es" for Spanish (Dado/Cuando/Entonces). If not provided, will be auto-detected from scenario steps, defaulting to Spanish.'
         }
       },
       required: ['huId', 'nombre', 'urlBase', 'endpoint', 'metodo']
@@ -418,6 +423,11 @@ const tools: Tool[] = [
         packageName: { 
           type: 'string', 
           description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay"'
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'es'],
+          description: 'Language for feature files and step definitions. "en" for English (Given/When/Then), "es" for Spanish (Dado/Cuando/Entonces). If not provided, will be auto-detected from scenario steps, defaulting to Spanish.'
         }
       },
       required: ['huId', 'nombre', 'baseUrl', 'paginas']

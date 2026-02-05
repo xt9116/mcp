@@ -1,8 +1,23 @@
 // Web automation code generator for Serenity Screenplay
 import type { WebHURequest, GeneratedHU } from './types.js';
+import { 
+  determineLanguage, 
+  getCucumberImport, 
+  getGherkinKeywords,
+  getGivenAnnotation,
+  getWhenAnnotation,
+  getThenAnnotation,
+  type Language
+} from './language.helper.js';
 
 export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
   const pkgBase = request.packageName || 'com.screenplay';
+  
+  // Determine language for step definitions and feature files
+  const language = determineLanguage(
+    request.language,
+    request.pasosFlujo
+  );
   
   const artifacts = {
     userInterfaces: [] as string[],
@@ -29,11 +44,11 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
   }
 
   artifacts.cucumberSteps.push(
-    buildStepDefinitionsClass(request, pkgBase)
+    buildStepDefinitionsClass(request, pkgBase, language)
   );
 
   artifacts.gherkinFeatures.push(
-    buildGherkinFeature(request)
+    buildGherkinFeature(request, language)
   );
 
   const hookSetup = buildCucumberHooks(pkgBase);
@@ -239,7 +254,7 @@ ${factoryMethods}
 }`;
 }
 
-function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string): string {
+function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string, language: Language): string {
   const stepDefClassName = `${request.huId.replace('WEB-HU-', '')}StepDefinitions`;
   const businessTaskName = sanitizeClassName(request.nombre);
   const primaryUIName = extractPrimaryUIClass(request.paginas);
@@ -248,9 +263,27 @@ function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string): stri
   const validationsList = request.validaciones || [];
   const firstValidation = validationsList.length > 0 ? validationsList[0]! : 'Elemento';
   const genericQuestionClassName = `Verificar${sanitizeClassName(firstValidation)}`;
+  
+  const cucumberImport = getCucumberImport(language);
+  const givenAnnotation = getGivenAnnotation(language);
+  const whenAnnotation = getWhenAnnotation(language);
+  const thenAnnotation = getThenAnnotation(language);
+  
+  // Use language-appropriate step text
+  const stepTexts = language === 'en' 
+    ? {
+        actorGoesToPage: '{string} goes to the web page',
+        actorSearchesProduct: 'searches for the product {string} in the search bar',
+        validateResults: 'I validate that the search results are displayed correctly'
+      }
+    : {
+        actorGoesToPage: 'que {string} ingresa a la página web',
+        actorSearchesProduct: 'diligencia el producto {string} en la barra de búsqueda',
+        validateResults: 'válido los resultados de búsqueda que se muestren correctamente'
+      };
 
   const requiredImports = [
-    'io.cucumber.java.es.*',
+    cucumberImport,
     'static net.serenitybdd.screenplay.actors.OnStage.*',
     'static net.serenitybdd.screenplay.GivenWhenThen.seeThat',
     'static org.hamcrest.Matchers.*',
@@ -265,7 +298,7 @@ ${requiredImports.map(imp => `import ${imp};`).join('\n')}
 
 public class ${stepDefClassName} {
 
-    @Dado("que {string} ingresa a la página web")
+    ${givenAnnotation}("${stepTexts.actorGoesToPage}")
     public void actorAccedeALaPaginaWeb(String actorName) {
         // Browser opening happens here - no product parameter needed yet
         theActorCalled(actorName).attemptsTo(
@@ -273,14 +306,14 @@ public class ${stepDefClassName} {
         );
     }
 
-    @Cuando("diligencia el producto {string} en la barra de búsqueda")
+    ${whenAnnotation}("${stepTexts.actorSearchesProduct}")
     public void actorBuscaProducto(String producto) {
         theActorInTheSpotlight().attemptsTo(
             ${businessTaskName}.llamado(producto)
         );
     }
 
-    @Entonces("válido los resultados de búsqueda que se muestren correctamente")
+    ${thenAnnotation}("${stepTexts.validateResults}")
     public void verificaResultadosDeBusqueda() {
         theActorInTheSpotlight().should(
             seeThat("Los resultados de búsqueda", ${genericQuestionClassName}.en(LBL_RESULTADOS), is(true))
@@ -289,26 +322,41 @@ public class ${stepDefClassName} {
 }`;
 }
 
-function buildGherkinFeature(request: WebHURequest): string {
+function buildGherkinFeature(request: WebHURequest, language: Language): string {
   const scenarioTitle = request.nombre;
   const featureTag = request.huId;
+  
+  const keywords = getGherkinKeywords(language);
+  
+  // Use language-appropriate step text and examples
+  const stepTexts = language === 'en' 
+    ? {
+        actorGoesToPage: '"Daniel" goes to the web page',
+        actorSearchesProduct: 'searches for the product "<producto>" in the search bar',
+        validateResults: 'I validate that the search results are displayed correctly',
+        exampleHeader: 'producto',
+        exampleData: ['Notebook', 'Laptop']
+      }
+    : {
+        actorGoesToPage: 'que "Daniel" ingresa a la página web',
+        actorSearchesProduct: 'diligencia el producto "<producto>" en la barra de búsqueda',
+        validateResults: 'válido los resultados de búsqueda que se muestren correctamente',
+        exampleHeader: 'producto',
+        exampleData: ['Cuaderno', 'Laptop']
+      };
 
-  const exampleData = [
-    '| Cuaderno |',
-    '| Laptop   |'
-  ];
-
-  return `Feature: ${scenarioTitle}
+  return `${keywords.feature}: ${scenarioTitle}
 
   @${featureTag}
-  Scenario Outline: ${scenarioTitle}
-    Given que "Daniel" ingresa a la página web
-    When diligencia el producto "<producto>" en la barra de búsqueda
-    Then válido los resultados de búsqueda que se muestren correctamente
+  ${keywords.scenarioOutline}: ${scenarioTitle}
+    ${keywords.given} ${stepTexts.actorGoesToPage}
+    ${keywords.when} ${stepTexts.actorSearchesProduct}
+    ${keywords.then} ${stepTexts.validateResults}
 
-    Examples:
-        | producto |
-        ${exampleData.join('\n        ')}`;
+    ${keywords.examples}:
+        | ${stepTexts.exampleHeader} |
+        | ${stepTexts.exampleData[0]} |
+        | ${stepTexts.exampleData[1]} |`;
 }
 
 function buildCucumberHooks(pkgBase: string): string {
