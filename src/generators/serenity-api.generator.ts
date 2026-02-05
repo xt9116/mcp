@@ -376,6 +376,154 @@ function getEndpointConstantName(method: string, resource: string): string {
   return `${methodMap[methodUpper] || methodUpper}_${resourceUpper}`;
 }
 
+/**
+ * Generates a GuardarRespuesta (SaveResponse) interaction for storing API responses
+ * @param packageName - Base package name for the interaction
+ * @param abilityClassName - Name of the ability class (e.g., "LlamarAPIsRimac")
+ * @returns Java code for GuardarRespuesta interaction
+ */
+export function generateGuardarRespuesta(packageName: string, abilityClassName: string = 'LlamarAPIsRimac'): string {
+  const lines: string[] = [];
+
+  lines.push(`package ${packageName}.interactions;`);
+  lines.push('');
+  lines.push('import net.serenitybdd.screenplay.Actor;');
+  lines.push('import net.serenitybdd.screenplay.Interaction;');
+  lines.push(`import ${packageName}.abilities.${abilityClassName};`);
+  lines.push('');
+  lines.push('import java.util.function.Consumer;');
+  lines.push('');
+  lines.push('/**');
+  lines.push(' * Interaction para guardar respuestas de API en memoria');
+  lines.push(' * Responsabilidad: Extraer y almacenar la respuesta deserializada para uso posterior');
+  lines.push(' * ');
+  lines.push(' * @param <T> Tipo de la clase de respuesta');
+  lines.push(' */');
+  lines.push('public class GuardarRespuesta<T> implements Interaction {');
+  lines.push('');
+  lines.push('    private final Class<T> responseClass;');
+  lines.push('    private final Consumer<T> setter;');
+  lines.push('    private final String nombreServicio;');
+  lines.push('');
+  lines.push('    /**');
+  lines.push('     * Constructor privado');
+  lines.push('     * @param responseClass Clase del modelo de respuesta');
+  lines.push('     * @param setter Consumer que guarda la respuesta');
+  lines.push('     * @param nombreServicio Nombre del servicio para logging');
+  lines.push('     */');
+  lines.push('    private GuardarRespuesta(Class<T> responseClass, Consumer<T> setter, String nombreServicio) {');
+  lines.push('        this.responseClass = responseClass;');
+  lines.push('        this.setter = setter;');
+  lines.push('        this.nombreServicio = nombreServicio;');
+  lines.push('    }');
+  lines.push('');
+  lines.push('    /**');
+  lines.push('     * Factory method para crear la interacción');
+  lines.push('     * @param responseClass Clase del modelo de respuesta');
+  lines.push('     * @param setter Consumer que guarda la respuesta');
+  lines.push('     * @param nombreServicio Nombre del servicio para logging');
+  lines.push('     * @param <T> Tipo de la clase de respuesta');
+  lines.push('     * @return Instancia de GuardarRespuesta');
+  lines.push('     */');
+  lines.push('    public static <T> GuardarRespuesta<T> de(Class<T> responseClass, Consumer<T> setter, String nombreServicio) {');
+  lines.push('        return new GuardarRespuesta<>(responseClass, setter, nombreServicio);');
+  lines.push('    }');
+  lines.push('');
+  lines.push('    @Override');
+  lines.push('    public <A extends Actor> void performAs(A actor) {');
+  lines.push(`        ${abilityClassName} ability = actor.abilityTo(${abilityClassName}.class);`);
+  lines.push('        T body = ability.getResponse()');
+  lines.push('                .then()');
+  lines.push('                .extract()');
+  lines.push('                .body()');
+  lines.push('                .as(responseClass);');
+  lines.push('');
+  lines.push('        // Guardamos la respuesta usando el setter');
+  lines.push('        setter.accept(body);');
+  lines.push('');
+  lines.push('        System.out.println("Respuesta de \'" + nombreServicio + "\' guardada en memoria");');
+  lines.push('    }');
+  lines.push('}');
+
+  return lines.join('\n');
+}
+
+/**
+ * Generates a response storage utility class
+ * @param config - Configuration for the storage class
+ * @returns Java code for response storage utility
+ */
+export function generateResponseStorage(config: {
+  packageName: string;
+  moduleName: string;
+  serviceName: string;
+  responseClassName: string;
+  threadSafe?: boolean;
+}): string {
+  const lines: string[] = [];
+  const { packageName, moduleName, serviceName, responseClassName, threadSafe = false } = config;
+
+  lines.push(`package ${packageName}.util.storage.${moduleName};`);
+  lines.push('');
+  lines.push(`import ${packageName}.response.${moduleName}.${responseClassName};`);
+  lines.push('');
+  lines.push('/**');
+  lines.push(` * Clase de almacenamiento${threadSafe ? ' thread-safe' : ''} para respuestas de ${serviceName}`);
+  lines.push(` * Responsabilidad: Mantener en memoria la respuesta${threadSafe ? ' de forma segura para ejecución paralela' : ' para uso entre escenarios'}`);
+  lines.push(' */');
+  lines.push(`public class Respuesta${serviceName} {`);
+  lines.push('');
+
+  if (threadSafe) {
+    lines.push(`    private static ThreadLocal<${responseClassName}> response = new ThreadLocal<>();`);
+    lines.push('');
+    lines.push('    /**');
+    lines.push('     * Guarda la respuesta del servicio para el thread actual');
+    lines.push('     * @param respuesta Respuesta a almacenar');
+    lines.push('     */');
+    lines.push(`    public static void setRespuesta(${responseClassName} respuesta) {`);
+    lines.push('        response.set(respuesta);');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    /**');
+    lines.push('     * Obtiene la respuesta almacenada para el thread actual');
+    lines.push('     * @return Respuesta guardada previamente');
+    lines.push('     */');
+    lines.push(`    public static ${responseClassName} getRespuesta() {`);
+    lines.push('        return response.get();');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    /**');
+    lines.push('     * Limpia la respuesta almacenada para el thread actual');
+    lines.push('     */');
+    lines.push('    public static void limpiar() {');
+    lines.push('        response.remove();');
+    lines.push('    }');
+  } else {
+    lines.push(`    private static ${responseClassName} response;`);
+    lines.push('');
+    lines.push('    /**');
+    lines.push('     * Guarda la respuesta del servicio');
+    lines.push('     * @param respuesta Respuesta a almacenar');
+    lines.push('     */');
+    lines.push(`    public static void setRespuesta(${responseClassName} respuesta) {`);
+    lines.push('        response = respuesta;');
+    lines.push('    }');
+    lines.push('');
+    lines.push('    /**');
+    lines.push('     * Obtiene la respuesta almacenada');
+    lines.push('     * @return Respuesta guardada previamente');
+    lines.push('     */');
+    lines.push(`    public static ${responseClassName} getRespuesta() {`);
+    lines.push('        return response;');
+    lines.push('    }');
+  }
+
+  lines.push('}');
+
+  return lines.join('\n');
+}
+
 export function generateAPIComponent(config: APIComponentConfig): string {
   switch (config.componentType) {
   case 'Task':

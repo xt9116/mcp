@@ -176,6 +176,54 @@ const tools: Tool[] = [
       required: ['code', 'type']
     }
   },
+  {
+    name: 'generate_guardar_respuesta',
+    description: 'Genera la interacción GuardarRespuesta para almacenar respuestas de API en memoria',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        packageName: {
+          type: 'string',
+          description: 'Nombre del paquete base (ej: rimac.api, com.screenplay.api)'
+        },
+        abilityClassName: {
+          type: 'string',
+          description: 'Nombre de la clase de ability (por defecto: LlamarAPIsRimac)'
+        }
+      },
+      required: ['packageName']
+    }
+  },
+  {
+    name: 'generate_response_storage',
+    description: 'Genera una clase de almacenamiento (storage) para respuestas de API',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        packageName: {
+          type: 'string',
+          description: 'Nombre del paquete base (ej: rimac.api)'
+        },
+        moduleName: {
+          type: 'string',
+          description: 'Nombre del módulo (ej: endoso, cliente, poliza)'
+        },
+        serviceName: {
+          type: 'string',
+          description: 'Nombre del servicio (ej: ObtenerCliente, CrearPoliza)'
+        },
+        responseClassName: {
+          type: 'string',
+          description: 'Nombre de la clase de respuesta (ej: ValidarObtenerCliente)'
+        },
+        threadSafe: {
+          type: 'boolean',
+          description: 'Si debe ser thread-safe para ejecución paralela (por defecto: false)'
+        }
+      },
+      required: ['packageName', 'moduleName', 'serviceName', 'responseClassName']
+    }
+  },
 
   // ═══ SERENITY WEB TOOLS ═══
   {
@@ -555,6 +603,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [{
           type: 'text',
           text: JSON.stringify(result, null, 2)
+        }]
+      };
+    }
+
+    case 'generate_guardar_respuesta': {
+      const { packageName, abilityClassName } = args as any;
+      const { generateGuardarRespuesta } = await import('./generators/serenity-api.generator.js');
+      const generatedCode = generateGuardarRespuesta(packageName, abilityClassName);
+      return {
+        content: [{
+          type: 'text',
+          text: generatedCode
+        }]
+      };
+    }
+
+    case 'generate_response_storage': {
+      const config = args as any;
+      const { generateResponseStorage } = await import('./generators/serenity-api.generator.js');
+      const generatedCode = generateResponseStorage(config);
+      return {
+        content: [{
+          type: 'text',
+          text: generatedCode
         }]
       };
     }
