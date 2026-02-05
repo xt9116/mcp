@@ -17,7 +17,7 @@ Antes de enviar tu especificación de API, asegúrate de tener:
 - [ ] **Validaciones** - Técnicas, estructura y negocio
 - [ ] **Gherkin** - Feature con ejemplos concretos
 - [ ] **Datos Prueba** - Casos positivos y negativos
-- [ ] **JUnit 5** - Especificar "con JUnit 5"
+- [ ] **JUnit 4** - Especificar "con JUnit 4"
 
 ---
 
@@ -73,7 +73,7 @@ DATOS PRUEBA:
 Positivos: 1, 2, 3
 Negativos: 0, -1, 999999
 
-Usando Serenity Screenplay con JUnit 5.
+Usando Serenity Screenplay con JUnit 4.
 ```
 
 ---
@@ -105,9 +105,9 @@ Usando Serenity Screenplay con JUnit 5.
 ❌ La respuesta debe ser correcta
 ```
 
-### 4. **Siempre JUnit 5**
+### 4. **Siempre JUnit 4**
 ```
-✅ "Utilizando Serenity Screenplay con JUnit 5"
+✅ "Utilizando Serenity Screenplay con JUnit 4"
 
 ❌ "Utilizando Serenity"
 ```
@@ -246,7 +246,7 @@ DATOS PRUEBA:
 Positivos: 1 (Rick), 2 (Morty)
 Negativos: 0 (inválido), 999999 (no existe)
 
-Utilizando Serenity Screenplay con JUnit 5.
+Utilizando Serenity Screenplay con JUnit 4.
 ```
 
 ---
@@ -258,7 +258,7 @@ Utilizando Serenity Screenplay con JUnit 5.
 - Tipos especificados
 - Validaciones claras
 - Ejemplos reales
-- JUnit 5 mencionado
+- JUnit 4 mencionado
 
 ### 🟡 REVISAR
 - Falta algún campo opcional
@@ -270,7 +270,7 @@ Utilizando Serenity Screenplay con JUnit 5.
 - Sin tipos de datos
 - Sin validaciones
 - Sin ejemplos
-- No menciona JUnit 5
+- No menciona JUnit 4
 
 ---
 
@@ -296,8 +296,8 @@ Utilizando Serenity Screenplay con JUnit 5.
 
 ### Tests no se detectan (Tests run: 0)
 ```
-❌ Causa: JUnit 4 en vez de JUnit 5
-✅ Solución: Especificar "con JUnit 5"
+❌ Causa: Runner mal configurado
+✅ Solución: Usar @RunWith(CucumberWithSerenity.class) con JUnit 4
 ```
 
 ### URLs malformadas

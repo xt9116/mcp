@@ -127,7 +127,7 @@ Validaciones:
 - [VALIDACIÓN_2]
 ...
 
-Utilizando de manera correcta Serenity Screenplay con Selenium WebDriver y JUnit 5.
+Utilizando de manera correcta Serenity Screenplay con Selenium WebDriver y JUnit 4.
 ```
 
 ### Ejemplo Completo de Solicitud:
@@ -168,7 +168,7 @@ Validaciones:
 - Nombre de producto contiene término buscado
 - Precio del producto visible
 
-Utilizando de manera correcta Serenity Screenplay con Selenium WebDriver y JUnit 5.
+Utilizando de manera correcta Serenity Screenplay con Selenium WebDriver y JUnit 4.
 ```
 
 ---
@@ -307,7 +307,7 @@ Esperar que aparezca mensaje de éxito"
 "Utilizando Serenity Screenplay"
 
 ✅ Correcto:
-"Utilizando Serenity Screenplay con Selenium WebDriver y JUnit 5"
+"Utilizando Serenity Screenplay con Selenium WebDriver y JUnit 4"
 ```
 
 **Razón**: Es necesario especificar que se trata de automatización Web UI.
@@ -347,7 +347,7 @@ src/
     │   ├── hooks/
     │   │   └── Hooks.java              ← SetTheStage + configuración
     │   ├── runners/
-    │   │   └── CucumberTestRunner.java ← JUnit 5 (@Suite)
+    │   │   └── CucumberTestRunner.java ← JUnit 4 (@RunWith)
     │   └── stepdefinitions/
     │       └── ProductSearchStepDefinitions.java
     └── resources/
@@ -400,7 +400,7 @@ Antes de enviar tu HU Web, verifica:
 - [ ] Incluí esperas explícitas donde necesario
 - [ ] Definí validaciones técnicas y visuales
 - [ ] Escribí el escenario Gherkin completo
-- [ ] Mencioné explícitamente usar Selenium WebDriver y JUnit 5
+- [ ] Mencioné explícitamente usar Selenium WebDriver y JUnit 4
 - [ ] Consideré casos de error y timeouts
 
 ---

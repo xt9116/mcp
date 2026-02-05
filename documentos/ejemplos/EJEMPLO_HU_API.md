@@ -115,7 +115,7 @@ El response debe devolver: [ESTRUCTURA_RESPONSE]
 
 Debe validar: [VALIDACIONES]
 
-Utilizando de manera correcta Serenity Screenplay con JUnit 5.
+Utilizando de manera correcta Serenity Screenplay con JUnit 4.
 ```
 
 ### Ejemplo Completo de Solicitud:
@@ -152,7 +152,7 @@ Debe validar:
 - El campo 'name' no debe estar vacío
 - El campo 'status' debe ser uno de: "Alive", "Dead", "unknown"
 
-Utilizando de manera correcta Serenity Screenplay con JUnit 5.
+Utilizando de manera correcta Serenity Screenplay con JUnit 4.
 ```
 
 ---
@@ -256,10 +256,10 @@ Response: { "id": Integer, "name": String, "email": String }
 "Utilizando Serenity Screenplay"
 
 ✅ Correcto:
-"Utilizando Serenity Screenplay con JUnit 5"
+"Utilizando Serenity Screenplay con JUnit 4"
 ```
 
-**Razón**: JUnit 4 y JUnit 5 tienen runners incompatibles.
+**Razón**: Es importante especificar JUnit 4 para asegurar la configuración correcta del runner.
 
 ### ❌ ERROR 4: Validaciones vagas
 
@@ -314,7 +314,7 @@ src/
     │   ├── hooks/
     │   │   └── Hooks.java                  ← Configura baseURL con CallAnApi
     │   ├── runners/
-    │   │   └── CucumberTestRunner.java     ← JUnit 5 (@Suite)
+    │   │   └── CucumberTestRunner.java     ← JUnit 4 (@Suite)
     │   └── stepdefinitions/
     │       └── PersonajeStepDefinitions.java
     └── resources/
@@ -335,7 +335,7 @@ Antes de enviar tu HU, verifica:
 - [ ] Definí validaciones técnicas y de negocio específicas
 - [ ] Incluí headers requeridos (si aplica)
 - [ ] Escribí el escenario Gherkin completo
-- [ ] Mencioné explícitamente usar JUnit 5
+- [ ] Mencioné explícitamente usar JUnit 4
 - [ ] Incluí ejemplos de datos de prueba
 
 ---

@@ -783,16 +783,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
                   '## 🚀 ¿Qué hacer ahora?\n\n' +
                   '1. **Guarda** cada archivo en la ubicación correcta de tu proyecto Web\n' +
-                  '2. **Configura** las dependencias Serenity Web en build.gradle o pom.xml\n' +
-                  '3. **Verifica** que los selectores sean correctos\n' +
-                  '4. **Asegúrate** de que la URL sea accesible\n' +
-                  '5. **Ejecuta** los tests con `gradle test` o `mvn test`\n' +
-                  '6. **Verifica** los reportes en `target/site/serenity`\n\n' +
+                  '2. **Configura** el archivo serenity.properties en src/test/resources/ (o puedes usar @DefaultUrl en las clases UI)\n' +
+                  '3. **Configura** las dependencias Serenity Web en build.gradle o pom.xml\n' +
+                  '4. **Verifica** que los selectores sean correctos\n' +
+                  '5. **Asegúrate** de que la URL sea accesible\n' +
+                  '6. **Ejecuta** los tests con `gradle test` o `mvn test`\n' +
+                  '7. **Verifica** los reportes en `target/site/serenity`\n\n' +
 
                   '## 💡 Consideraciones de Calidad\n\n' +
                   '- ✅ Cumple estándares de Screenplay Pattern\n' +
                   '- ✅ Usa convenciones de naming de Serenity\n' +
                   '- ✅ Aplica mejores prácticas de WebDriver\n' +
+                  '- ✅ Usa JUnit 4 con @RunWith(CucumberWithSerenity.class)\n' +
+                  '- ✅ SetTheStage en archivo de hooks separado (no en step definitions)\n' +
+                  '- ✅ Base URL configurable en serenity.properties\n' +
                   '- ✅ Código modular y reutilizable\n' +
                   '- ✅ Mantenible y extensible'
         }]
