@@ -192,7 +192,7 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
   // Validaciones de UI (actualizado con validaciones robots Rimac)
   if (payload.type === 'UI') {
     if (!payload.usesCorrectUIClassName) {
-      errors.push("❌ Las clases UI deben empezar con 'UI' o terminar con 'Page' (ej: UIHome, UISoatDigital, LoginPage, UILoginPage)");
+      errors.push("❌ Las clases UI deben empezar con 'UI' o terminar en 'Page' (ej: UIHome, UISoatDigital, LoginPage, UILoginPage)");
     }
 
     if (!payload.uiExtendsPageObject) {
@@ -234,7 +234,9 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
           if (!followsPrefixPattern) {
             errors.push(`❌ Target '${targetName}' debe seguir el patrón PREFIX_NAME (ej: TXT_USERNAME, LST_PRODUCTS)`);
           } else if (!hasStandardPrefix) {
-            warnings.push(`⚠️ Target '${targetName}' usa prefijo personalizado. Los prefijos estándar recomendados son: ${standardPrefixes.join(', ')}`);
+            // Format standard prefixes without trailing underscores for readability
+            const standardPrefixList = standardPrefixes.map(p => p.replace(/_$/, '')).join(', ');
+            warnings.push(`⚠️ Target '${targetName}' usa prefijo personalizado. Los prefijos estándar recomendados son: ${standardPrefixList}`);
           }
         }
       }

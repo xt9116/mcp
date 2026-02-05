@@ -171,7 +171,7 @@ public class LoginPage extends PageObject {
     public static final Target USERNAME = Target.the("Campo de usuario")
         .locatedBy("#username");
         
-    public static final Target password = Target.the("Campo de contraseña")
+    public static final Target PASSWORD = Target.the("Campo de contraseña")
         .locatedBy("#password");
 }
       `.trim();
