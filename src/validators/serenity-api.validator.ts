@@ -470,7 +470,7 @@ export function validateSerenityClass(code: string, type: ValidationPayload['typ
     payload.usesTheActorCalled = code.includes('theActorCalled(');
     payload.usesTheActorInTheSpotlight = code.includes('theActorInTheSpotlight()');
     payload.usesActorDirectly = code.includes('Actor.named(') || /private\s+(final\s+)?Actor\s+/.test(code);
-    
+
     // Detectar imports correctos
     payload.hasProperImports = code.includes('import static net.serenitybdd.screenplay.actors.OnStage') ||
                               code.includes('import net.serenitybdd.screenplay.actors.OnStage');

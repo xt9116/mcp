@@ -16,6 +16,7 @@ export interface ApiHURequest {
     examples: Record<string, string>[];
   };
   packageName?: string; // Optional: Base package name for generated code (e.g., "co.com.rickandmorty")
+  language?: 'en' | 'es'; // Optional: Language for feature files and step definitions ('en' for English, 'es' for Spanish)
 }
 
 export interface WebHURequest {
@@ -35,6 +36,7 @@ export interface WebHURequest {
   validaciones: string[];
   gherkinScenario: string;
   packageName?: string; // Optional: Base package name for generated code (e.g., "co.com.rickandmorty")
+  language?: 'en' | 'es'; // Optional: Language for feature files and step definitions ('en' for English, 'es' for Spanish)
 }
 
 export interface GeneratedHU {

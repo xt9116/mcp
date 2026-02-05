@@ -362,9 +362,14 @@ const tools: Tool[] = [
           },
           description: 'Escenario de prueba Gherkin'
         },
-        packageName: { 
-          type: 'string', 
+        packageName: {
+          type: 'string',
           description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay"'
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'es'],
+          description: 'Language for feature files and step definitions. "en" for English (Given/When/Then), "es" for Spanish (Dado/Cuando/Entonces). If not provided, will be auto-detected from scenario steps, defaulting to Spanish.'
         }
       },
       required: ['huId', 'nombre', 'urlBase', 'endpoint', 'metodo']
@@ -391,7 +396,7 @@ const tools: Tool[] = [
                 items: {
                   type: 'object',
                   properties: {
-                    prefix: { 
+                    prefix: {
                       type: 'string',
                       description: 'Prefix for the element (e.g., TXT, BTN, LBL, DDL, CHK, RDB, LNK, IMG, TBL, LST, etc.). Can be any uppercase letters followed by underscore.'
                     },
@@ -415,9 +420,14 @@ const tools: Tool[] = [
           description: 'Validaciones requeridas'
         },
         gherkinScenario: { type: 'string', description: 'Escenario Gherkin completo' },
-        packageName: { 
-          type: 'string', 
+        packageName: {
+          type: 'string',
           description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay"'
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'es'],
+          description: 'Language for feature files and step definitions. "en" for English (Given/When/Then), "es" for Spanish (Dado/Cuando/Entonces). If not provided, will be auto-detected from scenario steps, defaulting to Spanish.'
         }
       },
       required: ['huId', 'nombre', 'baseUrl', 'paginas']

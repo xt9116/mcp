@@ -364,10 +364,30 @@ Archivos JSON que definen reglas y mejores prácticas:
 
 ### Limitaciones conocidas
 
-1. **Idioma**: El código generado usa nombres en español para StepDefinitions (configurable)
-2. **Complejidad**: Para casos muy complejos, puede requerir ajustes manuales
-3. **Frameworks**: Optimizado para Serenity BDD, no otros frameworks de testing
-4. **Java**: Genera solo código Java, no otros lenguajes
+1. **Complejidad**: Para casos muy complejos, puede requerir ajustes manuales
+2. **Frameworks**: Optimizado para Serenity BDD, no otros frameworks de testing
+3. **Java**: Genera solo código Java, no otros lenguajes
+
+### 🌍 Soporte de Idiomas (NUEVO)
+
+El servidor ahora soporta generación de features y step definitions en **Inglés** y **Español**:
+
+- **Inglés**: `Given/When/Then` con `io.cucumber.java.en.*`
+- **Español**: `Dado/Cuando/Entonces` con `io.cucumber.java.es.*`
+
+**Uso:**
+```json
+{
+  "language": "en",  // 'en' para inglés, 'es' para español
+  "escenarioPrueba": {
+    "steps": ["Given the service is available", "When I send a request"]
+  }
+}
+```
+
+**Auto-detección:** Si no especificas el idioma, el sistema lo detecta automáticamente de tus pasos.
+
+📖 **Documentación completa**: Ver [LANGUAGE_SUPPORT.md](./documentos/LANGUAGE_SUPPORT.md)
 
 ### Troubleshooting común
 

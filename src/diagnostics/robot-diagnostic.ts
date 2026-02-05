@@ -117,15 +117,15 @@ function analyzeDependencies(projectStructure: string, projectType: string, issu
   const checks: CheckResult[] = [];
 
   // Verificar Serenity BDD 4.3.4
-  const hasSerenity434 = projectStructure.includes('serenity') && 
+  const hasSerenity434 = projectStructure.includes('serenity') &&
                          (projectStructure.includes('4.3.4') || projectStructure.includes('4.3.'));
   checks.push({
     name: 'Serenity BDD Version',
     passed: hasSerenity434,
-    message: hasSerenity434 
+    message: hasSerenity434
       ? '✅ Serenity BDD 4.3.4 detectado'
       : '❌ Serenity BDD 4.3.4 no encontrado',
-    details: hasSerenity434 
+    details: hasSerenity434
       ? 'Usando la versión recomendada de Serenity BDD'
       : 'Se requiere Serenity BDD 4.3.4 para compatibilidad óptima'
   });
@@ -140,7 +140,7 @@ function analyzeDependencies(projectStructure: string, projectType: string, issu
   }
 
   // Verificar JUnit 4
-  const hasJUnit4 = projectStructure.includes('junit:junit:4.13.2') || 
+  const hasJUnit4 = projectStructure.includes('junit:junit:4.13.2') ||
                     projectStructure.includes('junit4');
   checks.push({
     name: 'JUnit 4 Version',
@@ -177,7 +177,7 @@ function analyzeDependencies(projectStructure: string, projectType: string, issu
 
   // Verificar dependencias específicas por tipo
   if (projectType === 'api' || projectType === 'both') {
-    const hasRestAssured = projectStructure.includes('rest-assured') || 
+    const hasRestAssured = projectStructure.includes('rest-assured') ||
                           projectStructure.includes('serenity-screenplay-rest');
     checks.push({
       name: 'Serenity REST Assured',
@@ -286,7 +286,7 @@ function analyzeStructure(projectStructure: string, projectType: string, issues:
     });
   }
 
-  const hasStepDefinitions = projectStructure.includes('stepdefinitions/') || 
+  const hasStepDefinitions = projectStructure.includes('stepdefinitions/') ||
                              projectStructure.includes('StepDefinitions.java');
   checks.push({
     name: 'Step Definitions',
@@ -333,7 +333,7 @@ function analyzeStructure(projectStructure: string, projectType: string, issues:
       details: 'Tasks representan acciones de negocio en el patrón Screenplay'
     });
 
-    const hasInteractions = projectStructure.includes('interactions/') || 
+    const hasInteractions = projectStructure.includes('interactions/') ||
                            projectStructure.includes('Interaction.java');
     checks.push({
       name: 'API Interactions',
@@ -344,7 +344,7 @@ function analyzeStructure(projectStructure: string, projectType: string, issues:
       details: 'Interactions son acciones HTTP reutilizables'
     });
 
-    const hasQuestions = projectStructure.includes('questions/') || 
+    const hasQuestions = projectStructure.includes('questions/') ||
                         projectStructure.includes('Question.java');
     checks.push({
       name: 'API Questions',
@@ -355,7 +355,7 @@ function analyzeStructure(projectStructure: string, projectType: string, issues:
       details: 'Questions extraen información para validaciones'
     });
 
-    const hasModels = projectStructure.includes('models/') || 
+    const hasModels = projectStructure.includes('models/') ||
                      projectStructure.includes('Model.java') ||
                      projectStructure.includes('dto/');
     checks.push({
@@ -369,7 +369,7 @@ function analyzeStructure(projectStructure: string, projectType: string, issues:
   }
 
   if (projectType === 'web' || projectType === 'both') {
-    const hasUI = projectStructure.includes('userinterfaces/') || 
+    const hasUI = projectStructure.includes('userinterfaces/') ||
                  projectStructure.includes('pages/') ||
                  projectStructure.includes('UI.java');
     checks.push({
@@ -422,7 +422,7 @@ function analyzeScreenplayPattern(projectStructure: string, _projectType: string
   const checks: CheckResult[] = [];
 
   // Verificar Actor usage
-  const hasActorUsage = projectStructure.includes('Actor') || 
+  const hasActorUsage = projectStructure.includes('Actor') ||
                        projectStructure.includes('OnStage') ||
                        projectStructure.includes('theActorInTheSpotlight');
   checks.push({
@@ -446,7 +446,7 @@ function analyzeScreenplayPattern(projectStructure: string, _projectType: string
   }
 
   // Verificar uso de performAs
-  const hasPerformAs = projectStructure.includes('performAs') || 
+  const hasPerformAs = projectStructure.includes('performAs') ||
                       projectStructure.includes('attemptsTo');
   checks.push({
     name: 'Task Execution Pattern',
@@ -467,7 +467,7 @@ function analyzeScreenplayPattern(projectStructure: string, _projectType: string
   }
 
   // Verificar Questions pattern
-  const hasQuestionPattern = projectStructure.includes('asksFor') || 
+  const hasQuestionPattern = projectStructure.includes('asksFor') ||
                             projectStructure.includes('seeThat');
   checks.push({
     name: 'Question Pattern',
@@ -479,7 +479,7 @@ function analyzeScreenplayPattern(projectStructure: string, _projectType: string
   });
 
   // Anti-patrones comunes
-  const hasPageObjectAntipattern = projectStructure.includes('PageObject') && 
+  const hasPageObjectAntipattern = projectStructure.includes('PageObject') &&
                                    !projectStructure.includes('Target');
   if (hasPageObjectAntipattern) {
     checks.push({
@@ -505,7 +505,7 @@ function analyzeScreenplayPattern(projectStructure: string, _projectType: string
   }
 
   // Verificar imports correctos
-  const hasCorrectImports = projectStructure.includes('net.serenitybdd.screenplay') || 
+  const hasCorrectImports = projectStructure.includes('net.serenitybdd.screenplay') ||
                            projectStructure.includes('net.serenitybdd.core.pages');
   checks.push({
     name: 'Serenity Imports',
@@ -534,7 +534,7 @@ function analyzeBestPractices(projectStructure: string, _projectType: string, is
   const checks: CheckResult[] = [];
 
   // Naming conventions
-  const hasProperNaming = projectStructure.includes('Task') && 
+  const hasProperNaming = projectStructure.includes('Task') &&
                          projectStructure.includes('Question');
   checks.push({
     name: 'Naming Conventions',
@@ -546,7 +546,7 @@ function analyzeBestPractices(projectStructure: string, _projectType: string, is
   });
 
   // Builder pattern
-  const hasBuilders = projectStructure.includes('Builder') || 
+  const hasBuilders = projectStructure.includes('Builder') ||
                      projectStructure.includes('builder()');
   checks.push({
     name: 'Builder Pattern',
@@ -558,7 +558,7 @@ function analyzeBestPractices(projectStructure: string, _projectType: string, is
   });
 
   // Javadoc
-  const hasJavadoc = projectStructure.includes('/**') || 
+  const hasJavadoc = projectStructure.includes('/**') ||
                     projectStructure.includes('* @');
   checks.push({
     name: 'Documentation',
@@ -579,7 +579,7 @@ function analyzeBestPractices(projectStructure: string, _projectType: string, is
   }
 
   // Separación de concerns
-  const hasProperPackages = projectStructure.includes('tasks/') && 
+  const hasProperPackages = projectStructure.includes('tasks/') &&
                            projectStructure.includes('questions/');
   checks.push({
     name: 'Package Organization',
@@ -591,7 +591,7 @@ function analyzeBestPractices(projectStructure: string, _projectType: string, is
   });
 
   // Configuración de reportes
-  const hasReportConfig = projectStructure.includes('serenity.properties') || 
+  const hasReportConfig = projectStructure.includes('serenity.properties') ||
                          projectStructure.includes('serenity-maven-plugin');
   checks.push({
     name: 'Report Configuration',
@@ -718,17 +718,17 @@ export function generateMarkdownReport(result: DiagnosticResult): string {
   Object.values(result.sections).forEach(section => {
     const sectionEmoji = section.passed ? '✅' : '❌';
     const scoreBar = '█'.repeat(Math.floor(section.score / 10)) + '░'.repeat(10 - Math.floor(section.score / 10));
-    
+
     report += `### ${sectionEmoji} ${section.name}\n\n`;
     report += `**Puntuación:** ${section.score}/100 ${scoreBar}\n\n`;
-    
+
     section.checks.forEach(check => {
       report += `- ${check.message}\n`;
       if (check.details) {
         report += `  - _${check.details}_\n`;
       }
     });
-    
+
     report += '\n';
   });
 
@@ -737,7 +737,7 @@ export function generateMarkdownReport(result: DiagnosticResult): string {
   // Agregar issues detallados si existen
   if (result.issues.length > 0) {
     report += '## 🔴 Issues Encontrados\n\n';
-    
+
     const errorIssues = result.issues.filter(i => i.severity === 'error');
     const warningIssues = result.issues.filter(i => i.severity === 'warning');
     const infoIssues = result.issues.filter(i => i.severity === 'info');
