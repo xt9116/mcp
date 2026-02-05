@@ -24,7 +24,7 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
 
   for (const validationRule of (request.validaciones || [])) {
     artifacts.validationQuestions.push(
-      buildValidationQuestion(validationRule, request.paginas, pkgBase)
+      buildValidationQuestion(validationRule, pkgBase)
     );
   }
 
@@ -150,7 +150,7 @@ function extractPrimaryUIClass(pageList: any[]): string {
 }
 
 function buildActorSteps(flowSteps: string[]): string {
-  const stepGenerators: Record<string, (step: string) => string> = {
+  const stepGenerators: Record<string, () => string> = {
     'open': () => `            Open.browserOn(pageUI),`,
     'wait': () => `            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`,
     'enter': () => `            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),`,
@@ -162,13 +162,13 @@ function buildActorSteps(flowSteps: string[]): string {
     const lowerStep = stepDesc.toLowerCase();
     
     if (lowerStep.includes('open') || lowerStep.includes('abrir')) {
-      return stepGenerators['open']!(stepDesc);
+      return stepGenerators['open']!();
     } else if (lowerStep.includes('wait') || lowerStep.includes('espera')) {
-      return lowerStep.includes('resulta') ? stepGenerators['pause']!(stepDesc) : stepGenerators['wait']!(stepDesc);
+      return lowerStep.includes('resulta') ? stepGenerators['pause']!() : stepGenerators['wait']!();
     } else if (lowerStep.includes('ingres') || lowerStep.includes('enter')) {
-      return stepGenerators['enter']!(stepDesc);
+      return stepGenerators['enter']!();
     } else if (lowerStep.includes('clic') || lowerStep.includes('click')) {
-      return stepGenerators['click']!(stepDesc);
+      return stepGenerators['click']!();
     }
     
     return `            // TODO: ${stepDesc}`;
@@ -177,7 +177,7 @@ function buildActorSteps(flowSteps: string[]): string {
   return generatedSteps.join('\n');
 }
 
-function buildValidationQuestion(validationRule: string, _pageList: any[], pkgBase: string): string {
+function buildValidationQuestion(validationRule: string, pkgBase: string): string {
   const questionClassName = `Verificar${sanitizeClassName(validationRule)}`;
 
   const necessaryImports = [
@@ -220,7 +220,7 @@ function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string): stri
   const businessTaskName = sanitizeClassName(request.nombre);
   const primaryUIName = extractPrimaryUIClass(request.paginas);
 
-  const genericQuestionClass = 'VerificarElemento';
+  const genericQuestionClassName = 'VerificarElemento';
 
   const requiredImports = [
     'io.cucumber.java.es.*',
@@ -255,7 +255,7 @@ public class ${stepDefClassName} {
     @Entonces("válido los resultados de búsqueda que se muestren correctamente")
     public void verificaResultadosDeBusqueda() {
         theActorInTheSpotlight().should(
-            seeThat("Los resultados de búsqueda", ${genericQuestionClass}.en(LBL_RESULTADOS), is(true))
+            seeThat("Los resultados de búsqueda", ${genericQuestionClassName}.en(LBL_RESULTADOS), is(true))
         );
     }
 }`;
