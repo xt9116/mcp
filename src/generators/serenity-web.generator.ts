@@ -60,7 +60,8 @@ export function generateWebUI(config: WebComponentConfig): string {
       lines.push('');
     });
   } else {
-    lines.push('    // TODO: Definir Target locators con prefijos estándar:');
+    lines.push('    // TODO: Definir Target locators con prefijos (pueden ser estándar o personalizados):');
+    lines.push('    // Prefijos estándar recomendados:');
     lines.push('    // TXT_ (inputs de texto)');
     lines.push('    // BTN_ (botones)');
     lines.push('    // LBL_ (labels y textos)');
@@ -70,8 +71,10 @@ export function generateWebUI(config: WebComponentConfig): string {
     lines.push('    // LNK_ (links)');
     lines.push('    // IMG_ (imágenes)');
     lines.push('    // TBL_ (tablas)');
+    lines.push('    // También se aceptan prefijos personalizados: LST_ (listas), GRD_ (grids), etc.');
     lines.push('');
     lines.push('    // public static final Target TXT_CAMPO = Target.the("descripción").locatedBy("#selector");');
+    lines.push('    // public static final Target LST_ITEMS = Target.the("lista de items").locatedBy(".item-list");');
   }
 
   lines.push('}');

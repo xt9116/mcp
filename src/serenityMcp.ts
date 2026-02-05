@@ -391,7 +391,10 @@ const tools: Tool[] = [
                 items: {
                   type: 'object',
                   properties: {
-                    prefix: { type: 'string', enum: ['TXT', 'BTN', 'LBL', 'DDL', 'CHK', 'RDB', 'LNK', 'IMG', 'TBL'] },
+                    prefix: { 
+                      type: 'string',
+                      description: 'Prefix for the element (e.g., TXT, BTN, LBL, DDL, CHK, RDB, LNK, IMG, TBL, LST, etc.). Can be any uppercase letters followed by underscore.'
+                    },
                     name: { type: 'string' },
                     selector: { type: 'string' }
                   }
