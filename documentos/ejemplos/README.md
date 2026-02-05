@@ -138,9 +138,9 @@ El runner usa el patrón:
 public class CucumberTestRunner {}
 ```
 
-**Nota técnica**: El proyecto incluye tanto JUnit 4 (4.13.2) como JUnit 5 (5.9.2) como dependencias:
-- JUnit 4 es **requerido** para `@RunWith(CucumberWithSerenity.class)` 
-- JUnit 5 está disponible para tests adicionales si se necesitan
+**Nota técnica**: El proyecto incluye ambas versiones de JUnit como dependencias:
+- JUnit 4 (4.13.2) es **requerido** para el runner de Cucumber: `@RunWith(CucumberWithSerenity.class)` 
+- JUnit 5 (5.9.2) está incluido pero es opcional - puedes usarlo para tests unitarios adicionales si lo necesitas
 
 ### Separación de Responsabilidades
 

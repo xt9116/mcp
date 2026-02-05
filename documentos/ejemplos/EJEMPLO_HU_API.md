@@ -314,7 +314,7 @@ src/
     │   ├── hooks/
     │   │   └── Hooks.java                  ← Configura baseURL con CallAnApi
     │   ├── runners/
-    │   │   └── CucumberTestRunner.java     ← JUnit 4 (@Suite)
+    │   │   └── CucumberTestRunner.java     ← JUnit 4 (@RunWith)
     │   └── stepdefinitions/
     │       └── PersonajeStepDefinitions.java
     └── resources/
