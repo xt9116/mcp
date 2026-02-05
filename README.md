@@ -4,179 +4,490 @@
 [![Node version](https://img.shields.io/node/v/>=18.0.0.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
-Un MCP Server profesional para la validación y generación de código Java, OOP/SOLID, y Serenity Screenplay (API/Web). Este servidor ayuda a los equipos de desarrollo a mantener altos estándares de calidad en su código mediante validación automática y generación de código siguiendo las mejores prácticas.
+## 🎯 ¿Qué es este proyecto?
 
-## Características
+**Serenity Automation MCP** es un servidor basado en el protocolo MCP (Model Context Protocol) que actúa como un asistente especializado para equipos que trabajan con automatización de pruebas usando Serenity BDD y el patrón Screenplay.
 
-### Generación de Código Avanzada
-- **HU Completas API**: Genera automáticamente Task, Interaction, Question, Model, Builder, Endpoints, StepDefinitions, Runner, Hooks y Features para historias de usuario API REST
-- **HU Completas Web**: Genera automáticamente UI Classes, Tasks, Questions, StepDefinitions, Runner, Hooks (SetTheStage) y Features para historias de usuario Web
-- **Estructura de Proyectos**: Genera estructura completa de proyectos Maven o Gradle para Serenity BDD con archivos básicos (Runner, Hooks, configuración)
+### Problema que resuelve
 
-### Validación y Calidad
-- **Validación Java**: Análisis completo de código Java siguiendo estándares profesionales
-- **OOP/SOLID**: Validación de principios de diseño orientado a objetos y SOLID
-- **Validación Automática**: Valida automáticamente el código generado contra estándares de calidad
-- **Serenity API**: Generación y validación de componentes Screenplay para API REST
-- **Serenity Web**: Generación y validación de componentes Screenplay para Web UI
-- **Estándares**: Acceso a estándares de mejores prácticas completos y actualizados
-- **Serenity 4.3.4**: Última versión estable de Serenity BDD
+Cuando trabajas en automatización de pruebas con Serenity BDD:
+- ❌ Generar código manualmente es repetitivo y propenso a errores
+- ❌ Mantener consistencia en el código entre diferentes desarrolladores es difícil
+- ❌ Validar que el código siga las mejores prácticas requiere revisiones manuales exhaustivas
+- ❌ Crear estructuras de proyectos desde cero consume mucho tiempo
 
-### Generación de Componentes
-- **Java**: Clases, interfaces, enums, POJOs, Builders
-- **Serenity API**: Tasks, Interactions, Questions, Models, Endpoints, Builders
-- **Serenity Web**: UI Classes, Tasks, Questions, Page Objects
-- **Infraestructura**: Runner (CucumberTestRunner), Hooks (inicialización de actores, cierre de navegador)
+### Solución que ofrece
 
-## Instalación
+Este servidor MCP te permite:
+- ✅ Generar código completo de pruebas automáticas con un solo comando
+- ✅ Validar automáticamente que tu código sigue estándares profesionales
+- ✅ Crear proyectos completos con estructura correcta en segundos
+- ✅ Trabajar directamente desde tu asistente de IA (Claude, etc.) sin cambiar de herramientas
 
-### Prerrequisitos
+## 💡 Concepto: ¿Qué es MCP?
 
-- Node.js >= 18.0.0
-- npm, pnpm o yarn
+MCP (Model Context Protocol) es un protocolo que permite que asistentes de IA como Claude puedan usar herramientas especializadas. Piensa en ello como dar "superpoderes" a tu IA:
 
-### Instalación desde código fuente
+- Sin MCP: Tu IA solo puede dar consejos y generar texto
+- Con MCP: Tu IA puede ejecutar herramientas reales, generar código validado, y realizar tareas complejas
+
+**Este servidor MCP** conecta asistentes de IA con capacidades profesionales de generación y validación de código para Serenity BDD.
+
+## 🚀 Capacidades principales
+
+### 1. Generación Completa de Historias de Usuario
+
+**Para APIs REST:**
+- Genera todos los componentes necesarios en un solo paso
+- Incluye: Tasks, Interactions, Questions, Models, StepDefinitions, Features
+- Código listo para ejecutar con validaciones automáticas incluidas
+
+**Para Aplicaciones Web:**
+- Genera componentes UI completos con selectores
+- Incluye: UI Pages, Tasks, Questions, StepDefinitions, Features
+- Configuración de navegador lista para usar
+
+### 2. Validación de Código Inteligente
+
+- Analiza código Java buscando violaciones de buenas prácticas
+- Verifica principios SOLID y OOP
+- Detecta problemas de nombres, tipos, y estructura
+- Proporciona sugerencias específicas de mejora
+
+### 3. Estructuras de Proyecto
+
+- Crea proyectos Maven o Gradle completos
+- Configuración de Serenity BDD preconfigurada
+- Dependencias correctas (Serenity 4.3.4, JUnit 4.13.2)
+- Estructura de carpetas siguiendo convenciones
+
+### 4. Diagnóstico de Proyectos Existentes
+
+- Analiza proyectos Serenity existentes
+- Detecta problemas de configuración
+- Identifica anti-patrones
+- Genera reportes con recomendaciones específicas
+
+## 📋 Requisitos previos
+
+Antes de instalar este servidor MCP, asegúrate de tener:
+
+1. **Node.js versión 18 o superior**
+   ```bash
+   node --version  # Debe mostrar v18.x.x o superior
+   ```
+
+2. **Un gestor de paquetes**: npm (viene con Node.js), pnpm, o yarn
+
+3. **Un cliente MCP compatible**: Como Claude Desktop, VS Code con extensión MCP, u otro cliente compatible
+
+## 🔧 Instalación paso a paso
+
+### Opción 1: Instalación desde el repositorio (Recomendado para desarrollo)
 
 ```bash
-git clone https://github.com/tu-usuario/serenity-automation-mcp.git
-cd serenity-automation-mcp
+# 1. Clonar el repositorio
+git clone https://github.com/xt9116/mcp.git
+cd mcp
+
+# 2. Instalar dependencias
 npm install
+# O si usas pnpm:
+pnpm install
+
+# 3. Compilar el proyecto TypeScript
 npm run build
+
+# 4. Verificar que funciona
+npm start
+# Deberías ver: "Serenity Automation MCP Server running on stdio"
+# Presiona Ctrl+C para detenerlo
 ```
 
-### Instalación desde npm (cuando esté publicado)
+### Opción 2: Instalación desde npm (Cuando esté publicado)
 
 ```bash
 npm install -g serenity-automation-mcp
 ```
 
-## Uso
+## ⚙️ Configuración del cliente MCP
 
-### Iniciar el servidor MCP
+Después de instalar el servidor, necesitas configurar tu cliente MCP para que lo use.
+
+### Para Claude Desktop (macOS/Linux)
+
+1. Abre o crea el archivo de configuración:
+   ```bash
+   # En macOS:
+   nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
+   
+   # En Linux:
+   nano ~/.config/Claude/claude_desktop_config.json
+   ```
+
+2. Agrega esta configuración (reemplaza `/ruta/completa/` con tu ruta real):
+   ```json
+   {
+     "mcpServers": {
+       "serenity-automation": {
+         "command": "node",
+         "args": ["/ruta/completa/a/mcp/build/index.js"]
+       }
+     }
+   }
+   ```
+
+3. Reinicia Claude Desktop
+
+### Para Claude Desktop (Windows)
+
+1. Abre el archivo de configuración:
+   ```
+   %APPDATA%\Claude\claude_desktop_config.json
+   ```
+
+2. Agrega la configuración usando rutas de Windows:
+   ```json
+   {
+     "mcpServers": {
+       "serenity-automation": {
+         "command": "node",
+         "args": ["C:\\ruta\\completa\\a\\mcp\\build\\index.js"]
+       }
+     }
+   }
+   ```
+
+### Verificar la instalación
+
+1. Abre Claude Desktop
+2. Busca el ícono 🔌 o 🔨 que indica herramientas disponibles
+3. Deberías ver las herramientas del servidor MCP listadas
+4. Prueba con: "Genera una clase Java llamada Usuario con campos nombre y email"
+
+## 🎓 Cómo usar el servidor (Guía práctica)
+
+### Flujo de trabajo recomendado
+
+1. **Abre tu cliente MCP** (ej: Claude Desktop)
+2. **Describe lo que necesitas** en lenguaje natural
+3. **El asistente IA invocará las herramientas** automáticamente
+4. **Recibes el código generado** listo para usar
+
+### Ejemplo práctico 1: Generar una Historia de Usuario para API
+
+**Tu petición:**
+```
+Necesito generar código para una API REST que crea usuarios.
+La URL base es https://api.miempresa.com
+El endpoint es /api/v1/usuarios con método POST
+La respuesta incluye: id (número), nombre (texto), email (texto)
+```
+
+**Lo que obtienes:**
+- ✅ Task completo para ejecutar la petición POST
+- ✅ Interaction para manejar el HTTP request
+- ✅ Question para validar la respuesta
+- ✅ Model POJO con anotaciones Jackson
+- ✅ StepDefinitions en español listos para Cucumber
+- ✅ Feature file con escenarios Gherkin
+- ✅ Todo el código validado automáticamente
+
+### Ejemplo práctico 2: Crear un proyecto nuevo
+
+**Tu petición:**
+```
+Crea un proyecto nuevo de Serenity con Gradle para pruebas de API REST.
+Mi empresa es TechCorp, el paquete base debe ser com.techcorp.automation
+```
+
+**Lo que obtienes:**
+- ✅ Estructura completa de carpetas
+- ✅ build.gradle con todas las dependencias
+- ✅ serenity.conf configurado
+- ✅ Runner de Cucumber
+- ✅ Hooks con configuración de actores
+- ✅ README con instrucciones
+- ✅ .gitignore apropiado
+
+### Ejemplo práctico 3: Validar código existente
+
+**Tu petición:**
+```
+Valida este código Java:
+[pegar tu código aquí]
+```
+
+**Lo que obtienes:**
+- ✅ Lista de errores encontrados
+- ✅ Advertencias sobre posibles mejoras
+- ✅ Sugerencias específicas con ejemplos
+- ✅ Puntuación de calidad del código
+
+## 🏗️ Arquitectura técnica del proyecto
+
+### Organización del código
+
+El proyecto sigue una arquitectura modular dividida en componentes especializados:
+
+```
+mcp/
+├── src/                          # Código fuente TypeScript
+│   ├── index.ts                  # Punto de entrada
+│   ├── serenityMcp.ts            # Servidor MCP principal
+│   ├── validators/               # Módulos de validación
+│   ├── generators/               # Módulos de generación
+│   ├── standards/                # Definiciones de estándares (JSON)
+│   └── diagnostics/              # Herramientas de diagnóstico
+├── documentos/                   # Documentación técnica extendida
+├── tests/                        # Pruebas unitarias
+├── build/                        # Código JavaScript compilado
+└── package.json                  # Configuración del proyecto
+```
+
+### Componentes principales
+
+#### 1. Servidor MCP (serenityMcp.ts)
+
+Es el núcleo del sistema que:
+- Recibe peticiones del cliente MCP via JSON-RPC 2.0
+- Define y registra todas las herramientas disponibles
+- Enruta las peticiones a los módulos correctos
+- Formatea y envía las respuestas
+
+#### 2. Módulos de validación (validators/)
+
+Analizan código buscando problemas:
+- `java.validator.ts` - Valida sintaxis y convenciones Java
+- `oop-solid.validator.ts` - Verifica principios de diseño
+- `serenity-api.validator.ts` - Valida componentes Screenplay API
+- `serenity-web.validator.ts` - Valida componentes Screenplay Web
+
+#### 3. Módulos de generación (generators/)
+
+Crean código siguiendo plantillas profesionales:
+- `java.generator.ts` - Genera clases Java básicas
+- `serenity-api.generator.ts` - Genera componentes API Screenplay
+- `serenity-web.generator.ts` - Genera componentes Web Screenplay
+- `complete-api.generator.ts` - Genera HU completas de API
+- `complete-web.generator.ts` - Genera HU completas de Web
+- `project-structure.generator.ts` - Genera estructuras de proyectos
+
+#### 4. Estándares (standards/)
+
+Archivos JSON que definen reglas y mejores prácticas:
+- Convenciones de nombres
+- Patrones de diseño requeridos
+- Anotaciones necesarias
+- Ejemplos de implementación correcta
+
+### Flujo técnico de una petición
+
+```
+1. Cliente MCP (Claude)
+   ↓
+2. Mensaje JSON-RPC → serenityMcp.ts
+   ↓
+3. Identificación de herramienta solicitada
+   ↓
+4. Validación de parámetros de entrada
+   ↓
+5. Invocación del módulo apropiado (generator/validator)
+   ↓
+6. Ejecución de la lógica de negocio
+   ↓
+7. Aplicación de estándares desde standards/
+   ↓
+8. Validación automática del resultado
+   ↓
+9. Formateo de respuesta como Markdown
+   ↓
+10. Envío al cliente MCP
+```
+
+### Tecnologías utilizadas
+
+- **TypeScript 5.3**: Lenguaje principal con tipado fuerte
+- **@modelcontextprotocol/sdk**: SDK oficial para implementar servidores MCP
+- **JSON-RPC 2.0**: Protocolo de comunicación estandarizado
+- **ESLint**: Linting y calidad de código
+- **Jest**: Framework de testing (tests unitarios)
+
+### Patrones de diseño aplicados
+
+1. **Strategy Pattern**: Diferentes estrategias de validación/generación
+2. **Template Method**: Plantillas base con pasos personalizables
+3. **Factory Pattern**: Creación de objetos Java/Serenity
+4. **Dependency Injection**: Inyección de estándares y configuraciones
+
+## ⚠️ Consideraciones importantes para trabajar con el servidor
+
+### Para desarrolladores
+
+#### 1. Formato de entrada
+- **Sé específico**: Proporciona todos los detalles necesarios (nombres, endpoints, tipos de datos)
+- **Usa nombres descriptivos**: Nombres de clases, métodos y variables deben ser claros
+- **Especifica paquetes completos**: Ej: `com.empresa.proyecto.api` en lugar de solo `api`
+
+#### 2. Validación de código generado
+- El código generado ya está validado automáticamente
+- Pero siempre revisa el código antes de integrarlo en tu proyecto
+- Ajusta nombres y paquetes según tus convenciones específicas
+
+#### 3. Versiones de dependencias
+- El servidor genera código para **Serenity BDD 4.3.4**
+- Usa **JUnit 4.13.2** (estable y compatible)
+- Si tu proyecto usa versiones diferentes, ajusta las dependencias generadas
+
+#### 4. Estructura de paquetes
+- El servidor sigue convenciones estándar: `com.empresa.proyecto.tipo`
+- Para APIs: `tasks`, `interactions`, `questions`, `models`
+- Para Web: `ui`, `tasks`, `questions`
+- Para tests: `stepdefinitions`, `runners`, `hooks`
+
+### Para equipos
+
+#### 1. Estándares del equipo
+- El servidor usa estándares generales de la industria
+- Puedes personalizar los archivos en `src/standards/` para reflejar tus propios estándares
+- Después de modificar, ejecuta `npm run build` para recompilar
+
+#### 2. Control de calidad
+- Usa la herramienta de diagnóstico para analizar proyectos existentes
+- Establece un proceso de revisión para código generado
+- Integra las validaciones en tu pipeline de CI/CD
+
+#### 3. Organización de archivos
+- Mantén una estructura consistente en todos tus proyectos
+- Usa el generador de estructura de proyectos para nuevos proyectos
+- Documenta cualquier desviación de los estándares generados
+
+### Limitaciones conocidas
+
+1. **Idioma**: El código generado usa nombres en español para StepDefinitions (configurable)
+2. **Complejidad**: Para casos muy complejos, puede requerir ajustes manuales
+3. **Frameworks**: Optimizado para Serenity BDD, no otros frameworks de testing
+4. **Java**: Genera solo código Java, no otros lenguajes
+
+### Troubleshooting común
+
+#### El servidor no inicia
+```bash
+# Verifica Node.js
+node --version  # Debe ser >= 18.0.0
+
+# Reinstala dependencias
+rm -rf node_modules package-lock.json
+npm install
+
+# Recompila
+npm run build
+```
+
+#### El cliente MCP no ve las herramientas
+- Verifica la ruta en la configuración del cliente
+- Usa rutas absolutas, no relativas
+- Reinicia completamente el cliente MCP
+- Revisa los logs del cliente para errores
+
+#### Código generado tiene errores
+- Verifica que proporcionaste todos los parámetros requeridos
+- Revisa que los nombres de paquetes sigan el formato correcto
+- Consulta la documentación en `documentos/ejemplos/` para ver ejemplos correctos
+
+## 📚 Recursos de documentación adicional
+
+Este README proporciona una visión general. Para información más detallada:
+
+- **[MCP_GUIDE.md](./documentos/MCP_GUIDE.md)** - Guía completa sobre qué es MCP y cómo funciona
+- **[ARQUITECTURA_TECNICA.md](./documentos/ARQUITECTURA_TECNICA.md)** - Arquitectura detallada del sistema
+- **[ejemplos/](./documentos/ejemplos/)** - Ejemplos prácticos y plantillas
+  - [PLANTILLA_ESPECIFICACION_API.md](./documentos/ejemplos/PLANTILLA_ESPECIFICACION_API.md) - Plantilla para HUs API
+  - [EJEMPLO_HU_API.md](./documentos/ejemplos/EJEMPLO_HU_API.md) - Ejemplo completo de HU API
+  - [EJEMPLO_HU_WEB.md](./documentos/ejemplos/EJEMPLO_HU_WEB.md) - Ejemplo completo de HU Web
+
+## 🛠️ Scripts de desarrollo disponibles
 
 ```bash
-npm start
+# Compilación
+npm run build         # Compilar TypeScript a JavaScript
+npm run watch         # Compilar en modo observación (auto-recompila)
+npm run clean         # Limpiar archivos compilados
+
+# Ejecución
+npm start            # Iniciar servidor MCP
+npm run dev          # Compilar e iniciar en modo desarrollo
+
+# Calidad de código
+npm run lint         # Analizar código con ESLint
+npm run lint:fix     # Corregir automáticamente problemas de lint
+npm run typecheck    # Verificar tipos TypeScript sin compilar
+
+# Testing
+npm test             # Ejecutar tests unitarios
+npm run test:watch   # Tests en modo observación
+npm run test:coverage # Tests con reporte de cobertura
 ```
 
-### Modo desarrollo
+## 🔍 Herramientas disponibles en el servidor
 
-```bash
-npm run dev
-```
+El servidor expone las siguientes herramientas que pueden ser invocadas por tu asistente de IA:
 
-### Scripts disponibles
+### Generación avanzada (Historias de Usuario completas)
 
-- `npm run build` - Compila el código TypeScript
-- `npm run watch` - Compila en modo watch
-- `npm start` - Inicia el servidor MCP
-- `npm run dev` - Compila e inicia el servidor
-- `npm run lint` - Ejecuta ESLint
-- `npm run lint:fix` - Corrige automáticamente los problemas de lint
-- `npm run typecheck` - Verifica tipos sin compilar
-- `npm run clean` - Limpia el directorio de build
+- **`process_api_hu`** - Genera una Historia de Usuario completa para API REST
+  - Crea: Task, Interaction, Question, Model, StepDefinitions, Feature, Hooks, Runner
+  - Validación automática integrada
+  
+- **`process_web_hu`** - Genera una Historia de Usuario completa para Web UI
+  - Crea: UI Classes, Tasks, Questions, StepDefinitions, Feature, Hooks, Runner
+  - Configuración de navegador incluida
 
-## Herramientas disponibles
+- **`generate_project_structure`** - Genera estructura completa de proyecto
+  - Soporta: Maven y Gradle
+  - Tipos: API o Web
+  - Incluye: configuraciones, dependencias, archivos base
 
-### Generación Avanzada
+### Validación de código
 
-- `process_api_hu` - Procesa una Historia de Usuario completa para API REST generando Task, Interaction, Question, Model, StepDefinitions, Feature y validaciones automáticas
-- `process_web_hu` - Procesa una Historia de Usuario completa para Web generando UI Classes, Tasks, Questions, StepDefinitions y Features
-- `generate_project_structure` - Genera la estructura completa de un proyecto Maven o Gradle para automatización con Serenity BDD
+- **`validate_java_code`** - Valida código Java contra estándares
+  - Analiza: naming, tipos, estructura
+  - Verifica: principios SOLID y OOP
+  - Reporta: errores, advertencias, sugerencias
 
-### Validación Java
+- **`validate_api_component`** - Valida componentes Serenity API
+  - Verifica: Tasks, Interactions, Questions, Models
+  - Valida: anotaciones, estructura, patrones
 
-- `validate_java_code` - Valida código Java contra estándares (naming, types, structure, SOLID, OOP)
+- **`validate_web_component`** - Valida componentes Serenity Web
+  - Verifica: UI classes, Tasks, Questions
+  - Valida: selectores, navegación, interacciones
 
-### Generación Java
+### Generación de componentes individuales
 
-- `generate_java_class` - Genera una clase Java completa con campos, métodos, constructores
+**Java básico:**
+- **`generate_java_class`** - Genera clases, interfaces, enums
 
-### Serenity API
+**Componentes Serenity API:**
+- **`generate_api_task`** - Task para operaciones API
+- **`generate_api_interaction`** - Interaction HTTP
+- **`generate_api_question`** - Question para validaciones
+- **`generate_api_model`** - POJO con Jackson annotations
+- **`generate_guardar_respuesta`** - Interaction para almacenar respuestas
+- **`generate_response_storage`** - Clase de almacenamiento de respuestas
 
-- `generate_api_task` - Genera un Task de Serenity para API REST
-- `generate_api_interaction` - Genera una Interaction de Serenity para API
-- `generate_api_question` - Genera una Question de Serenity para API
-- `generate_api_model` - Genera un Model (POJO) para Request/Response de API
-- `generate_guardar_respuesta` - Genera la interacción GuardarRespuesta para almacenar respuestas de API en memoria
-- `generate_response_storage` - Genera una clase de almacenamiento (storage) para respuestas de API
-- `validate_api_component` - Valida un componente de Serenity API contra los estándares
+**Componentes Serenity Web:**
+- **`generate_web_ui`** - UI class con Target locators
+- **`generate_web_task`** - Task para acciones web
+- **`generate_web_question`** - Question para verificaciones web
+- **`generate_set_the_stage`** - Configuración OnStage
 
-### Serenity Web
+### Estándares y diagnóstico
 
-- `generate_web_ui` - Genera una clase UI con Target locators para elementos web
-- `generate_web_task` - Genera un Task de Serenity para Web UI
-- `generate_web_question` - Genera una Question de Serenity para Web
-- `generate_set_the_stage` - Genera la clase SetTheStage para configurar OnStage
-- `validate_web_component` - Valida un componente de Serenity Web contra los estándares
+- **`get_standard`** - Obtiene un estándar completo (Java, OOP/SOLID, Serenity API o Web)
+- **`diagnose_serenity_robot`** - Diagnostica proyectos existentes y genera reporte completo
 
-### Estándares
-
-- `get_standard` - Obtiene un estándar completo (Java, OOP/SOLID, Serenity API o Web)
-
-### Diagnóstico de Robots 🔍
-
-- `diagnose_serenity_robot` - Diagnostica proyectos Serenity BDD existentes y genera un reporte completo en formato Markdown (.md) con:
-  - ✅ Validación de dependencias (Serenity 4.3.4, JUnit 4.13.2)
-  - ✅ Análisis de estructura del proyecto
-  - ✅ Verificación de implementación del patrón Screenplay
-  - ✅ Detección de anti-patrones comunes
-  - ✅ Evaluación de mejores prácticas
-  - ✅ Recomendaciones específicas para correcciones
-  - ✅ Puntuación general del proyecto (0-100)
-
-## Arquitectura
-
-```
-serenity-automation-mcp/
-├── src/
-│   ├── index.ts                      # Punto de entrada principal
-│   ├── serenityMcp.ts                # Configuración y arranque del servidor MCP
-│   ├── validators/                   # Validadores de código
-│   │   ├── java.validator.ts
-│   │   ├── oop-solid.validator.ts
-│   │   ├── serenity-api.validator.ts
-│   │   └── serenity-web.validator.ts
-│   ├── generators/                   # Generadores de código
-│   │   ├── types.ts                 # Tipos compartidos
-│   │   ├── java.generator.ts
-│   │   ├── serenity-api.generator.ts
-│   │   ├── serenity-web.generator.ts
-│   │   ├── complete-api.generator.ts  # Generador de HUs API completas
-│   │   ├── complete-web.generator.ts  # Generador de HUs Web completas
-│   │   ├── project-structure.generator.ts  # Generador de estructura de proyectos
-│   │   └── validation.helper.ts     # Helper de validación automática
-│   └── standards/                    # Definiciones de estándares JSON
-│       ├── java.standard.json
-│       ├── oop-solid.standard.json
-│       ├── serenity-api-screenplay.standard.json
-│       └── serenity-web-screenplay.standard.json
-├── tests/                            # Tests unitarios
-│   └── basic.test.ts
-├── build/                            # Código compilado (generado automáticamente)
-├── package.json
-├── tsconfig.json
-├── .eslintrc.cjs
-├── jest.config.js
-├── .gitignore
-└── README.md
-```
-
-## Configuración del Cliente MCP
-
-Para usar este servidor MCP, necesitas configurarlo en tu cliente MCP. Agrega lo siguiente a tu configuración:
-
-```json
-{
-  "mcpServers": {
-    "serenity-automation": {
-      "command": "node",
-      "args": ["/ruta/a/serenity-automation-mcp/build/index.js"]
-    }
-  }
-}
-```
-
-## 📚 Documentación y Guías
+## 📖 Ejemplos y guías de uso
 
 ### Guías de Historias de Usuario
 
@@ -208,361 +519,207 @@ El estándar API incluye una sección completa **"commonIssuesAndFixes"** que do
 
 Ver: [RESUMEN_CAMBIOS_FIXES.md](./RESUMEN_CAMBIOS_FIXES.md) para el resumen completo de todas las mejoras.
 
-## Ejemplos de uso
+### Ejemplos prácticos paso a paso
 
-### Generar HU API completa
+#### Ejemplo 1: Generar HU API completa
 
-```json
-{
-  "tool": "process_api_hu",
-  "arguments": {
-    "huId": "API-HU-001",
-    "nombre": "Crear Usuario",
-    "urlBase": "https://api.example.com",
-    "endpoint": "/api/users",
-    "metodo": "POST",
-    "headers": [
-      { "name": "Content-Type", "value": "application/json" },
-      { "name": "Authorization", "value": "Bearer token" }
-    ],
-    "parametros": [],
-    "esquemaRespuesta": { "id": "int", "name": "string" },
-    "codigosRespuesta": [
-      { "codigo": 201, "descripcion": "Usuario creado" },
-      { "codigo": 400, "descripcion": "Bad Request" }
-    ],
-    "validaciones": [
-      "El código de respuesta es 201",
-      "El response body contiene el ID del usuario"
-    ],
-    "flujoTask": [
-      "Configurar headers de autenticación",
-      "Enviar request POST al endpoint",
-      "Validar response code 201"
-    ],
-    "escenarioPrueba": {
-      "nombre": "Crear usuario exitosamente",
-      "steps": [
-        "Given el servicio está disponible",
-        "When envío una petición POST a /api/users",
-        "Then el código de respuesta debe ser 201"
-      ],
-      "examples": []
+**Contexto**: Necesitas automatizar una API que crea usuarios en tu sistema.
+
+**Tu solicitud al asistente:**
+```
+Genera el código completo para automatizar esta API:
+- Nombre: Crear Usuario
+- URL base: https://api.ejemplo.com
+- Endpoint: /api/v1/usuarios
+- Método: POST
+- Headers necesarios:
+  * Content-Type: application/json
+  * Authorization: Bearer {token}
+- Body de ejemplo: {"nombre": "Juan", "email": "juan@test.com"}
+- Respuesta esperada: {"id": 123, "nombre": "Juan", "email": "juan@test.com", "estado": "activo"}
+- Validaciones: verificar código 201 y que el ID no sea nulo
+```
+
+**Código que recibirás**: Múltiples archivos Java listos para usar con toda la estructura Screenplay.
+
+#### Ejemplo 2: Crear proyecto desde cero
+
+**Contexto**: Inicias un nuevo proyecto de automatización.
+
+**Tu solicitud:**
+```
+Crea un proyecto nuevo de Serenity BDD con estas características:
+- Build tool: Gradle
+- Empresa: MiEmpresa
+- Paquete base: com.miempresa.automation
+- Nombre del proyecto: pruebas-api
+- Tipo: API REST
+```
+
+**Lo que recibirás**: Estructura completa de carpetas y archivos de configuración.
+
+#### Ejemplo 3: Validar código existente
+
+**Contexto**: Tienes código que necesitas revisar.
+
+**Tu solicitud:**
+```
+Valida este código Java:
+
+public class userservice {
+    public void CreateUser(String NAME) {
+        // implementación
     }
-  }
 }
 ```
 
-### Generar HU Web completa
+**Respuesta que obtendrás**: Lista de problemas encontrados con sugerencias de cómo corregirlos.
 
-```json
-{
-  "tool": "process_web_hu",
-  "arguments": {
-    "huId": "WEB-HU-001",
-    "nombre": "Buscar Producto",
-    "baseUrl": "https://www.example.com",
-    "paginas": [
-      {
-        "name": "Página de Búsqueda",
-        "uiName": "UIBusqueda",
-        "elements": [
-          {
-            "prefix": "TXT",
-            "name": "BUSCAR_PRODUCTO",
-            "selector": "#search-input"
-          },
-          {
-            "prefix": "BTN",
-            "name": "BUSCAR",
-            "selector": "#search-button"
-          },
-          {
-            "prefix": "LBL",
-            "name": "RESULTADOS",
-            "selector": ".search-results"
-          }
-        ]
-      }
-    ],
-    "pasosFlujo": [
-      "Abrir navegador en la página de búsqueda",
-      "Ingresar texto de búsqueda",
-      "Hacer clic en botón buscar",
-      "Esperar resultados"
-    ],
-    "validaciones": [
-      "Los resultados de búsqueda se muestran correctamente"
-    ],
-    "gherkinScenario": "Feature: Buscar Producto\n  Scenario: Buscar un producto\n    Given que el usuario ingresa a la página\n    When ingresa el texto y busca\n    Then debería ver los resultados"
-  }
-}
+#### Ejemplo 4: Generar proyecto Web
+
+**Tu solicitud:**
+```
+Genera código para automatizar login web:
+- URL: https://www.ejemplo.com/login
+- Elementos:
+  * Campo usuario: #username
+  * Campo password: #password  
+  * Botón login: button[type="submit"]
+  * Mensaje bienvenida: .welcome-message
+- Flujo: ingresar credenciales, hacer click, verificar mensaje
 ```
 
-### Generar estructura de proyecto Gradle
+**Código que recibirás**: UI classes, Tasks, Questions completos y Feature file.
 
-**Ejemplo 1: Nombre simple del proyecto**
-```json
-{
-  "tool": "generate_project_structure",
-  "arguments": {
-    "buildTool": "gradle",
-    "companyPackage": "com.example.automation",
-    "projectName": "serenity-api-tests",
-    "type": "api"
-  }
-}
-```
+## 🎯 Mejores prácticas de uso
 
-**Ejemplo 2: Nombre completo con notación de puntos**
-```json
-{
-  "tool": "generate_project_structure",
-  "arguments": {
-    "buildTool": "gradle",
-    "companyPackage": "co.com.corredores",
-    "projectName": "co.com.corredores.api",
-    "type": "api"
-  }
-}
-```
+### 1. Preparación antes de generar código
 
-**Nota importante**: El parámetro `projectName` puede ser:
-- Un nombre simple como `"api"` o `"serenity-api-tests"`
-- Un identificador completo con notación de puntos como `"co.com.corredores.api"`
+✅ **Haz esto:**
+- Ten clara la especificación de la API o UI
+- Define los nombres de paquetes antes
+- Prepara ejemplos de requests/responses
+- Lista las validaciones necesarias
 
-El nombre se usará tal cual para el directorio del proyecto, artifact ID en Maven/Gradle, y configuraciones de Serenity.
+❌ **Evita esto:**
+- Generar sin tener clara la especificación
+- Usar nombres genéricos como "Test" o "Api"
+- Omitir headers o parámetros importantes
 
-### Validar código Java
+### 2. Después de generar código
 
-```json
-{
-  "tool": "validate_java_code",
-  "arguments": {
-    "code": "public class UserService { ... }",
-    "type": "class",
-    "analysisType": "full"
-  }
-}
-```
+✅ **Haz esto:**
+- Revisa el código generado
+- Ajusta nombres si es necesario
+- Prueba en tu entorno local
+- Integra gradualmente en tu proyecto
 
-### Generar un Task de API
+❌ **Evita esto:**
+- Usar el código sin revisarlo
+- Mezclar diferentes convenciones
+- Ignorar warnings de validación
 
-```json
-{
-  "tool": "generate_api_task",
-  "arguments": {
-    "className": "CreateUserTask",
-    "packageName": "com.example.api.tasks",
-    "httpMethod": "POST",
-    "endpoint": "/api/users"
-  }
-}
-```
+### 3. Mantenimiento
 
-### Generar GuardarRespuesta interaction
+✅ **Haz esto:**
+- Mantén actualizado el servidor MCP
+- Documenta desviaciones de los estándares
+- Comparte aprendizajes con el equipo
 
-```json
-{
-  "tool": "generate_guardar_respuesta",
-  "arguments": {
-    "packageName": "rimac.api",
-    "abilityClassName": "LlamarAPIsRimac"
-  }
-}
-```
+❌ **Evita esto:**
+- Modificar estándares sin documentar
+- Crear inconsistencias entre proyectos
 
-**Uso en un Task:**
-```java
-actor.attemptsTo(
-    ConfigurarEndpoint.conServicio("ObtenerCliente"),
-    EjecutarLlamadaAPI.get(),
-    GuardarRespuesta.de(
-        ValidarObtenerCliente.class, 
-        RespuestaObtenerCliente::setRespuesta, 
-        "Obtener Datos Cliente"
-    )
-);
-```
+## 🤝 Contribución al proyecto
 
-### Generar clase de almacenamiento de respuestas
+¿Quieres mejorar este servidor MCP? ¡Las contribuciones son bienvenidas!
 
-```json
-{
-  "tool": "generate_response_storage",
-  "arguments": {
-    "packageName": "rimac.api",
-    "moduleName": "endoso",
-    "serviceName": "ObtenerCliente",
-    "responseClassName": "ValidarObtenerCliente",
-    "threadSafe": false
-  }
-}
-```
+### Proceso de contribución
 
-**Para ejecución paralela (thread-safe):**
-```json
-{
-  "tool": "generate_response_storage",
-  "arguments": {
-    "packageName": "rimac.api",
-    "moduleName": "endoso",
-    "serviceName": "ObtenerCliente",
-    "responseClassName": "ValidarObtenerCliente",
-    "threadSafe": true
-  }
-}
-```
+1. Haz fork del repositorio
+2. Crea una rama para tu feature: `git checkout -b feature/mi-mejora`
+3. Realiza tus cambios
+4. Ejecuta los tests: `npm test`
+5. Verifica el linting: `npm run lint`
+6. Commit de cambios: `git commit -m 'Agrega nueva funcionalidad'`
+7. Push a tu fork: `git push origin feature/mi-mejora`
+8. Abre un Pull Request
 
-**Reutilizar datos almacenados:**
-```java
-// Recuperar datos guardados en otro escenario
-ValidarObtenerCliente clienteGuardado = RespuestaObtenerCliente.getRespuesta();
-String idCliente = clienteGuardado.getPayload().getItems().get(0).getIdCliente();
+### Áreas donde puedes contribuir
 
-// Usar en una nueva llamada
-actor.attemptsTo(
-    ConfigurarEndpoint.conServicio("ActualizarCliente"),
-    AgregarParametros.path("idCliente", idCliente),
-    EjecutarLlamadaAPI.put()
-);
-```
+- 🐛 Reportar bugs o problemas encontrados
+- 📝 Mejorar documentación y ejemplos
+- ✨ Agregar nuevas herramientas o generadores
+- 🧪 Escribir más tests unitarios
+- 🌍 Traducciones y localización
+- 🎨 Mejorar templates de código generado
 
-### Obtener estándar Java
+## 🔒 Seguridad
 
-```json
-{
-  "tool": "get_standard",
-  "arguments": {
-    "standard": "java"
-  }
-}
-```
+### Consideraciones de seguridad
 
-### Diagnosticar un robot Serenity existente
+- ✅ El servidor NO almacena código ni datos
+- ✅ Toda la comunicación es local via stdio
+- ✅ No hay conexiones externas salvo las que tu código requiera
+- ✅ Los estándares son archivos JSON estáticos
 
-**Cómo usar la herramienta de diagnóstico:**
+### Reportar vulnerabilidades
 
-1. **Recopilar información del proyecto**: Usar comandos `tree`, `cat`, o similar para obtener la estructura y contenido de archivos clave
-2. **Invocar la herramienta** con la información recopilada
-3. **Revisar el reporte** generado en formato Markdown con análisis completo
+Si encuentras una vulnerabilidad de seguridad, por favor:
+1. NO la publiques en issues públicos
+2. Contacta directamente al mantenedor
+3. Proporciona detalles y pasos para reproducir
 
-**Ejemplo de uso:**
+## 📄 Licencia
 
-```json
-{
-  "tool": "diagnose_serenity_robot",
-  "arguments": {
-    "projectPath": "/path/to/my-serenity-project",
-    "projectType": "api",
-    "projectStructure": "📦 my-api-project/\n├── pom.xml (contains serenity-core:4.3.4, junit:4.13.2)\n├── serenity.properties\n├── src/\n│   ├── main/java/com/example/\n│   │   ├── tasks/ (CreateUserTask.java)\n│   │   ├── interactions/ (SendPostRequest.java)\n│   │   ├── questions/ (StatusCodeQuestion.java)\n│   │   └── models/ (UserModel.java)\n│   └── test/java/com/example/\n│       ├── runners/ (CucumberTestRunner.java with @RunWith)\n│       ├── hooks/ (Hooks.java with OnStage)\n│       └── stepdefinitions/ (UserStepDefinitions.java with Actor)\n└── src/test/resources/\n    └── features/ (user-creation.feature)"
-  }
-}
-```
+Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para más detalles.
 
-**El reporte generado incluirá:**
+## 🙋 Soporte y ayuda
 
-- 📊 Puntuación general del proyecto (0-100)
-- ✅/❌ Estado de aprobación
-- 🔴 Errores críticos encontrados
-- ⚠️ Advertencias y recomendaciones
-- 📋 Análisis detallado de:
-  - Dependencias (versiones correctas de Serenity y JUnit)
-  - Estructura del proyecto (Runner, Hooks, StepDefinitions, Features)
-  - Patrón Screenplay (uso correcto de Actor, Tasks, Questions)
-  - Mejores prácticas (naming conventions, documentación, organización)
-- 💡 Recomendaciones específicas para mejorar
-- 📝 Conclusión con próximos pasos si hay issues
+### ¿Necesitas ayuda?
 
-**Ejemplo de reporte generado:**
+- 📖 **Documentación**: Revisa la carpeta `documentos/` para guías detalladas
+- 💬 **Issues**: [GitHub Issues](https://github.com/xt9116/mcp/issues) para reportar problemas
+- 📧 **Contacto**: Abre un issue para preguntas específicas
 
-```markdown
-# 🔍 Reporte de Diagnóstico - Serenity Robot
+### Preguntas frecuentes (FAQ)
 
-## Información General
-- **Proyecto:** my-api-project
-- **Tipo:** API
-- **Estado:** ✅ APROBADO
-- **Puntuación General:** 🟢 **85/100**
+**P: ¿El código generado está listo para producción?**  
+R: El código sigue mejores prácticas y está validado, pero siempre revísalo antes de usarlo en producción.
 
-## 📊 Resumen de Issues
-| Tipo | Cantidad |
-|------|----------|
-| 🔴 Errores | 0 |
-| ⚠️  Advertencias | 2 |
-| ℹ️  Información | 1 |
+**P: ¿Puedo personalizar los templates?**  
+R: Sí, puedes modificar los generadores en `src/generators/` y los estándares en `src/standards/`.
 
-## 📋 Análisis Detallado
+**P: ¿Funciona con otros frameworks además de Serenity?**  
+R: Actualmente está optimizado para Serenity BDD. Para otros frameworks necesitarías crear nuevos generadores.
 
-### ✅ Dependencias
-**Puntuación:** 100/100 ██████████
-- ✅ Serenity BDD 4.3.4 detectado
-- ✅ JUnit 4.13.2 (estable) detectado
-- ✅ Serenity Cucumber configurado
-...
+**P: ¿El servidor envía mis datos a internet?**  
+R: No, todo es procesamiento local. No hay comunicación con servicios externos.
 
-## 💡 Recomendaciones
-1. ⭐ Mejorar calidad del código: agregar documentación Javadoc
-2. 📚 Consultar documentación oficial de Serenity Screenplay
+**P: ¿Funciona con Java 17 / Java 21?**  
+R: Sí, el código generado es compatible con Java 8+ incluyendo versiones modernas.
 
-## 📝 Conclusión
-✅ **El proyecto ha pasado el diagnóstico.** El patrón Screenplay está correctamente implementado...
-```
+## 🚀 Roadmap futuro
 
-## Contribución
-{
-  "tool": "get_standard",
-  "arguments": {
-    "standard": "java"
-  }
-}
-```
+Mejoras planeadas para futuras versiones:
 
-## Contribución
+- [ ] Soporte para REST Assured avanzado
+- [ ] Generación de data builders más sofisticados
+- [ ] Templates personalizables por usuario
+- [ ] Integración con más clientes MCP
+- [ ] Reportes de cobertura de código generado
+- [ ] Soporte para GraphQL APIs
+- [ ] Generación de tests de carga/performance
 
-Las contribuciones son bienvenidas. Por favor:
+## 🙏 Agradecimientos
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Desarrollo
-
-Asegúrate de ejecutar `npm run lint` y `npm run typecheck` antes de hacer commit de tus cambios.
-
-## Licencia
-
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## Soporte
-
-- **Issues**: [GitHub Issues](https://github.com/tu-usuario/serenity-automation-mcp/issues)
-- **Documentación**: [Wiki](https://github.com/tu-usuario/serenity-automation-mcp/wiki)
-
-## Roadmap
-
-- [x] Validación de código Java básica
-- [x] Generación de código Java
-- [x] Soporte para Serenity API Screenplay
-- [x] Soporte para Serenity Web Screenplay
-- [x] Validación de principios OOP/SOLID
-- [ ] Tests unitarios completos
-- [ ] Soporte para otros lenguajes (Python, C#, etc.)
-- [ ] Integración con CI/CD
-- [ ] Documentación interactiva
-
-## Autores
-
-- **Tu Nombre** - Trabajo inicial
-
-## Agradecimientos
-
-- Al equipo de [Model Context Protocol](https://modelcontextprotocol.io/) por el excelente framework
-- A la comunidad de [Serenity BDD](https://www.serenity-bdd.info/) por los patrones de Screenplay
-- A todos los contribuidores que ayudan a mejorar este proyecto
+- Equipo de [Model Context Protocol](https://modelcontextprotocol.io/) por el SDK
+- Comunidad [Serenity BDD](https://serenity-bdd.info/) por el framework
+- John Ferguson Smart por el patrón Screenplay
+- Todos los contribuidores del proyecto
 
 ---
 
-**Hecho con ❤️ para mejorar la calidad del código**
+**💻 Hecho con ❤️ para la comunidad de automatización de pruebas**
+
+**⭐ Si este proyecto te es útil, considera darle una estrella en GitHub**
