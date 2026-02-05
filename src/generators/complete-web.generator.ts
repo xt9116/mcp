@@ -1,80 +1,60 @@
-// Generador completo para HU de Web UI - Alineado con Estándars y Robots Rimac
+// Web automation code generator for Serenity Screenplay
 import type { WebHURequest, GeneratedHU } from './types.js';
 
 export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
-  // Use provided packageName or default to com.screenplay.web
-  const basePackage = request.packageName || 'com.screenplay.web';
+  const pkgBase = request.packageName || 'com.screenplay.web';
   
-  const uiClasses: string[] = [];
-  const tasks: string[] = [];
-  const questions: string[] = [];
-  const stepDefinitions: string[] = [];
-  const features: string[] = [];
+  const artifacts = {
+    userInterfaces: [] as string[],
+    businessTasks: [] as string[],
+    validationQuestions: [] as string[],
+    cucumberSteps: [] as string[],
+    gherkinFeatures: [] as string[]
+  };
 
-  (request.paginas || []).forEach(page => {
-    const uiCode = generateWebUIFromPage(page, request.baseUrl, basePackage);
-    uiClasses.push(uiCode);
-  });
+  for (const pageDefinition of (request.paginas || [])) {
+    artifacts.userInterfaces.push(
+      buildUIPageObject(pageDefinition, request.baseUrl, pkgBase)
+    );
+  }
 
-  const taskCode = generateWebTaskFromFlow(request, basePackage);
-  tasks.push(taskCode);
+  artifacts.businessTasks.push(
+    buildBusinessTask(request, pkgBase)
+  );
 
-  (request.validaciones || []).forEach(validation => {
-    const questionCode = generateWebQuestionFromValidation(validation, basePackage);
-    questions.push(questionCode);
-  });
+  for (const validationRule of (request.validaciones || [])) {
+    artifacts.validationQuestions.push(
+      buildValidationQuestion(validationRule, pkgBase)
+    );
+  }
 
-  const stepCode = generateWebStepDefinitionsFromScenario(request, basePackage);
-  stepDefinitions.push(stepCode);
+  artifacts.cucumberSteps.push(
+    buildStepDefinitionsClass(request, pkgBase)
+  );
 
-  const featureCode = generateWebFeatureFromScenario(request);
-  features.push(featureCode);
+  artifacts.gherkinFeatures.push(
+    buildGherkinFeature(request)
+  );
 
-  const setTheStageCode = generateSetTheStage(basePackage);
-  const runnerCode = generateWebRunner(basePackage);
+  const hookSetup = buildCucumberHooks(pkgBase);
+  const testRunner = buildJUnitRunner(pkgBase);
 
-  const output = uiClasses.map((code, index) =>
-    `### UI: ${request.paginas[index]?.uiName || 'Unknown'}.java
-\`\`\`java
-${code}
-\`\`\`
-`
-  ).join('\n') +
-  `### Task: ${request.huId.replace('WEB-HU-', '')}.java
-\`\`\`java
-${tasks[0]}
-\`\`\`
-` +
-  questions.map((code, index) =>
-    `### Question: Verificar${request.validaciones[index]?.replace(/\s+/g, '') || 'Unknown'}.java
-\`\`\`java
-${code}
-\`\`\`
-`
-  ).join('\n') +
-  `### SetTheStage.java
-\`\`\`java
-${setTheStageCode}
-\`\`\`
-
-### Runner: CucumberTestRunner.java
-\`\`\`java
-${runnerCode}
-\`\`\`
-
-### Step Definitions: ${request.huId.replace('WEB-HU-', '')}StepDefinitions.java
-\`\`\`java
-${stepCode}
-\`\`\`
-
-### Feature: ${request.huId.replace('WEB-HU-', '')}.feature
-\`\`\`gherkin
-${featureCode}
-\`\`\`
-`;
+  const formattedOutput = [
+    ...artifacts.userInterfaces.map((code, idx) =>
+      `### UI: ${request.paginas[idx]?.uiName || 'Unknown'}.java\n\`\`\`java\n${code}\n\`\`\`\n`
+    ),
+    `### Task: ${request.huId.replace('WEB-HU-', '')}.java\n\`\`\`java\n${artifacts.businessTasks[0]}\n\`\`\`\n`,
+    ...artifacts.validationQuestions.map((code, idx) =>
+      `### Question: Verificar${request.validaciones[idx]?.replace(/\s+/g, '') || 'Unknown'}.java\n\`\`\`java\n${code}\n\`\`\`\n`
+    ),
+    `### SetTheStage.java\n\`\`\`java\n${hookSetup}\n\`\`\`\n`,
+    `### Runner: CucumberTestRunner.java\n\`\`\`java\n${testRunner}\n\`\`\`\n`,
+    `### Step Definitions: ${request.huId.replace('WEB-HU-', '')}StepDefinitions.java\n\`\`\`java\n${artifacts.cucumberSteps[0]}\n\`\`\`\n`,
+    `### Feature: ${request.huId.replace('WEB-HU-', '')}.feature\n\`\`\`gherkin\n${artifacts.gherkinFeatures[0]}\n\`\`\`\n`
+  ].join('\n');
 
   return {
-    output,
+    output: formattedOutput,
     summary: {
       totalFiles: 5 + request.paginas.length + request.validaciones.length,
       files: [
@@ -90,218 +70,301 @@ ${featureCode}
   };
 }
 
-function generateWebUIFromPage(page: any, baseUrl: string, basePackage: string): string {
-  const targetLines = page.elements.map((elem: any) => {
-    const prefix = elem.prefix || 'ELEMENT';
-    const description = elem.name || 'Elemento';
-    return `    public static final Target ${prefix}_${elem.name.toUpperCase()} = Target.the("${description}")
-        .locatedBy("${elem.selector}");`;
-  }).join('\n');
+function buildUIPageObject(pageDefinition: any, websiteUrl: string, pkgBase: string): string {
+  const elementTargets = pageDefinition.elements.map((elem: any) => {
+    const targetPrefix = elem.prefix || 'ELEMENT';
+    const targetDesc = elem.name || 'Elemento';
+    const targetConstant = `${targetPrefix}_${elem.name.toUpperCase()}`;
+    return `    public static final Target ${targetConstant} = Target.the("${targetDesc}")\n        .locatedBy("${elem.selector}");`;
+  }).join('\n\n');
 
-  return `package ${basePackage}.userinterfaces;
+  const imports = [
+    'net.serenitybdd.annotations.DefaultUrl',
+    'net.serenitybdd.core.pages.PageObject',
+    'net.serenitybdd.screenplay.targets.Target'
+  ];
 
-import net.serenitybdd.annotations.DefaultUrl;
-import net.serenitybdd.core.pages.PageObject;
-import net.serenitybdd.screenplay.targets.Target;
+  return `package ${pkgBase}.userinterfaces;
 
-@DefaultUrl("${baseUrl}")
-public class ${page.uiName} extends PageObject {
+${imports.map(imp => `import ${imp};`).join('\n')}
 
-${targetLines}
+@DefaultUrl("${websiteUrl}")
+public class ${pageDefinition.uiName} extends PageObject {
+
+${elementTargets}
 }`;
 }
 
-function generateWebTaskFromFlow(request: WebHURequest, basePackage: string): string {
-  const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-  const uiClass = request.paginas && request.paginas.length > 0 && request.paginas[0] ? request.paginas[0].uiName : 'UIHome';
+function buildBusinessTask(request: WebHURequest, pkgBase: string): string {
+  const taskClassName = sanitizeClassName(request.nombre);
+  const primaryUI = extractPrimaryUIClass(request.paginas);
+  
+  const actorSteps = buildActorSteps(request.pasosFlujo || []);
+  
+  const requiredImports = [
+    'net.serenitybdd.screenplay.Actor',
+    'net.serenitybdd.screenplay.Task',
+    'net.serenitybdd.screenplay.Tasks',
+    'net.serenitybdd.screenplay.actions.*',
+    'net.serenitybdd.screenplay.waits.WaitUntil',
+    'net.serenitybdd.screenplay.matchers.WebElementStateMatchers',
+    `${pkgBase}.userinterfaces.${primaryUI}`,
+    `static ${pkgBase}.userinterfaces.${primaryUI}.*`
+  ];
 
-  const flowImplementation = (request.pasosFlujo || []).map(step => {
-    if (step.includes('Open.browserOn')) {
-      return `            Open.browserOn(${uiClass}.class),`;
-    } else if (step.includes('WaitUntil')) {
-      return '            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),';
-    } else if (step.includes('Ingresar')) {
-      return '            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),';
-    } else if (step.includes('Hacer clic')) {
-      return '            Click.on(BTN_BUSCAR),';
-    } else if (step.includes('Esperar')) {
-      return '            WaitUntil.the(LBL_RESULTADOS, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),';
-    }
-    return `            // ${step}`;
-  }).join('\n');
+  return `package ${pkgBase}.tasks;
 
-  return `package ${basePackage}.tasks;
+${requiredImports.map(imp => `import ${imp};`).join('\n')}
 
-import net.serenitybdd.screenplay.Actor;
-import net.serenitybdd.screenplay.Task;
-import net.serenitybdd.screenplay.Tasks;
-import net.serenitybdd.screenplay.actions.*;
-import net.serenitybdd.screenplay.waits.WaitUntil;
-import net.serenitybdd.screenplay.matchers.WebElementStateMatchers;
-import ${basePackage}.userinterfaces.${uiClass};
-import static ${basePackage}.userinterfaces.${uiClass}.*;
-
-public class ${taskName} implements Task {
+public class ${taskClassName} implements Task {
 
     private final String producto;
-    private ${uiClass} uiPage;
+    // Private UI field - Serenity injects automatically (do NOT initialize in constructor)
+    private ${primaryUI} pageUI;
 
-    public ${taskName}(String producto) {
+    public ${taskClassName}(String producto) {
         this.producto = producto;
     }
 
     @Override
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
-${flowImplementation}
+${actorSteps}
         );
     }
 
-    public static ${taskName} llamado(String producto) {
-        return Tasks.instrumented(${taskName}.class, producto);
+    // Factory method for browser opening (no parameters needed)
+    public static ${taskClassName} iniciar() {
+        return Tasks.instrumented(${taskClassName}.class, "");
+    }
+
+    // Factory method for actions with data
+    public static ${taskClassName} llamado(String producto) {
+        return Tasks.instrumented(${taskClassName}.class, producto);
     }
 }`;
 }
 
-function generateWebQuestionFromValidation(validation: string, basePackage: string): string {
-  const questionName = `Verificar${validation.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '')}`;
+function sanitizeClassName(rawName: string): string {
+  // Convert to PascalCase: split by spaces/non-alpha, capitalize each word
+  return rawName
+    .split(/[\s\-_]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join('')
+    .replace(/[^a-zA-Z0-9]/g, '');
+}
 
-  return `package ${basePackage}.questions;
+function extractPrimaryUIClass(pageList: any[]): string {
+  if (!pageList || pageList.length === 0) {
+    return 'UIHome';
+  }
+  return pageList[0].uiName;
+}
 
-import net.serenitybdd.screenplay.Actor;
-import net.serenitybdd.screenplay.Question;
-import net.serenitybdd.screenplay.targets.Target;
-import ${basePackage}.userinterfaces.UIHome;
-import static ${basePackage}.userinterfaces.UIHome.LBL_CANTIDAD_CARRITO;
+function buildActorSteps(flowSteps: string[]): string {
+  const stepGenerators: Record<string, () => string> = {
+    // UI injection pattern: pageUI is a private field injected by Serenity BDD
+    // This allows @DefaultUrl from the UI class to be automatically used
+    'open': () => `            Open.browserOn(pageUI),`,
+    'wait': () => `            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`,
+    'enter': () => `            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),`,
+    'click': () => `            Click.on(BTN_BUSCAR),`,
+    'pause': () => `            WaitUntil.the(LBL_RESULTADOS, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`
+  };
 
-public class ${questionName} implements Question<Boolean> {
+  const generatedSteps = flowSteps.map(stepDesc => {
+    const lowerStep = stepDesc.toLowerCase();
+    
+    if (lowerStep.includes('open') || lowerStep.includes('abrir')) {
+      const generator = stepGenerators['open'];
+      return generator ? generator() : `            // TODO: ${stepDesc}`;
+    } else if (lowerStep.includes('wait') || lowerStep.includes('espera')) {
+      const pauseGen = stepGenerators['pause'];
+      const waitGen = stepGenerators['wait'];
+      return lowerStep.includes('resulta') 
+        ? (pauseGen ? pauseGen() : `            // TODO: ${stepDesc}`)
+        : (waitGen ? waitGen() : `            // TODO: ${stepDesc}`);
+    } else if (lowerStep.includes('ingres') || lowerStep.includes('enter')) {
+      const generator = stepGenerators['enter'];
+      return generator ? generator() : `            // TODO: ${stepDesc}`;
+    } else if (lowerStep.includes('clic') || lowerStep.includes('click')) {
+      const generator = stepGenerators['click'];
+      return generator ? generator() : `            // TODO: ${stepDesc}`;
+    }
+    
+    return `            // TODO: ${stepDesc}`;
+  });
 
-    private final Target target;
+  return generatedSteps.join('\n');
+}
 
-    public ${questionName}(Target target) {
-        this.target = target;
+function buildValidationQuestion(validationRule: string, pkgBase: string): string {
+  const questionClassName = `Verificar${sanitizeClassName(validationRule)}`;
+
+  const necessaryImports = [
+    'net.serenitybdd.screenplay.Actor',
+    'net.serenitybdd.screenplay.Question',
+    'net.serenitybdd.screenplay.targets.Target'
+  ];
+
+  const factoryMethods = [
+    { name: 'en', param: 'target' },
+    { name: 'del', param: 'target' },
+    { name: 'de', param: 'target' }
+  ].map(method => 
+    `    public static ${questionClassName} ${method.name}(Target ${method.param}) {\n        return new ${questionClassName}(${method.param});\n    }`
+  ).join('\n\n');
+
+  return `package ${pkgBase}.questions;
+
+${necessaryImports.map(imp => `import ${imp};`).join('\n')}
+
+public class ${questionClassName} implements Question<Boolean> {
+
+    private final Target elementTarget;
+
+    public ${questionClassName}(Target elementTarget) {
+        this.elementTarget = elementTarget;
     }
 
     @Override
     public Boolean answeredBy(Actor actor) {
-        // ${validation}
-        return target.resolveFor(actor).isDisplayed();
+        return elementTarget.resolveFor(actor).isDisplayed();
     }
 
-    public static ${questionName} en(Target target) {
-        return new ${questionName}(target);
-    }
-
-    public static ${questionName} del(Target target) {
-        return new ${questionName}(target);
-    }
-
-    public static ${questionName} de(Target target) {
-        return new ${questionName}(target);
-    }
+${factoryMethods}
 }`;
 }
 
-function generateWebStepDefinitionsFromScenario(request: WebHURequest, basePackage: string): string {
-  const className = `${request.huId.replace('WEB-HU-', '')}StepDefinitions`;
-  const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string): string {
+  const stepDefClassName = `${request.huId.replace('WEB-HU-', '')}StepDefinitions`;
+  const businessTaskName = sanitizeClassName(request.nombre);
+  const primaryUIName = extractPrimaryUIClass(request.paginas);
 
-  return `package ${basePackage}.stepdefinitions;
+  // Generate question class name from first validation to ensure it matches generated code
+  const validationsList = request.validaciones || [];
+  const firstValidation = validationsList.length > 0 ? validationsList[0]! : 'Elemento';
+  const genericQuestionClassName = `Verificar${sanitizeClassName(firstValidation)}`;
 
-import io.cucumber.java.es.*;
-import static net.serenitybdd.screenplay.actors.OnStage.*;
-import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
-import static org.hamcrest.Matchers.*;
-import ${basePackage}.tasks.*;
-import ${basePackage}.questions.*;
+  const requiredImports = [
+    'io.cucumber.java.es.*',
+    'static net.serenitybdd.screenplay.actors.OnStage.*',
+    'static net.serenitybdd.screenplay.GivenWhenThen.seeThat',
+    'static org.hamcrest.Matchers.*',
+    `${pkgBase}.tasks.*`,
+    `${pkgBase}.questions.*`,
+    `static ${pkgBase}.userinterfaces.${primaryUIName}.*`
+  ];
 
-public class ${className} {
+  return `package ${pkgBase}.stepdefinitions;
+
+${requiredImports.map(imp => `import ${imp};`).join('\n')}
+
+public class ${stepDefClassName} {
 
     @Dado("que {string} ingresa a la página web")
-    public void usuarioIngresaAPagina(String nombreActor) {
-        theActorCalled(nombreActor).wasAbleTo(
-            NavigateToPage.now()
+    public void actorAccedeALaPaginaWeb(String actorName) {
+        // Browser opening happens here - no product parameter needed yet
+        theActorCalled(actorName).attemptsTo(
+            ${businessTaskName}.iniciar()
         );
     }
 
     @Cuando("diligencia el producto {string} en la barra de búsqueda")
-    public void diligenciaProducto(String producto) {
+    public void actorBuscaProducto(String producto) {
         theActorInTheSpotlight().attemptsTo(
-            ${taskName}.llamado(producto)
+            ${businessTaskName}.llamado(producto)
         );
     }
 
     @Entonces("válido los resultados de búsqueda que se muestren correctamente")
-    public void validoResultados() {
+    public void verificaResultadosDeBusqueda() {
         theActorInTheSpotlight().should(
-            seeThat("Los resultados de búsqueda", VerificarElemento.en(UIHome.LBL_RESULTADOS), is(true))
+            seeThat("Los resultados de búsqueda", ${genericQuestionClassName}.en(LBL_RESULTADOS), is(true))
         );
     }
 }`;
 }
 
-function generateWebFeatureFromScenario(request: WebHURequest): string {
-  return `Feature: ${request.nombre}
+function buildGherkinFeature(request: WebHURequest): string {
+  const scenarioTitle = request.nombre;
+  const featureTag = request.huId;
 
-  @${request.huId}
-  Scenario Outline: ${request.nombre}
+  const exampleData = [
+    '| Cuaderno |',
+    '| Laptop   |'
+  ];
+
+  return `Feature: ${scenarioTitle}
+
+  @${featureTag}
+  Scenario Outline: ${scenarioTitle}
     Given que "Daniel" ingresa a la página web
     When diligencia el producto "<producto>" en la barra de búsqueda
     Then válido los resultados de búsqueda que se muestren correctamente
 
     Examples:
         | producto |
-        | Cuaderno   |
-        | Laptop   |`;
+        ${exampleData.join('\n        ')}`;
 }
 
-function generateSetTheStage(basePackage: string): string {
-  return `package ${basePackage}.hooks;
+function buildCucumberHooks(pkgBase: string): string {
+  const hookImports = [
+    'io.cucumber.java.Before',
+    'io.cucumber.java.After',
+    'net.serenitybdd.screenplay.actors.OnStage',
+    'net.serenitybdd.screenplay.actors.OnlineCast'
+  ];
 
-import io.cucumber.java.Before;
-import io.cucumber.java.After;
-import net.serenitybdd.screenplay.actors.OnStage;
-import net.serenitybdd.screenplay.actors.OnlineCast;
-
-/**
+  const hookComment = `/**
  * SetTheStage: Configuración inicial del escenario (OBLIGATORIO)
  * Responsabilidad: Inicializar y cerrar OnStage antes/después de cada test
  * NOTA: NO necesita ser importado en StepDefinitions - Cucumber lo detecta automáticamente
- */
+ */`;
+
+  return `package ${pkgBase}.hooks;
+
+${hookImports.map(imp => `import ${imp};`).join('\n')}
+
+${hookComment}
 public class SetTheStage {
 
     @Before
-    public void setTheStage() {
+    public void prepararEscenario() {
         OnStage.setTheStage(new OnlineCast());
     }
 
     @After
-    public void tearDown() {
+    public void finalizarEscenario() {
         OnStage.drawTheCurtain();
     }
 }`;
 }
 
-function generateWebRunner(basePackage: string): string {
-  return `package ${basePackage}.runners;
+function buildJUnitRunner(pkgBase: string): string {
+  const runnerImports = [
+    'io.cucumber.junit.CucumberOptions',
+    'net.serenitybdd.cucumber.CucumberWithSerenity',
+    'org.junit.runner.RunWith'
+  ];
 
-import io.cucumber.junit.CucumberOptions;
-import net.serenitybdd.cucumber.CucumberWithSerenity;
-import org.junit.runner.RunWith;
-
-/**
+  const runnerComment = `/**
  * Runner principal para ejecutar los tests de Web con Cucumber y Serenity
  * Ejecuta las features ubicadas en src/test/resources/features/
- */
+ */`;
+
+  return `package ${pkgBase}.runners;
+
+${runnerImports.map(imp => `import ${imp};`).join('\n')}
+
+${runnerComment}
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
     features = "src/test/resources/features",
-    glue = {"${basePackage}.stepdefinitions", "${basePackage}.hooks"},
+    glue = {"${pkgBase}.stepdefinitions", "${pkgBase}.hooks"},
     plugin = {"pretty", "json:target/cucumber-report.json"},
     tags = "@web"
 )
 public class CucumberTestRunner {
-    // Esta clase no necesita código adicional
-    // El Runner ejecuta automáticamente las features con los step definitions
 }`;
 }
