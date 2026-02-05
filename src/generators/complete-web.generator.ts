@@ -1,8 +1,8 @@
 // Web automation code generator for Serenity Screenplay
 import type { WebHURequest, GeneratedHU } from './types.js';
-import { 
-  determineLanguage, 
-  getCucumberImport, 
+import {
+  determineLanguage,
+  getCucumberImport,
   getGherkinKeywords,
   getGivenAnnotation,
   getWhenAnnotation,
@@ -12,13 +12,13 @@ import {
 
 export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
   const pkgBase = request.packageName || 'com.screenplay';
-  
+
   // Determine language for step definitions and feature files
   const language = determineLanguage(
     request.language,
     request.pasosFlujo
   );
-  
+
   const artifacts = {
     userInterfaces: [] as string[],
     businessTasks: [] as string[],
@@ -116,9 +116,9 @@ ${elementTargets}
 function buildBusinessTask(request: WebHURequest, pkgBase: string): string {
   const taskClassName = sanitizeClassName(request.nombre);
   const primaryUI = extractPrimaryUIClass(request.paginas);
-  
+
   const actorSteps = buildActorSteps(request.pasosFlujo || []);
-  
+
   const requiredImports = [
     'net.serenitybdd.screenplay.Actor',
     'net.serenitybdd.screenplay.Task',
@@ -183,23 +183,23 @@ function buildActorSteps(flowSteps: string[]): string {
   const stepGenerators: Record<string, () => string> = {
     // UI injection pattern: pageUI is a private field injected by Serenity BDD
     // This allows @DefaultUrl from the UI class to be automatically used
-    'open': () => `            Open.browserOn(pageUI),`,
-    'wait': () => `            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`,
-    'enter': () => `            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),`,
-    'click': () => `            Click.on(BTN_BUSCAR),`,
-    'pause': () => `            WaitUntil.the(LBL_RESULTADOS, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`
+    'open': () => '            Open.browserOn(pageUI),',
+    'wait': () => '            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),',
+    'enter': () => '            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),',
+    'click': () => '            Click.on(BTN_BUSCAR),',
+    'pause': () => '            WaitUntil.the(LBL_RESULTADOS, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),'
   };
 
   const generatedSteps = flowSteps.map(stepDesc => {
     const lowerStep = stepDesc.toLowerCase();
-    
+
     if (lowerStep.includes('open') || lowerStep.includes('abrir')) {
       const generator = stepGenerators['open'];
       return generator ? generator() : `            // TODO: ${stepDesc}`;
     } else if (lowerStep.includes('wait') || lowerStep.includes('espera')) {
       const pauseGen = stepGenerators['pause'];
       const waitGen = stepGenerators['wait'];
-      return lowerStep.includes('resulta') 
+      return lowerStep.includes('resulta')
         ? (pauseGen ? pauseGen() : `            // TODO: ${stepDesc}`)
         : (waitGen ? waitGen() : `            // TODO: ${stepDesc}`);
     } else if (lowerStep.includes('ingres') || lowerStep.includes('enter')) {
@@ -209,7 +209,7 @@ function buildActorSteps(flowSteps: string[]): string {
       const generator = stepGenerators['click'];
       return generator ? generator() : `            // TODO: ${stepDesc}`;
     }
-    
+
     return `            // TODO: ${stepDesc}`;
   });
 
@@ -229,7 +229,7 @@ function buildValidationQuestion(validationRule: string, pkgBase: string): strin
     { name: 'en', param: 'target' },
     { name: 'del', param: 'target' },
     { name: 'de', param: 'target' }
-  ].map(method => 
+  ].map(method =>
     `    public static ${questionClassName} ${method.name}(Target ${method.param}) {\n        return new ${questionClassName}(${method.param});\n    }`
   ).join('\n\n');
 
@@ -263,24 +263,24 @@ function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string, langu
   const validationsList = request.validaciones || [];
   const firstValidation = validationsList.length > 0 ? validationsList[0]! : 'Elemento';
   const genericQuestionClassName = `Verificar${sanitizeClassName(firstValidation)}`;
-  
+
   const cucumberImport = getCucumberImport(language);
   const givenAnnotation = getGivenAnnotation(language);
   const whenAnnotation = getWhenAnnotation(language);
   const thenAnnotation = getThenAnnotation(language);
-  
+
   // Use language-appropriate step text
-  const stepTexts = language === 'en' 
+  const stepTexts = language === 'en'
     ? {
-        actorGoesToPage: '{string} goes to the web page',
-        actorSearchesProduct: 'searches for the product {string} in the search bar',
-        validateResults: 'I validate that the search results are displayed correctly'
-      }
+      actorGoesToPage: '{string} goes to the web page',
+      actorSearchesProduct: 'searches for the product {string} in the search bar',
+      validateResults: 'I validate that the search results are displayed correctly'
+    }
     : {
-        actorGoesToPage: 'que {string} ingresa a la página web',
-        actorSearchesProduct: 'diligencia el producto {string} en la barra de búsqueda',
-        validateResults: 'válido los resultados de búsqueda que se muestren correctamente'
-      };
+      actorGoesToPage: 'que {string} ingresa a la página web',
+      actorSearchesProduct: 'diligencia el producto {string} en la barra de búsqueda',
+      validateResults: 'válido los resultados de búsqueda que se muestren correctamente'
+    };
 
   const requiredImports = [
     cucumberImport,
@@ -325,25 +325,25 @@ public class ${stepDefClassName} {
 function buildGherkinFeature(request: WebHURequest, language: Language): string {
   const scenarioTitle = request.nombre;
   const featureTag = request.huId;
-  
+
   const keywords = getGherkinKeywords(language);
-  
+
   // Use language-appropriate step text and examples
-  const stepTexts = language === 'en' 
+  const stepTexts = language === 'en'
     ? {
-        actorGoesToPage: '"Daniel" goes to the web page',
-        actorSearchesProduct: 'searches for the product "<producto>" in the search bar',
-        validateResults: 'I validate that the search results are displayed correctly',
-        exampleHeader: 'producto',
-        exampleData: ['Notebook', 'Laptop']
-      }
+      actorGoesToPage: '"Daniel" goes to the web page',
+      actorSearchesProduct: 'searches for the product "<producto>" in the search bar',
+      validateResults: 'I validate that the search results are displayed correctly',
+      exampleHeader: 'producto',
+      exampleData: ['Notebook', 'Laptop']
+    }
     : {
-        actorGoesToPage: 'que "Daniel" ingresa a la página web',
-        actorSearchesProduct: 'diligencia el producto "<producto>" en la barra de búsqueda',
-        validateResults: 'válido los resultados de búsqueda que se muestren correctamente',
-        exampleHeader: 'producto',
-        exampleData: ['Cuaderno', 'Laptop']
-      };
+      actorGoesToPage: 'que "Daniel" ingresa a la página web',
+      actorSearchesProduct: 'diligencia el producto "<producto>" en la barra de búsqueda',
+      validateResults: 'válido los resultados de búsqueda que se muestren correctamente',
+      exampleHeader: 'producto',
+      exampleData: ['Cuaderno', 'Laptop']
+    };
 
   return `${keywords.feature}: ${scenarioTitle}
 

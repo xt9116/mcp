@@ -44,23 +44,23 @@ export const CUCUMBER_IMPORTS = {
  */
 export function detectLanguage(content: string): Language {
   const contentLower = content.toLowerCase();
-  
+
   // Check for Spanish keywords first (more specific)
   const spanishKeywords = ['dado', 'cuando', 'entonces', 'característica', 'escenario', 'esquema del escenario'];
   const hasSpanish = spanishKeywords.some(keyword => contentLower.includes(keyword));
-  
+
   if (hasSpanish) {
     return 'es';
   }
-  
+
   // Check for English keywords
   const englishKeywords = ['given', 'when', 'then', 'feature', 'scenario'];
   const hasEnglish = englishKeywords.some(keyword => contentLower.includes(keyword));
-  
+
   if (hasEnglish) {
     return 'en';
   }
-  
+
   // Default to Spanish for backwards compatibility
   return 'es';
 }
@@ -72,7 +72,7 @@ export function detectLanguageFromSteps(steps: string[]): Language {
   if (!steps || steps.length === 0) {
     return 'es'; // Default to Spanish
   }
-  
+
   const combinedSteps = steps.join(' ');
   return detectLanguage(combinedSteps);
 }
@@ -131,12 +131,12 @@ export function determineLanguage(
   if (explicitLanguage) {
     return explicitLanguage;
   }
-  
+
   // Try to detect from steps
   if (steps && steps.length > 0) {
     return detectLanguageFromSteps(steps);
   }
-  
+
   // Default to Spanish for backwards compatibility
   return 'es';
 }

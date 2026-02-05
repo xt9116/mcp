@@ -227,7 +227,7 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
           // Standard prefixes recommended by Rimac
           const standardPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
           const hasStandardPrefix = standardPrefixes.some(prefix => targetName.startsWith(prefix));
-          
+
           // Check if it follows the PREFIX_NAME pattern (uppercase letters followed by underscore)
           const followsPrefixPattern = /^[A-Z]+_/.test(targetName);
 

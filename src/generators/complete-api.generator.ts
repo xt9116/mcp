@@ -1,9 +1,9 @@
 // Generador completo para HU de API REST - Alineado con Estándares actualizados
 import type { ApiHURequest, GeneratedHU } from './types.js';
 import { httpMethodToPascalCase } from './naming.helper.js';
-import { 
-  determineLanguage, 
-  getCucumberImport, 
+import {
+  determineLanguage,
+  getCucumberImport,
   getGherkinKeywords,
   getGivenAnnotation,
   getWhenAnnotation,
@@ -15,13 +15,13 @@ import {
 export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
   // Use provided packageName or default to com.screenplay
   const basePackage = request.packageName || 'com.screenplay';
-  
+
   // Determine language for step definitions and feature files
   const language = determineLanguage(
     request.language,
     request.escenarioPrueba?.steps
   );
-  
+
   const taskCode = generateApiTask(request, basePackage);
   const questionCode = generateApiQuestion(request, basePackage);
   const modelCode = generateApiModel(request, basePackage);
@@ -303,41 +303,41 @@ function generateApiStepDefinitions(request: ApiHURequest, basePackage: string, 
   const className = `${request.huId.replace('API-HU-', '')}StepDefinitions`;
   const taskName = request.nombre.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const questionName = `Validar${request.huId.replace('API-HU-', '')}Response`;
-  
+
   const cucumberImport = getCucumberImport(language);
   const givenAnnotation = getGivenAnnotation(language);
   const whenAnnotation = getWhenAnnotation(language);
   const thenAnnotation = getThenAnnotation(language);
   const andAnnotation = getAndAnnotation(language);
-  
+
   // Use language-appropriate step text
-  const stepTexts = language === 'en' 
+  const stepTexts = language === 'en'
     ? {
-        serviceAvailable: 'the service is available',
-        sendRequest: `I send a ${request.metodo} request to {word}`,
-        responseCode200: 'the response code should be 200',
-        responseCodeInt: 'the response code should be {int}',
-        bodyContainsId: 'the body should contain the character ID',
-        idDataType: 'the ID data type is Integer',
-        fieldShouldBe: 'the field {string} should be {string}',
-        fieldValidValues: 'the field {string} should be one of the valid values',
-        fieldIsObject: 'the field {string} should be an object with properties {string} and {string}',
-        fieldIsArray: 'the field {string} should be a non-empty array',
-        bodyContainsExpectedInfo: 'the body should contain the expected information'
-      }
+      serviceAvailable: 'the service is available',
+      sendRequest: `I send a ${request.metodo} request to {word}`,
+      responseCode200: 'the response code should be 200',
+      responseCodeInt: 'the response code should be {int}',
+      bodyContainsId: 'the body should contain the character ID',
+      idDataType: 'the ID data type is Integer',
+      fieldShouldBe: 'the field {string} should be {string}',
+      fieldValidValues: 'the field {string} should be one of the valid values',
+      fieldIsObject: 'the field {string} should be an object with properties {string} and {string}',
+      fieldIsArray: 'the field {string} should be a non-empty array',
+      bodyContainsExpectedInfo: 'the body should contain the expected information'
+    }
     : {
-        serviceAvailable: 'que el servicio está disponible',
-        sendRequest: `envío una petición ${request.metodo} a {word}`,
-        responseCode200: 'el código de respuesta debe ser 200',
-        responseCodeInt: 'el código de respuesta debe ser {int}',
-        bodyContainsId: 'el body debe contener el ID del personaje',
-        idDataType: 'el tipo de dato del ID es Integer',
-        fieldShouldBe: 'el campo {string} debe ser {string}',
-        fieldValidValues: 'el campo {string} debe ser uno de los valores válidos',
-        fieldIsObject: 'el campo {string} debe ser un objeto con propiedades {string} y {string}',
-        fieldIsArray: 'el campo {string} debe ser un array no vacío',
-        bodyContainsExpectedInfo: 'el body debe contener la información esperada'
-      };
+      serviceAvailable: 'que el servicio está disponible',
+      sendRequest: `envío una petición ${request.metodo} a {word}`,
+      responseCode200: 'el código de respuesta debe ser 200',
+      responseCodeInt: 'el código de respuesta debe ser {int}',
+      bodyContainsId: 'el body debe contener el ID del personaje',
+      idDataType: 'el tipo de dato del ID es Integer',
+      fieldShouldBe: 'el campo {string} debe ser {string}',
+      fieldValidValues: 'el campo {string} debe ser uno de los valores válidos',
+      fieldIsObject: 'el campo {string} debe ser un objeto con propiedades {string} y {string}',
+      fieldIsArray: 'el campo {string} debe ser un array no vacío',
+      bodyContainsExpectedInfo: 'el body debe contener la información esperada'
+    };
 
   return `package ${basePackage}.stepdefinitions;
 
@@ -478,23 +478,23 @@ function generateApiFeature(request: ApiHURequest, language: Language): string {
 
   // Extract resource ID from endpoint (e.g., "/api/character/99999" -> "99999")
   const resourceId = extractResourceIdFromEndpoint(request.endpoint);
-  
+
   const keywords = getGherkinKeywords(language);
-  
+
   // Use language-appropriate step text
-  const stepTexts = language === 'en' 
+  const stepTexts = language === 'en'
     ? {
-        serviceAvailable: 'the service is available',
-        sendRequest: `I send a ${request.metodo} request to ${resourceId}`,
-        responseCode200: 'the response code should be 200',
-        bodyContainsExpectedInfo: 'the body should contain the expected information'
-      }
+      serviceAvailable: 'the service is available',
+      sendRequest: `I send a ${request.metodo} request to ${resourceId}`,
+      responseCode200: 'the response code should be 200',
+      bodyContainsExpectedInfo: 'the body should contain the expected information'
+    }
     : {
-        serviceAvailable: 'el servicio está disponible',
-        sendRequest: `envío una petición ${request.metodo} a ${resourceId}`,
-        responseCode200: 'el código de respuesta debe ser 200',
-        bodyContainsExpectedInfo: 'el body debe contener la información esperada'
-      };
+      serviceAvailable: 'el servicio está disponible',
+      sendRequest: `envío una petición ${request.metodo} a ${resourceId}`,
+      responseCode200: 'el código de respuesta debe ser 200',
+      bodyContainsExpectedInfo: 'el body debe contener la información esperada'
+    };
 
   return `${keywords.feature}: ${request.nombre}
 
