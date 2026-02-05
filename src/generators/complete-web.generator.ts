@@ -2,7 +2,7 @@
 import type { WebHURequest, GeneratedHU } from './types.js';
 
 export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
-  const pkgBase = request.packageName || 'com.screenplay.web';
+  const pkgBase = request.packageName || 'com.screenplay';
   
   const artifacts = {
     userInterfaces: [] as string[],
