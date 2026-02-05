@@ -97,6 +97,8 @@ npm run dev
 - `generate_api_interaction` - Genera una Interaction de Serenity para API
 - `generate_api_question` - Genera una Question de Serenity para API
 - `generate_api_model` - Genera un Model (POJO) para Request/Response de API
+- `generate_guardar_respuesta` - Genera la interacción GuardarRespuesta para almacenar respuestas de API en memoria
+- `generate_response_storage` - Genera una clase de almacenamiento (storage) para respuestas de API
 - `validate_api_component` - Valida un componente de Serenity API contra los estándares
 
 ### Serenity Web
@@ -356,6 +358,74 @@ El nombre se usará tal cual para el directorio del proyecto, artifact ID en Mav
     "endpoint": "/api/users"
   }
 }
+```
+
+### Generar GuardarRespuesta interaction
+
+```json
+{
+  "tool": "generate_guardar_respuesta",
+  "arguments": {
+    "packageName": "rimac.api",
+    "abilityClassName": "LlamarAPIsRimac"
+  }
+}
+```
+
+**Uso en un Task:**
+```java
+actor.attemptsTo(
+    ConfigurarEndpoint.conServicio("ObtenerCliente"),
+    EjecutarLlamadaAPI.get(),
+    GuardarRespuesta.de(
+        ValidarObtenerCliente.class, 
+        RespuestaObtenerCliente::setRespuesta, 
+        "Obtener Datos Cliente"
+    )
+);
+```
+
+### Generar clase de almacenamiento de respuestas
+
+```json
+{
+  "tool": "generate_response_storage",
+  "arguments": {
+    "packageName": "rimac.api",
+    "moduleName": "endoso",
+    "serviceName": "ObtenerCliente",
+    "responseClassName": "ValidarObtenerCliente",
+    "threadSafe": false
+  }
+}
+```
+
+**Para ejecución paralela (thread-safe):**
+```json
+{
+  "tool": "generate_response_storage",
+  "arguments": {
+    "packageName": "rimac.api",
+    "moduleName": "endoso",
+    "serviceName": "ObtenerCliente",
+    "responseClassName": "ValidarObtenerCliente",
+    "threadSafe": true
+  }
+}
+```
+
+**Reutilizar datos almacenados:**
+```java
+// Recuperar datos guardados en otro escenario
+ValidarObtenerCliente clienteGuardado = RespuestaObtenerCliente.getRespuesta();
+String idCliente = clienteGuardado.getPayload().getItems().get(0).getIdCliente();
+
+// Usar en una nueva llamada
+actor.attemptsTo(
+    ConfigurarEndpoint.conServicio("ActualizarCliente"),
+    AgregarParametros.path("idCliente", idCliente),
+    EjecutarLlamadaAPI.put()
+);
 ```
 
 ### Obtener estándar Java

@@ -689,6 +689,62 @@
         "PutRequest",
         "DeleteRequest",
         "PatchRequest"
+      ],
+      "specializedInteractions": {
+        "description": "Interacciones especializadas opcionales para casos de uso específicos",
+        "responseStorage": {
+          "name": "GuardarRespuesta",
+          "description": "Interaction para guardar respuestas de API en memoria para reutilización entre escenarios",
+          "when": "Usar cuando necesites compartir datos de respuesta entre múltiples escenarios o pasos",
+          "template": "package {package}.interactions;\n\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.screenplay.Interaction;\nimport {package}.abilities.LlamarAPIsRimac;\n\nimport java.util.function.Consumer;\n\n/**\n * Interaction para guardar respuestas de API en memoria\n * Responsabilidad: Extraer y almacenar la respuesta deserializada para uso posterior\n * \n * @param <T> Tipo de la clase de respuesta\n */\npublic class GuardarRespuesta<T> implements Interaction {\n\n    private final Class<T> responseClass;\n    private final Consumer<T> setter;\n    private final String nombreServicio;\n\n    /**\n     * Constructor privado\n     * @param responseClass Clase del modelo de respuesta\n     * @param setter Consumer que guarda la respuesta\n     * @param nombreServicio Nombre del servicio para logging\n     */\n    private GuardarRespuesta(Class<T> responseClass, Consumer<T> setter, String nombreServicio) {\n        this.responseClass = responseClass;\n        this.setter = setter;\n        this.nombreServicio = nombreServicio;\n    }\n\n    /**\n     * Factory method para crear la interacción\n     * @param responseClass Clase del modelo de respuesta\n     * @param setter Consumer que guarda la respuesta\n     * @param nombreServicio Nombre del servicio para logging\n     * @param <T> Tipo de la clase de respuesta\n     * @return Instancia de GuardarRespuesta\n     */\n    public static <T> GuardarRespuesta<T> de(Class<T> responseClass, Consumer<T> setter, String nombreServicio) {\n        return new GuardarRespuesta<>(responseClass, setter, nombreServicio);\n    }\n\n    @Override\n    public <A extends Actor> void performAs(A actor) {\n        LlamarAPIsRimac ability = actor.abilityTo(LlamarAPIsRimac.class);\n        T body = ability.getResponse()\n                .then()\n                .extract()\n                .body()\n                .as(responseClass);\n\n        // Guardamos la respuesta usando el setter\n        setter.accept(body);\n\n        System.out.println(\"Respuesta de '\" + nombreServicio + \"' guardada en memoria\");\n    }\n}",
+          "usage": {
+            "description": "Cómo usar GuardarRespuesta en un Task",
+            "example": "actor.attemptsTo(\n    ConfigurarEndpoint.conServicio(\"ObtenerCliente\"),\n    ConfigurarAutenticacion.conCredencialesAWS(),\n    AgregarParametros.query(\n        \"page\", \"1\",\n        \"pageSize\", \"10\",\n        \"idProducto\", idProducto,\n        \"nroPoliza\", nroPoliza\n    ),\n    EjecutarLlamadaAPI.get(),\n    GuardarRespuesta.de(ValidarObtenerCliente.class, RespuestaObtenerCliente::setRespuesta, \"Obtener Datos Cliente\")\n);"
+          },
+          "rules": [
+            "Usar generics para type safety",
+            "Usar Consumer<T> para flexibilidad",
+            "Incluir logging para debugging",
+            "Guardar después de ejecutar la llamada API",
+            "Nombre del servicio descriptivo para logs"
+          ]
+        }
+      }
+    },
+    "responseStorage": {
+      "description": "Patrón para almacenar y recuperar respuestas de API entre escenarios",
+      "when": "Usar cuando los datos de una respuesta API se necesiten en escenarios posteriores",
+      "pattern": "Clase estática con getter/setter para cada tipo de respuesta",
+      "location": "{package}.util.storage o {package}.storage",
+      "rules": [
+        "Una clase de storage por tipo de respuesta",
+        "Usar static para compartir entre escenarios",
+        "Nombres descriptivos que indiquen qué almacenan",
+        "Métodos getter/setter claros",
+        "Thread-safe si es necesario (considerar ThreadLocal para ejecución paralela)"
+      ],
+      "template": "package {package}.util.storage.{module};\n\nimport {package}.response.{module}.{ResponseModel};\n\n/**\n * Clase de almacenamiento para respuestas de {ServiceName}\n * Responsabilidad: Mantener en memoria la respuesta para uso entre escenarios\n */\npublic class Respuesta{ServiceName} {\n\n    private static {ResponseModel} response;\n\n    /**\n     * Guarda la respuesta del servicio\n     * @param respuesta Respuesta a almacenar\n     */\n    public static void setRespuesta({ResponseModel} respuesta) {\n        response = respuesta;\n    }\n\n    /**\n     * Obtiene la respuesta almacenada\n     * @return Respuesta guardada previamente\n     */\n    public static {ResponseModel} getRespuesta() {\n        return response;\n    }\n}",
+      "threadSafeTemplate": "package {package}.util.storage.{module};\n\nimport {package}.response.{module}.{ResponseModel};\n\n/**\n * Clase de almacenamiento thread-safe para respuestas de {ServiceName}\n * Responsabilidad: Mantener en memoria la respuesta de forma segura para ejecución paralela\n */\npublic class Respuesta{ServiceName} {\n\n    private static ThreadLocal<{ResponseModel}> response = new ThreadLocal<>();\n\n    /**\n     * Guarda la respuesta del servicio para el thread actual\n     * @param respuesta Respuesta a almacenar\n     */\n    public static void setRespuesta({ResponseModel} respuesta) {\n        response.set(respuesta);\n    }\n\n    /**\n     * Obtiene la respuesta almacenada para el thread actual\n     * @return Respuesta guardada previamente\n     */\n    public static {ResponseModel} getRespuesta() {\n        return response.get();\n    }\n\n    /**\n     * Limpia la respuesta almacenada para el thread actual\n     */\n    public static void limpiar() {\n        response.remove();\n    }\n}",
+      "example": {
+        "storageClass": "package rimac.api.util.storage.endoso;\n\nimport rimac.api.response.endoso.ValidarObtenerCliente;\n\n/**\n * Almacenamiento para respuestas de Obtener Cliente\n */\npublic class RespuestaObtenerCliente {\n\n    private static ValidarObtenerCliente response;\n\n    public static void setRespuesta(ValidarObtenerCliente respuesta) {\n        response = respuesta;\n    }\n\n    public static ValidarObtenerCliente getRespuesta() {\n        return response;\n    }\n}",
+        "responseModel": "package rimac.api.response.endoso;\n\nimport com.fasterxml.jackson.annotation.JsonIgnoreProperties;\nimport com.fasterxml.jackson.annotation.JsonProperty;\nimport com.google.gson.annotations.Expose;\nimport com.google.gson.annotations.SerializedName;\nimport lombok.Data;\n\nimport java.util.List;\n\n/**\n * Modelo de respuesta para Obtener Cliente\n */\n@Data\n@JsonIgnoreProperties(ignoreUnknown = true)\npublic class ValidarObtenerCliente {\n\n    @SerializedName(\"payload\")\n    @Expose\n    private Payload payload;\n\n    @Data\n    @JsonIgnoreProperties(ignoreUnknown = true)\n    public static class Payload {\n\n        @SerializedName(\"items\")\n        @JsonProperty(\"items\")\n        private List<Item> items;\n\n        @SerializedName(\"totalItems\")\n        @JsonProperty(\"totalItems\")\n        private int totalItems;\n    }\n\n    @Data\n    @JsonIgnoreProperties(ignoreUnknown = true)\n    public static class Item {\n\n        @SerializedName(\"idCliente\")\n        @JsonProperty(\"idCliente\")\n        private String idCliente;\n\n        @SerializedName(\"cliente\")\n        @JsonProperty(\"cliente\")\n        private String cliente;\n\n        @SerializedName(\"nroDocumento\")\n        @JsonProperty(\"nroDocumento\")\n        private String nroDocumento;\n    }\n}",
+        "taskUsage": "package rimac.api.tasks.endosos.valoresDeclarados;\n\nimport net.serenitybdd.screenplay.Actor;\nimport net.serenitybdd.screenplay.Task;\nimport rimac.api.interactions.*;\nimport rimac.api.response.endoso.ValidarObtenerCliente;\nimport rimac.api.util.storage.endoso.RespuestaObtenerCliente;\n\n/**\n * Task para obtener datos de cliente\n */\npublic class ObtenerDatosCliente implements Task {\n\n    private final String idProducto;\n    private final String nroPoliza;\n\n    private ObtenerDatosCliente(String idProducto, String nroPoliza) {\n        this.idProducto = idProducto;\n        this.nroPoliza = nroPoliza;\n    }\n\n    public static ObtenerDatosCliente conParametros(String idProducto, String nroPoliza) {\n        return new ObtenerDatosCliente(idProducto, nroPoliza);\n    }\n\n    @Override\n    public <T extends Actor> void performAs(T actor) {\n        actor.attemptsTo(\n                ConfigurarEndpoint.conServicio(\"ObtenerCliente\"),\n                ConfigurarAutenticacion.conCredencialesAWS(),\n                AgregarParametros.query(\n                        \"page\", \"1\",\n                        \"pageSize\", \"10\",\n                        \"idProducto\", idProducto,\n                        \"nroPoliza\", nroPoliza),\n                EjecutarLlamadaAPI.get(),\n                GuardarRespuesta.de(ValidarObtenerCliente.class, RespuestaObtenerCliente::setRespuesta, \"Obtener Datos Cliente\")\n        );\n    }\n}",
+        "reuseInAnotherTask": "// En otro Task o Step, recuperar los datos almacenados\nValidarObtenerCliente clienteGuardado = RespuestaObtenerCliente.getRespuesta();\nString idCliente = clienteGuardado.getPayload().getItems().get(0).getIdCliente();\n\n// Usar el dato en una nueva llamada\nactor.attemptsTo(\n    ConfigurarEndpoint.conServicio(\"ActualizarCliente\"),\n    AgregarParametros.path(\"idCliente\", idCliente),\n    EjecutarLlamadaAPI.put()\n);"
+      },
+      "bestPractices": [
+        "Documentar claramente qué se almacena y por qué",
+        "Usar ThreadLocal para ejecución paralela de tests",
+        "Considerar limpiar el storage en @After hooks",
+        "No abusar del patrón - solo para casos necesarios",
+        "Validar que la respuesta no sea null antes de usar",
+        "Preferir pasar datos entre steps cuando sea posible"
+      ],
+      "antiPatterns": [
+        "Almacenar todas las respuestas innecesariamente",
+        "No limpiar el storage entre escenarios",
+        "Compartir estado sin ThreadLocal en tests paralelos",
+        "Acceder al storage sin validar null",
+        "Usar para datos que pueden pasarse como parámetros"
       ]
     },
     "tasks": {
