@@ -119,6 +119,7 @@ ${requiredImports.map(imp => `import ${imp};`).join('\n')}
 public class ${taskClassName} implements Task {
 
     private final String producto;
+    // Private UI field - Serenity injects automatically (do NOT initialize in constructor)
     private ${primaryUI} pageUI;
 
     public ${taskClassName}(String producto) {
@@ -132,6 +133,12 @@ ${actorSteps}
         );
     }
 
+    // Factory method for browser opening (no parameters needed)
+    public static ${taskClassName} iniciar() {
+        return Tasks.instrumented(${taskClassName}.class, "");
+    }
+
+    // Factory method for actions with data
     public static ${taskClassName} llamado(String producto) {
         return Tasks.instrumented(${taskClassName}.class, producto);
     }
@@ -139,7 +146,12 @@ ${actorSteps}
 }
 
 function sanitizeClassName(rawName: string): string {
-  return rawName.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  // Convert to PascalCase: split by spaces/non-alpha, capitalize each word
+  return rawName
+    .split(/[\s\-_]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join('')
+    .replace(/[^a-zA-Z0-9]/g, '');
 }
 
 function extractPrimaryUIClass(pageList: any[]): string {
@@ -151,6 +163,8 @@ function extractPrimaryUIClass(pageList: any[]): string {
 
 function buildActorSteps(flowSteps: string[]): string {
   const stepGenerators: Record<string, () => string> = {
+    // UI injection pattern: pageUI is a private field injected by Serenity BDD
+    // This allows @DefaultUrl from the UI class to be automatically used
     'open': () => `            Open.browserOn(pageUI),`,
     'wait': () => `            WaitUntil.the(TXT_BUSCAR_PRODUCTO, WebElementStateMatchers.isVisible()).forNoMoreThan(120).seconds(),`,
     'enter': () => `            Enter.theValue(producto).into(TXT_BUSCAR_PRODUCTO),`,
@@ -162,13 +176,20 @@ function buildActorSteps(flowSteps: string[]): string {
     const lowerStep = stepDesc.toLowerCase();
     
     if (lowerStep.includes('open') || lowerStep.includes('abrir')) {
-      return stepGenerators['open']!();
+      const generator = stepGenerators['open'];
+      return generator ? generator() : `            // TODO: ${stepDesc}`;
     } else if (lowerStep.includes('wait') || lowerStep.includes('espera')) {
-      return lowerStep.includes('resulta') ? stepGenerators['pause']!() : stepGenerators['wait']!();
+      const pauseGen = stepGenerators['pause'];
+      const waitGen = stepGenerators['wait'];
+      return lowerStep.includes('resulta') 
+        ? (pauseGen ? pauseGen() : `            // TODO: ${stepDesc}`)
+        : (waitGen ? waitGen() : `            // TODO: ${stepDesc}`);
     } else if (lowerStep.includes('ingres') || lowerStep.includes('enter')) {
-      return stepGenerators['enter']!();
+      const generator = stepGenerators['enter'];
+      return generator ? generator() : `            // TODO: ${stepDesc}`;
     } else if (lowerStep.includes('clic') || lowerStep.includes('click')) {
-      return stepGenerators['click']!();
+      const generator = stepGenerators['click'];
+      return generator ? generator() : `            // TODO: ${stepDesc}`;
     }
     
     return `            // TODO: ${stepDesc}`;
@@ -220,7 +241,10 @@ function buildStepDefinitionsClass(request: WebHURequest, pkgBase: string): stri
   const businessTaskName = sanitizeClassName(request.nombre);
   const primaryUIName = extractPrimaryUIClass(request.paginas);
 
-  const genericQuestionClassName = 'VerificarElemento';
+  // Generate question class name from first validation to ensure it matches generated code
+  const validationsList = request.validaciones || [];
+  const firstValidation = validationsList.length > 0 ? validationsList[0]! : 'Elemento';
+  const genericQuestionClassName = `Verificar${sanitizeClassName(firstValidation)}`;
 
   const requiredImports = [
     'io.cucumber.java.es.*',
@@ -240,8 +264,9 @@ public class ${stepDefClassName} {
 
     @Dado("que {string} ingresa a la página web")
     public void actorAccedeALaPaginaWeb(String actorName) {
+        // Browser opening happens here - no product parameter needed yet
         theActorCalled(actorName).attemptsTo(
-            ${businessTaskName}.llamado("")
+            ${businessTaskName}.iniciar()
         );
     }
 

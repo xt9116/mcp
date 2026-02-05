@@ -124,7 +124,8 @@ describe('seeThat() validation generation tests', () => {
       
       // Should use 3-parameter seeThat with description for Boolean
       expect(result.output).toContain('seeThat("Los resultados de búsqueda",');
-      expect(result.output).toContain('VerificarElemento.en(');
+      // Question class name is now generated from validation text: "Los resultados se muestran" -> "VerificarLosResultadosSeMuestran"
+      expect(result.output).toContain('VerificarLosResultadosSeMuestran.en(');
       expect(result.output).toContain(', is(true))');
       
       // Should NOT use lambda expressions
