@@ -3,8 +3,8 @@ import type { ApiHURequest, GeneratedHU } from './types.js';
 import { httpMethodToPascalCase } from './naming.helper.js';
 
 export function generateCompleteApiHU(request: ApiHURequest): GeneratedHU {
-  // Use provided packageName or default to com.screenplay.api
-  const basePackage = request.packageName || 'com.screenplay.api';
+  // Use provided packageName or default to com.screenplay
+  const basePackage = request.packageName || 'com.screenplay';
   
   const taskCode = generateApiTask(request, basePackage);
   const questionCode = generateApiQuestion(request, basePackage);

@@ -75,9 +75,9 @@ describe('Package Name Structure Fix', () => {
       const result = generateCompleteApiHU(request);
 
       // Verify it uses default package
-      expect(result.output).toContain('package com.screenplay.api.stepdefinitions;');
-      expect(result.output).toContain('package com.screenplay.api.tasks;');
-      expect(result.output).toContain('package com.screenplay.api.questions;');
+      expect(result.output).toContain('package com.screenplay.stepdefinitions;');
+      expect(result.output).toContain('package com.screenplay.tasks;');
+      expect(result.output).toContain('package com.screenplay.questions;');
     });
 
     it('should NOT add extra path segments like /api/ to stepdefinitions', () => {
@@ -176,9 +176,9 @@ describe('Package Name Structure Fix', () => {
       const result = generateCompleteWebHU(request);
 
       // Verify it uses default package
-      expect(result.output).toContain('package com.screenplay.web.stepdefinitions;');
-      expect(result.output).toContain('package com.screenplay.web.tasks;');
-      expect(result.output).toContain('package com.screenplay.web.questions;');
+      expect(result.output).toContain('package com.screenplay.stepdefinitions;');
+      expect(result.output).toContain('package com.screenplay.tasks;');
+      expect(result.output).toContain('package com.screenplay.questions;');
     });
 
     it('should NOT add extra path segments to stepdefinitions', () => {

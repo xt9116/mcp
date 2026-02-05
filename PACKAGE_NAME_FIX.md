@@ -73,8 +73,8 @@ This will generate:
 ## Default Behavior
 
 If you don't provide `packageName`, the system uses defaults for backward compatibility:
-- API: `com.screenplay.api`
-- Web: `com.screenplay.web`
+- API: `com.screenplay`
+- Web: `com.screenplay`
 
 ## Complete Example
 

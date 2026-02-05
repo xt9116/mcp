@@ -70,8 +70,8 @@ Added `packageName` parameter to both tools in `serenityMcp.ts`:
 ### 4. Default Behavior
 
 If `packageName` is not provided, the system uses default values for backward compatibility:
-- API: `com.screenplay.api`
-- Web: `com.screenplay.web`
+- API: `com.screenplay`
+- Web: `com.screenplay`
 
 ## How to Use
 
