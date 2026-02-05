@@ -8,7 +8,27 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ## 📂 Contenido
 
-### 1. [🚀 Guía Rápida API](./GUIA_RAPIDA_API.md) ⚡ **NUEVO**
+### 1. [📖 Ejemplo de Uso Correcto - Web](./EJEMPLO_USO_CORRECTO_WEB.md) ⭐ **NUEVO**
+**Guía esencial sobre cómo usar correctamente la herramienta process_web_hu**
+
+**Incluye:**
+- ✅ Formato JSON correcto vs. texto libre (❌ incorrecto)
+- ✅ Conversión paso a paso de texto a JSON
+- ✅ Estructura completa del JSON explicada
+- ✅ Tabla de prefijos de elementos (TXT, BTN, LBL, etc.)
+- ✅ Estrategias de selectores (id, css, xpath)
+- ✅ Ejemplo completo con SauceDemo
+- ✅ Checklist de validación antes de enviar
+- ✅ Soluciones a errores comunes
+
+**Ideal para:**
+- Resolver el error "input does not comply with allowed values"
+- Entender qué formato espera la herramienta
+- Convertir especificaciones de texto a JSON
+
+---
+
+### 2. [🚀 Guía Rápida API](./GUIA_RAPIDA_API.md) ⚡
 **Referencia rápida con checklist y plantilla ultra-compacta**
 
 **Incluye:**
@@ -26,7 +46,7 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ---
 
-### 2. [📝 Plantilla de Especificación API](./PLANTILLA_ESPECIFICACION_API.md) ⭐
+### 3. [📝 Plantilla de Especificación API](./PLANTILLA_ESPECIFICACION_API.md) ⭐
 **Plantilla completa y fácil de usar para especificar HUs de API**
 
 **Incluye:**
@@ -44,7 +64,7 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ---
 
-### 3. [Ejemplo HU API REST](./EJEMPLO_HU_API.md)
+### 4. [Ejemplo HU API REST](./EJEMPLO_HU_API.md)
 **Automatización de APIs REST con Serenity Screenplay**
 
 **Incluye:**
@@ -65,7 +85,7 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ---
 
-### 3. [Ejemplo HU Web UI](./EJEMPLO_HU_WEB.md)
+### 5. [Ejemplo HU Web UI](./EJEMPLO_HU_WEB.md)
 **Automatización de interfaces web con Serenity Screenplay + Selenium**
 
 **Incluye:**
@@ -107,16 +127,20 @@ Esta guía contiene **ejemplos completos y plantillas** de cómo estructurar cor
 
 ## 🎓 Conceptos Clave
 
-### JUnit 5 vs JUnit 4
+### JUnit 4 with Cucumber
 
-**⚠️ CRÍTICO**: Los proyectos deben usar **JUnit 5**, no JUnit 4.
+**⚠️ IMPORTANTE**: Los proyectos generados usan **JUnit 4** con Cucumber para ejecutar los tests. 
 
-| Aspecto | JUnit 4 ❌ | JUnit 5 ✅ |
-|---------|-----------|-----------|
-| Runner | `@RunWith(CucumberWithSerenity.class)` | `@Suite` + `@IncludeEngines("cucumber")` |
-| Configuración | `@CucumberOptions` | `@ConfigurationParameter` |
-| Dependencia | `junit:junit:4.x` | `junit-platform-suite` + `cucumber-junit-platform-engine` |
-| Features path | `"src/test/resources/features"` | `"features"` |
+El runner usa el patrón:
+```java
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(...)
+public class CucumberTestRunner {}
+```
+
+**Nota técnica**: El proyecto incluye ambas versiones de JUnit como dependencias:
+- JUnit 4 (4.13.2) es **requerido** para el runner de Cucumber: `@RunWith(CucumberWithSerenity.class)` 
+- JUnit 5 (5.9.2) está incluido pero es opcional - puedes usarlo para tests unitarios adicionales si lo necesitas
 
 ### Separación de Responsabilidades
 
@@ -150,7 +174,7 @@ Validaciones:
 - Campo 'field1' no debe estar vacío
 - [Otras validaciones específicas]
 
-Usando Serenity Screenplay con JUnit 5.
+Usando Serenity Screenplay con JUnit 4.
 ```
 
 ### Web UI (Mínimo Viable)
@@ -174,7 +198,7 @@ Validaciones:
 - [Validación visual/funcional 1]
 - [Validación visual/funcional 2]
 
-Usando Serenity Screenplay con Selenium WebDriver y JUnit 5.
+Usando Serenity Screenplay con Selenium WebDriver y JUnit 4.
 ```
 
 ---
@@ -182,8 +206,8 @@ Usando Serenity Screenplay con Selenium WebDriver y JUnit 5.
 ## ⚠️ Problemas Comunes Resueltos
 
 ### 1. Tests no se detectan (Tests run: 0)
-**Causa**: Runner con JUnit 4 en proyecto JUnit 5  
-**Solución**: Ver [EJEMPLO_HU_API.md](./EJEMPLO_HU_API.md) - Sección "commonIssuesAndFixes"
+**Causa**: Runner mal configurado o dependencias incorrectas  
+**Solución**: Asegúrate de usar `@RunWith(CucumberWithSerenity.class)` con las dependencias correctas de JUnit 4
 
 ### 2. URLs malformadas en peticiones
 **Causa**: Duplicación de BASE_URL en endpoints  
@@ -222,7 +246,7 @@ graph LR
     D --> E[Validar Compilación]
     E --> F[Ejecutar Tests]
     F --> G{Tests detectados?}
-    G -->|No| H[Revisar Runner JUnit 5]
+    G -->|No| H[Revisar Runner JUnit 4]
     G -->|Sí| I{Tests pasan?}
     I -->|No| J[Revisar Validaciones]
     I -->|Sí| K[Generar Reportes]
@@ -252,7 +276,7 @@ graph LR
 ### Mantenimiento
 
 1. ✅ **Versionado consistente**: Usa `${serenity.version}` en pom.xml
-2. ✅ **No mezcles JUnit 4 y 5**: Causa incompatibilidades
+2. ✅ **Usa el runner correcto**: Asegúrate de usar `@RunWith(CucumberWithSerenity.class)` con JUnit 4
 3. ✅ **Documenta dependencias**: Especifica por qué cada una es necesaria
 4. ✅ **Centraliza configuración**: serenity.properties para toda la config
 5. ✅ **Prueba regularmente**: CI/CD debe ejecutar tests automáticamente

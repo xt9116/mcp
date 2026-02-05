@@ -367,7 +367,7 @@ Antes de enviar tu especificación, verifica que:
 - [ ] **Validaciones** son específicas y medibles
 - [ ] **Escenario Gherkin** tiene ejemplos concretos
 - [ ] **Datos de prueba** incluyen casos positivos y negativos
-- [ ] Se especifica usar **"Serenity Screenplay con JUnit 5"**
+- [ ] Se especifica usar **"Serenity Screenplay con JUnit 4"**
 
 ---
 
@@ -401,10 +401,10 @@ Antes de enviar tu especificación, verifica que:
 ✅ Bueno: Examples con datos verificables de la API real
 ```
 
-### 5. **Especifica JUnit 5**
+### 5. **Especifica JUnit 4**
 ```
 ❌ Malo: "Usando Serenity"
-✅ Bueno: "Utilizando Serenity Screenplay con JUnit 5"
+✅ Bueno: "Utilizando Serenity Screenplay con JUnit 4"
 ```
 
 ---

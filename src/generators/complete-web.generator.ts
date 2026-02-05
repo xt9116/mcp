@@ -38,6 +38,7 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
 
   const hookSetup = buildCucumberHooks(pkgBase);
   const testRunner = buildJUnitRunner(pkgBase);
+  const serenityPropertiesConfig = buildSerenityPropertiesConfig(request.baseUrl);
 
   const formattedOutput = [
     ...artifacts.userInterfaces.map((code, idx) =>
@@ -50,13 +51,14 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
     `### SetTheStage.java\n\`\`\`java\n${hookSetup}\n\`\`\`\n`,
     `### Runner: CucumberTestRunner.java\n\`\`\`java\n${testRunner}\n\`\`\`\n`,
     `### Step Definitions: ${request.huId.replace('WEB-HU-', '')}StepDefinitions.java\n\`\`\`java\n${artifacts.cucumberSteps[0]}\n\`\`\`\n`,
-    `### Feature: ${request.huId.replace('WEB-HU-', '')}.feature\n\`\`\`gherkin\n${artifacts.gherkinFeatures[0]}\n\`\`\`\n`
+    `### Feature: ${request.huId.replace('WEB-HU-', '')}.feature\n\`\`\`gherkin\n${artifacts.gherkinFeatures[0]}\n\`\`\`\n`,
+    `### serenity.properties\n\`\`\`properties\n${serenityPropertiesConfig}\n\`\`\`\n`
   ].join('\n');
 
   return {
     output: formattedOutput,
     summary: {
-      totalFiles: 5 + request.paginas.length + request.validaciones.length,
+      totalFiles: 6 + request.paginas.length + request.validaciones.length,
       files: [
         ...request.paginas.map(p => ({ name: `${p.uiName}.java`, type: 'UI' })),
         { name: `${request.huId.replace('WEB-HU-', '')}.java`, type: 'Task' },
@@ -64,7 +66,8 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
         { name: 'SetTheStage.java', type: 'SetTheStage' },
         { name: 'CucumberTestRunner.java', type: 'Runner' },
         { name: `${request.huId.replace('WEB-HU-', '')}StepDefinitions.java`, type: 'StepDefinitions' },
-        { name: `${request.huId.replace('WEB-HU-', '')}.feature`, type: 'Feature' }
+        { name: `${request.huId.replace('WEB-HU-', '')}.feature`, type: 'Feature' },
+        { name: 'serenity.properties', type: 'Configuration' }
       ]
     }
   };
@@ -367,4 +370,25 @@ ${runnerComment}
 )
 public class CucumberTestRunner {
 }`;
+}
+
+function buildSerenityPropertiesConfig(baseUrl: string): string {
+  return `# Serenity Configuration
+# Base URL de la aplicación web
+webdriver.base.url=${baseUrl}
+
+# Configuración del navegador
+webdriver.driver=chrome
+chrome.switches=--start-maximized
+
+# Configuración de screenshots
+serenity.take.screenshots=FOR_FAILURES
+
+# Configuración de reportes
+serenity.reports.show.step.details=true
+serenity.console.headings=normal
+serenity.logging=QUIET
+
+# NOTA: También puedes usar @DefaultUrl en las clases UI para especificar URLs específicas
+# Si usas serenity.properties, puedes remover la anotación @DefaultUrl de las clases UI`;
 }
