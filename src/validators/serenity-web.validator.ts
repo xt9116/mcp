@@ -192,7 +192,7 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
   // Validaciones de UI (actualizado con validaciones robots Rimac)
   if (payload.type === 'UI') {
     if (!payload.usesCorrectUIClassName) {
-      errors.push("❌ Las clases UI deben empezar con 'UI' (ej: UIHome, UISoatDigital)");
+      errors.push("❌ Las clases UI deben empezar con 'UI' o terminar con 'Page' (ej: UIHome, UISoatDigital, LoginPage, UILoginPage)");
     }
 
     if (!payload.uiExtendsPageObject) {
@@ -224,11 +224,17 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
       for (const match of targetMatches) {
         const targetName = match[1];
         if (targetName) {
-          const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
-          const hasValidPrefix = validPrefixes.some(prefix => targetName.startsWith(prefix));
+          // Standard prefixes recommended by Rimac
+          const standardPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
+          const hasStandardPrefix = standardPrefixes.some(prefix => targetName.startsWith(prefix));
+          
+          // Check if it follows the PREFIX_NAME pattern (uppercase letters followed by underscore)
+          const followsPrefixPattern = /^[A-Z]+_/.test(targetName);
 
-          if (!hasValidPrefix) {
-            warnings.push(`⚠️ Target '${targetName}' no usa prefijo estándar`);
+          if (!followsPrefixPattern) {
+            errors.push(`❌ Target '${targetName}' debe seguir el patrón PREFIX_NAME (ej: TXT_USERNAME, LST_PRODUCTS)`);
+          } else if (!hasStandardPrefix) {
+            warnings.push(`⚠️ Target '${targetName}' usa prefijo personalizado. Los prefijos estándar recomendados son: ${standardPrefixes.join(', ')}`);
           }
         }
       }
@@ -313,7 +319,8 @@ export function validateSerenityWebClass(
 
   // Validaciones de naming conventions (actualizado)
   payload.usesCorrectFolderName = code.includes('userinterfaces') && !code.includes('userInterfaces');
-  payload.usesCorrectUIClassName = className?.startsWith('UI') || false;
+  // UI classes can start with 'UI' or end with 'Page' (e.g., UIHome, LoginPage, UILoginPage)
+  payload.usesCorrectUIClassName = className ? (className.startsWith('UI') || className.endsWith('Page')) : false;
   payload.usesLocatedByVsLocatedBy = code.includes('.locatedBy(') && !code.includes('.located(By.');
   payload.hasDrawTheCurtain = code.includes('drawTheCurtain()');
   payload.usesTheActorCalled = code.includes('theActorCalled(');
@@ -355,15 +362,15 @@ export function validateSerenityWebClass(
       payload.locatorIsStable = true;
     }
 
-    // Validar prefijos de Targets
-    const validPrefixes = ['TXT_', 'BTN_', 'LBL_', 'DDL_', 'CHK_', 'RDB_', 'LNK_', 'IMG_', 'TBL_'];
+    // Validar prefijos de Targets - solo verifica que sigan el patrón PREFIX_NAME
     const targetMatches = code.matchAll(/public static final Target\s+(\w+)\s*=/g);
     let allValid = true;
     for (const match of targetMatches) {
       const targetName = match[1];
       if (targetName) {
-        const hasValidPrefix = validPrefixes.some(prefix => targetName.startsWith(prefix));
-        if (!hasValidPrefix) {
+        // Check if it follows the PREFIX_NAME pattern (uppercase letters followed by underscore)
+        const followsPrefixPattern = /^[A-Z]+_/.test(targetName);
+        if (!followsPrefixPattern) {
           allValid = false;
           break;
         }
@@ -406,5 +413,6 @@ export function isValidQuestionName(name: string): boolean {
 }
 
 export function isValidUIName(name: string): boolean {
-  return name.startsWith('UI');
+  // UI classes can start with 'UI' or end with 'Page' (e.g., UIHome, LoginPage, UILoginPage)
+  return name.startsWith('UI') || name.endsWith('Page');
 }
