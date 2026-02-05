@@ -487,7 +487,7 @@ El servidor expone las siguientes herramientas que pueden ser invocadas por tu a
 - **`get_standard`** - Obtiene un estándar completo (Java, OOP/SOLID, Serenity API o Web)
 - **`diagnose_serenity_robot`** - Diagnostica proyectos existentes y genera reporte completo
 
-## 📖 Ejemplos de uso detallados
+## 📖 Ejemplos y guías de uso
 
 ### Guías de Historias de Usuario
 
@@ -519,9 +519,9 @@ El estándar API incluye una sección completa **"commonIssuesAndFixes"** que do
 
 Ver: [RESUMEN_CAMBIOS_FIXES.md](./RESUMEN_CAMBIOS_FIXES.md) para el resumen completo de todas las mejoras.
 
-## 📖 Ejemplos de uso detallados
+### Ejemplos prácticos paso a paso
 
-### Ejemplo 1: Generar HU API completa
+#### Ejemplo 1: Generar HU API completa
 
 **Contexto**: Necesitas automatizar una API que crea usuarios en tu sistema.
 
@@ -542,7 +542,7 @@ Genera el código completo para automatizar esta API:
 
 **Código que recibirás**: Múltiples archivos Java listos para usar con toda la estructura Screenplay.
 
-### Ejemplo 2: Crear proyecto desde cero
+#### Ejemplo 2: Crear proyecto desde cero
 
 **Contexto**: Inicias un nuevo proyecto de automatización.
 
@@ -558,7 +558,7 @@ Crea un proyecto nuevo de Serenity BDD con estas características:
 
 **Lo que recibirás**: Estructura completa de carpetas y archivos de configuración.
 
-### Ejemplo 3: Validar código existente
+#### Ejemplo 3: Validar código existente
 
 **Contexto**: Tienes código que necesitas revisar.
 
@@ -575,7 +575,7 @@ public class userservice {
 
 **Respuesta que obtendrás**: Lista de problemas encontrados con sugerencias de cómo corregirlos.
 
-### Ejemplo 4: Generar proyecto Web
+#### Ejemplo 4: Generar proyecto Web
 
 **Tu solicitud:**
 ```
