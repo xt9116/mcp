@@ -421,7 +421,7 @@ public class CucumberTestRunner {
 }
 
 function buildSerenityPropertiesConfig(baseUrl: string, packageName: string): string {
-  // Extract project name from package (e.g., "co.com.saucedemo.web" -> "co.com.saucedemo.web")
+  // Use package name as project name for serenity.project.name property
   const projectName = packageName;
   
   return `serenity.project.name=${projectName}
