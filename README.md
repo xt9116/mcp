@@ -453,6 +453,55 @@ npm run test:coverage # Tests con reporte de cobertura
 
 El servidor expone las siguientes herramientas que pueden ser invocadas por tu asistente de IA:
 
+### 🔥 Herramientas de Generación Completa (RECOMENDADAS)
+
+#### `parse_web_hu_text` - Parsear Historia de Usuario Web desde Texto Plano (NUEVO)
+**¿Qué hace?** Convierte una Historia de Usuario Web escrita en formato texto plano a código Serenity completo.
+
+**¿Cuándo usarla?** Cuando tienes una HU Web escrita en formato de texto con secciones como:
+- INFORMACIÓN BÁSICA (ID, Nombre, URL Base)
+- PÁGINAS Y ELEMENTOS (definición de UI pages y locators)
+- PASOS DEL FLUJO DE LA TASK
+- VALIDACIONES REQUERIDAS
+- ESCENARIO DE PRUEBA GHERKIN
+
+**Ejemplo de uso:**
+```
+Copias y pegas tu HU completa en texto plano, por ejemplo:
+
+INFORMACIÓN BÁSICA
+-------------------
+ID: WEB-HU-001
+Nombre: Buscar Productos en el Catálogo
+URL Base: https://www.saucedemo.com
+
+PÁGINAS Y ELEMENTOS
+------------------
+Página 1: Página de Login
+  UI Class: UILoginPage
+  Elementos:
+    TXT_USERNAME:
+      strategy: id
+      selector: user-name
+      Descripción: Campo de texto para usuario
+
+[... resto de tu HU ...]
+```
+
+El servidor parseará automáticamente el texto y generará:
+- ✅ UI Classes con todos los elementos
+- ✅ Tasks con la lógica de negocio
+- ✅ Questions para validaciones
+- ✅ Step Definitions en español
+- ✅ Feature file con escenarios Gherkin
+- ✅ SetTheStage (en archivo Hooks separado, no en step definitions)
+- ✅ Runner JUnit 4
+- ✅ serenity.properties con URL base configurable
+
+**Parámetros opcionales:**
+- `packageName`: Package base para el código generado (ej: "com.empresa.proyecto")
+- `language`: Idioma de features y step definitions ("en" o "es")
+
 ### Generación avanzada (Historias de Usuario completas)
 
 - **`process_api_hu`** - Genera una Historia de Usuario completa para API REST
