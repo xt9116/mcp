@@ -167,15 +167,14 @@ function extractElements(elementsSection: string): Array<{
     strategy?: string;
   }> = [];
   
-  // Pattern for element definitions:
+  // Pattern 1: Standard format with PREFIX_NAME:
   // PREFIX_NAME:
   //   strategy: ...
   //   selector: ...
-  //   (optional) Descripción: ...
-  const elementPattern = /([A-Z]+)_([A-Z_]+):\s*\n([\s\S]*?)(?=\n\s*[A-Z]+_[A-Z_]+:|\n\s*$|$)/gi;
+  const elementPattern1 = /([A-Z]+)_([A-Z_]+):\s*\n([\s\S]*?)(?=\n\s*[A-Z]+_[A-Z_]+:|\n\s*$|$)/gi;
   
   let elementMatch;
-  while ((elementMatch = elementPattern.exec(elementsSection)) !== null) {
+  while ((elementMatch = elementPattern1.exec(elementsSection)) !== null) {
     if (!elementMatch[1] || !elementMatch[2] || !elementMatch[3]) continue;
     
     const prefix = elementMatch[1];
@@ -194,6 +193,30 @@ function extractElements(elementsSection: string): Array<{
         strategy: strategyMatch && strategyMatch[1] ? strategyMatch[1].trim() : undefined
       });
     }
+  }
+  
+  // Pattern 2: Alternative format with separate lines for prefix, name, strategy, selector
+  // prefix: TXT
+  // name: USERNAME
+  // strategy: id
+  // selector: user-name
+  const elementPattern2 = /prefix:\s*([A-Z]+)\s*\n\s*name:\s*([A-Z_]+)\s*\n\s*strategy:\s*(.+?)\s*\n\s*selector:\s*(.+?)(?:\s*\n|$)/gi;
+  
+  let elementMatch2;
+  while ((elementMatch2 = elementPattern2.exec(elementsSection)) !== null) {
+    if (!elementMatch2[1] || !elementMatch2[2] || !elementMatch2[4]) continue;
+    
+    const prefix = elementMatch2[1].trim();
+    const name = elementMatch2[2].trim();
+    const strategy = elementMatch2[3] ? elementMatch2[3].trim() : undefined;
+    const selector = elementMatch2[4].trim();
+    
+    elements.push({
+      prefix,
+      name,
+      selector,
+      strategy
+    });
   }
   
   return elements;
