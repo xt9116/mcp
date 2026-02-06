@@ -212,6 +212,56 @@ Feature: Búsqueda de Productos en el Catálogo
     expect(generatedCode.output).toContain('https://www.saucedemo.com');
   });
 
+  it('should generate complete serenity.properties with all required configurations', () => {
+    const parseResult = parseWebHUText(sampleHUText);
+    const generatedCode = generateCompleteWebHU(parseResult.data!);
+    
+    // Extract serenity.properties section
+    const propertiesMatch = generatedCode.output.match(/### serenity\.properties\n```properties\n([\s\S]+?)\n```/);
+    expect(propertiesMatch).toBeTruthy();
+    
+    if (propertiesMatch) {
+      const properties = propertiesMatch[1];
+      
+      // Check that serenity.project.name is present and dynamic
+      expect(properties).toContain('serenity.project.name=');
+      expect(properties).toMatch(/serenity\.project\.name=\w+/);
+      
+      // Check that webdriver.base.url is present and dynamic
+      expect(properties).toContain('webdriver.base.url=https://www.saucedemo.com');
+      
+      // Check all required chrome switches
+      expect(properties).toContain('chrome.switches=--remote-allow-origins=*;--start-maximized;--force-device-scale-factor=1;--high-dpi-support=1;--disable-blink-features=AutomationControlled;--ignore-certificate-errors;--use-fake-ui-for-media-stream;--use-fake-device-for-media-stream;--disable-dev-shm-usage;--no-sandbox;--disable-gpu');
+      
+      // Check chrome capabilities
+      expect(properties).toContain('chrome.capabilities.loggingPrefs.browser=ALL');
+      expect(properties).toContain('chrome.capabilities.loggingPrefs.performance=ALL');
+      expect(properties).toContain('chrome.capabilities.acceptInsecureCerts=true');
+      expect(properties).toContain('chrome.capabilities.handlesAlerts=true');
+      
+      // Check timeouts
+      expect(properties).toContain('webdriver.timeouts.implicitlywait=10000');
+      expect(properties).toContain('webdriver.wait.for.timeout=10000');
+      
+      // Check serenity settings
+      expect(properties).toContain('serenity.use.unique.browser=false');
+      expect(properties).toContain('serenity.dry.run=false');
+      expect(properties).toContain('serenity.verbose.steps=false');
+      expect(properties).toContain('serenity.report.encoding=UTF8');
+      expect(properties).toContain('feature.file.encoding=UTF8');
+      expect(properties).toContain('serenity.restart.browser.for.each=never');
+      expect(properties).toContain('cucumber.options=--plugin pretty');
+      expect(properties).toContain('serenity.take.screenshots=FOR_FAILURES');
+      expect(properties).toContain('serenity.reports.show.step.details=true');
+      expect(properties).toContain('serenity.console.headings=normal');
+      expect(properties).toContain('serenity.logging=QUIET');
+      expect(properties).toContain('serenity.browser.maximized=true');
+      
+      // Check driver download
+      expect(properties).toContain('webdriver.autodownload=true');
+    }
+  });
+
   it('should support custom package name', () => {
     const parseResult = parseWebHUText(sampleHUText);
     
