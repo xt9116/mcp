@@ -118,7 +118,7 @@ Feature: Búsqueda de Productos en el Catálogo
     const loginPage = result.data?.paginas[0];
     expect(loginPage?.name).toBe('Página de Login');
     expect(loginPage?.uiName).toBe('UILoginPage');
-    expect(loginPage?.elements.length).toBeGreaterThanOrEqual(2); // At least TXT_PASSWORD and BTN_LOGIN
+    expect(loginPage?.elements.length).toBeGreaterThanOrEqual(3); // TXT_USERNAME, TXT_PASSWORD, and BTN_LOGIN
     
     // Check second page
     const productsPage = result.data?.paginas[1];
