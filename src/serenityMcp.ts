@@ -22,6 +22,7 @@ import { generateCompleteApiHU } from './generators/complete-api.generator.js';
 import { generateCompleteWebHU } from './generators/complete-web.generator.js';
 import { generateProjectStructure as generateProjectStructureGen } from './generators/project-structure.generator.js';
 import { validateGeneratedCode } from './generators/validation.helper.js';
+import { parseWebHUText } from './generators/web-hu-text.parser.js';
 
 // Importar diagnostics
 import { diagnoseSerenityRobot, generateMarkdownReport } from './diagnostics/robot-diagnostic.js';
@@ -434,6 +435,29 @@ const tools: Tool[] = [
     }
   },
   {
+    name: 'parse_web_hu_text',
+    description: 'Parsea una Historia de Usuario Web en formato texto plano y la convierte a formato estructurado JSON. Acepta el formato con secciones: INFORMACIÓN BÁSICA, PÁGINAS Y ELEMENTOS, PASOS DEL FLUJO DE LA TASK, VALIDACIONES REQUERIDAS, ESCENARIO DE PRUEBA GHERKIN. Después de parsear, puedes usar process_web_hu para generar el código.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        textInput: {
+          type: 'string',
+          description: 'El texto completo de la Historia de Usuario en formato plano con las secciones: INFORMACIÓN BÁSICA (ID, Nombre, URL Base), PÁGINAS Y ELEMENTOS, PASOS DEL FLUJO, VALIDACIONES REQUERIDAS, ESCENARIO DE PRUEBA GHERKIN'
+        },
+        packageName: {
+          type: 'string',
+          description: 'Base package name for generated code (e.g., "co.com.rickandmorty"). If not provided, defaults to "com.screenplay"'
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'es'],
+          description: 'Language for feature files and step definitions. "en" for English (Given/When/Then), "es" for Spanish (Dado/Cuando/Entonces). If not provided, will be auto-detected from scenario steps, defaulting to Spanish.'
+        }
+      },
+      required: ['textInput']
+    }
+  },
+  {
     name: 'generate_project_structure',
     description: 'Genera la estructura completa de un proyecto Gradle/Maven para automatización con Serenity BDD',
     inputSchema: {
@@ -809,6 +833,120 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   '- ✅ Base URL configurable en serenity.properties\n' +
                   '- ✅ Código modular y reutilizable\n' +
                   '- ✅ Mantenible y extensible'
+        }]
+      };
+    }
+
+    case 'parse_web_hu_text': {
+      const { textInput, packageName, language } = args as any;
+      const parseResult = parseWebHUText(textInput);
+
+      if (!parseResult.isValid || !parseResult.data) {
+        return {
+          content: [{
+            type: 'text',
+            text: `# ❌ Error al Parsear Historia de Usuario Web\n\n` +
+                  `**Error:** ${parseResult.error}\n\n` +
+                  `## 📝 Formato Esperado\n\n` +
+                  `El texto debe incluir las siguientes secciones:\n\n` +
+                  `### INFORMACIÓN BÁSICA\n` +
+                  `\`\`\`\n` +
+                  `ID: WEB-HU-001\n` +
+                  `Nombre: Nombre descriptivo de la HU\n` +
+                  `URL Base: https://example.com\n` +
+                  `\`\`\`\n\n` +
+                  `### PÁGINAS Y ELEMENTOS\n` +
+                  `\`\`\`\n` +
+                  `Página 1: Nombre de la página\n` +
+                  `  UI Class: NombreClaseUI\n` +
+                  `  Elementos:\n` +
+                  `    TXT_USERNAME:\n` +
+                  `      strategy: id\n` +
+                  `      selector: username\n` +
+                  `      Descripción: Campo de usuario\n` +
+                  `\`\`\`\n\n` +
+                  `### PASOS DEL FLUJO DE LA TASK\n` +
+                  `\`\`\`\n` +
+                  `1. Abrir navegador\n` +
+                  `2. Ingresar usuario\n` +
+                  `3. Hacer clic en login\n` +
+                  `\`\`\`\n\n` +
+                  `### VALIDACIONES REQUERIDAS\n` +
+                  `\`\`\`\n` +
+                  `- Login exitoso\n` +
+                  `- Dashboard visible\n` +
+                  `\`\`\`\n\n` +
+                  `### ESCENARIO DE PRUEBA GHERKIN\n` +
+                  `\`\`\`gherkin\n` +
+                  `Feature: Nombre del feature\n` +
+                  `  Scenario: Escenario de prueba\n` +
+                  `    Given ...\n` +
+                  `    When ...\n` +
+                  `    Then ...\n` +
+                  `\`\`\`\n`
+          }]
+        };
+      }
+
+      // Add optional parameters if provided
+      if (packageName) {
+        parseResult.data.packageName = packageName;
+      }
+      if (language) {
+        parseResult.data.language = language;
+      }
+
+      // Generate the code using the parsed data
+      const generatedCode = generateCompleteWebHU(parseResult.data);
+
+      return {
+        content: [{
+          type: 'text',
+          text: `# ✅ Historia de Usuario Web Parseada y Generada: ${parseResult.data.huId}\n\n` +
+                `**Nombre:** ${parseResult.data.nombre}\n` +
+                `**URL Base:** ${parseResult.data.baseUrl}\n\n` +
+                `## 📊 Información Parseada\n\n` +
+                `✅ **Páginas detectadas:** ${parseResult.data.paginas.length}\n` +
+                `✅ **Pasos del flujo:** ${parseResult.data.pasosFlujo.length}\n` +
+                `✅ **Validaciones:** ${parseResult.data.validaciones.length}\n` +
+                `✅ **Escenario Gherkin:** ${parseResult.data.gherkinScenario ? 'Detectado' : 'No detectado'}\n\n` +
+                
+                `### Páginas y Elementos\n` +
+                parseResult.data.paginas.map((p, idx) => 
+                  `${idx + 1}. **${p.name}** (${p.uiName}): ${p.elements.length} elementos`
+                ).join('\n') + '\n\n' +
+
+                `## 📊 Generación Completa\n\n` +
+                `✅ **UI Classes** generadas: ${parseResult.data.paginas.length} páginas\n` +
+                `✅ **Tasks** generados: Flujo completo de la HU\n` +
+                `✅ **Questions** generados: ${parseResult.data.validaciones.length} validaciones\n` +
+                `✅ **Step Definitions** generados: En español\n` +
+                `✅ **Features** generados: Escenario Gherkin\n\n` +
+
+                `## 📁 Archivos Generados\n\n` +
+                `${generatedCode.summary.files.map(f => `- **${f.type}**: ${f.name}`).join('\n')}\n\n` +
+
+                `## 🔧 Código Generado\n\n` +
+                generatedCode.output +
+
+                `## 🚀 ¿Qué hacer ahora?\n\n` +
+                `1. **Guarda** cada archivo en la ubicación correcta de tu proyecto Web\n` +
+                `2. **Configura** el archivo serenity.properties en src/test/resources/ (o puedes usar @DefaultUrl en las clases UI)\n` +
+                `3. **Configura** las dependencias Serenity Web en build.gradle o pom.xml\n` +
+                `4. **Verifica** que los selectores sean correctos\n` +
+                `5. **Asegúrate** de que la URL sea accesible\n` +
+                `6. **Ejecuta** los tests con \`gradle test\` o \`mvn test\`\n` +
+                `7. **Verifica** los reportes en \`target/site/serenity\`\n\n` +
+
+                `## 💡 Consideraciones de Calidad\n\n` +
+                `- ✅ Cumple estándares de Screenplay Pattern\n` +
+                `- ✅ Usa convenciones de naming de Serenity\n` +
+                `- ✅ Aplica mejores prácticas de WebDriver\n` +
+                `- ✅ Usa JUnit 4 con @RunWith(CucumberWithSerenity.class)\n` +
+                `- ✅ SetTheStage en archivo de hooks separado (no en step definitions)\n` +
+                `- ✅ Base URL configurable en serenity.properties\n` +
+                `- ✅ Código modular y reutilizable\n` +
+                `- ✅ Mantenible y extensible`
         }]
       };
     }
