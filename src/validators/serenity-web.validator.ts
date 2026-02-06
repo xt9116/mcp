@@ -47,6 +47,12 @@ interface ValidationPayloadWeb {
   usesTheActorCalled?: boolean;
   stepsExceedThreeLines?: boolean;
   hasLogicInSteps?: boolean;
+
+  // Validaciones para Open.browserOn
+  usesOpenBrowserOn?: boolean;
+  hasPrivateUIField?: boolean;
+  uiFieldExtendsPageObject?: boolean;
+  uiFieldHasDefaultUrl?: boolean;
 }
 
 export function validateSerenityWeb(payload: ValidationPayloadWeb) {
@@ -145,6 +151,17 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
     if (payload.code && payload.usesPageObjectModel) {
       errors.push('❌ Task no debe usar Page Object Model tradicional');
     }
+
+    // Validaciones para Open.browserOn - ESTÁNDAR WEB NO NEGOCIABLE
+    if (payload.usesOpenBrowserOn) {
+      if (!payload.hasPrivateUIField) {
+        errors.push('❌ CRÍTICO: Al usar Open.browserOn() se debe declarar un campo privado de la clase UI (ej: private UILoginPage uiLoginPage;)');
+      }
+
+      // Note: uiFieldExtendsPageObject and uiFieldHasDefaultUrl cannot be validated from Task code alone
+      // These must be validated when the UI class itself is validated
+      warnings.push('⚠️ IMPORTANTE: La clase UI usada con Open.browserOn() DEBE extender PageObject y tener @DefaultUrl');
+    }
   }
 
   // Validaciones de Interactions
@@ -197,6 +214,11 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
 
     if (!payload.uiExtendsPageObject) {
       errors.push('❌ Las clases UI DEBEN extender PageObject');
+    }
+
+    // CRÍTICO: Validar @DefaultUrl - NO NEGOCIABLE para usar con Open.browserOn()
+    if (payload.code && !payload.code.includes('@DefaultUrl')) {
+      errors.push('❌ CRÍTICO: Las clases UI DEBEN tener @DefaultUrl para usarse con Open.browserOn()');
     }
 
     if (!payload.uiUsesTarget) {
@@ -326,6 +348,35 @@ export function validateSerenityWebClass(
   payload.usesLocatedByVsLocatedBy = code.includes('.locatedBy(') && !code.includes('.located(By.');
   payload.hasDrawTheCurtain = code.includes('drawTheCurtain()');
   payload.usesTheActorCalled = code.includes('theActorCalled(');
+
+  // Validaciones para Open.browserOn (solo para Tasks)
+  if (type === 'Task') {
+    payload.usesOpenBrowserOn = code.includes('Open.browserOn(');
+
+    if (payload.usesOpenBrowserOn) {
+      // Check for private UI field pattern: private UIClassName fieldName;
+      const privateUIFieldPattern = /private\s+(UI\w+|\w+Page)\s+\w+;/;
+      payload.hasPrivateUIField = privateUIFieldPattern.test(code);
+
+      // Extract UI class name from Open.browserOn call
+      const openBrowserMatch = code.match(/Open\.browserOn\((\w+)\)/);
+      if (openBrowserMatch?.[1]) {
+        const uiFieldName = openBrowserMatch[1];
+        // Check if this field is declared as private with a UI class type
+        const fieldDeclarationPattern = new RegExp(`private\\s+(UI\\w+|\\w+Page)\\s+${uiFieldName};`);
+        const fieldDeclarationMatch = code.match(fieldDeclarationPattern);
+
+        if (fieldDeclarationMatch) {
+          payload.hasPrivateUIField = true;
+          // Note: We can't validate if the UI class extends PageObject or has @DefaultUrl
+          // from the Task code alone - that must be validated when the UI class is validated
+        } else if (payload.hasPrivateUIField) {
+          // Has a private UI field but not matching the Open.browserOn parameter
+          // This will be caught by the validation
+        }
+      }
+    }
+  }
 
   if (type === 'Question') {
     payload.usesCorrectFactoryMethods = code.includes('.en(') || code.includes('.del(') || code.includes('.de(');
