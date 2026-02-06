@@ -651,7 +651,8 @@
         "value": "PageObject",
         "description": "Todas las clases UI deben extender PageObject",
         "mandatory": true,
-        "reason": "Necesario para usar @DefaultUrl y para la instrumentación de Serenity BDD"
+        "reason": "Necesario para usar @DefaultUrl y para la instrumentación de Serenity BDD",
+        "criticality": "NO NEGOCIABLE - Es requisito obligatorio para usar Open.browserOn() en Tasks"
       },
       "annotations": {
         "defaultUrl": {
@@ -659,7 +660,8 @@
           "description": "Anotación para URL base de la página",
           "mandatory": true,
           "usage": "@DefaultUrl(\"https://www.example.com/\")",
-          "note": "OBLIGATORIO: Siempre se debe usar @DefaultUrl en la clase UI principal que contiene la URL del sitio web. Esto permite usar Open.browserOn(uiPage) en las Tasks."
+          "note": "OBLIGATORIO: Siempre se debe usar @DefaultUrl en la clase UI principal que contiene la URL del sitio web. Esto permite usar Open.browserOn(uiPage) en las Tasks.",
+          "criticality": "NO NEGOCIABLE - Open.browserOn() requiere que la clase UI tenga @DefaultUrl"
         }
       },
       "imports": {
@@ -782,6 +784,44 @@
           "description": "Cómo usar el Task en StepDefinitions",
           "example": "actor.attemptsTo(AbrirPagina.urlWeb());",
           "note": "El actor ejecuta el task que abre el navegador en la URL definida en @DefaultUrl de UiPagina"
+        },
+        "requirements": {
+          "description": "Requisitos NO NEGOCIABLES para usar Open.browserOn()",
+          "mandatory": true,
+          "rules": [
+            {
+              "rule": "Uso de campo privado",
+              "description": "Open.browserOn() DEBE usarse con un campo privado de la clase UI",
+              "example": "private UILoginPage uiLoginPage; ... Open.browserOn(uiLoginPage)",
+              "reason": "Permite que Serenity BDD inyecte automáticamente la instancia y use @DefaultUrl"
+            },
+            {
+              "rule": "UI extiende PageObject",
+              "description": "La clase UI DEBE extender PageObject",
+              "example": "public class UILoginPage extends PageObject { ... }",
+              "reason": "Es requisito obligatorio para que @DefaultUrl funcione correctamente"
+            },
+            {
+              "rule": "UI tiene @DefaultUrl",
+              "description": "La clase UI DEBE tener la anotación @DefaultUrl con la URL del sitio",
+              "example": "@DefaultUrl(\"https://www.saucedemo.com/\")",
+              "reason": "Define la URL base que Open.browserOn() utilizará para abrir el navegador"
+            }
+          ],
+          "antipatterns": [
+            {
+              "pattern": "Open.browserOn().the(page)",
+              "reason": "NO usar .the() - usar directamente el campo privado UI"
+            },
+            {
+              "pattern": "Open.browserOn(new UILoginPage())",
+              "reason": "NO instanciar manualmente - usar campo privado inyectado por Serenity"
+            },
+            {
+              "pattern": "public UILoginPage uiLoginPage;",
+              "reason": "El campo DEBE ser private, no public"
+            }
+          ]
         }
       }
     },
