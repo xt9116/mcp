@@ -121,3 +121,4 @@ dist
 
 # TypeScript
 *.tsbuildinfo
+test-open-browser-validation.mjs
