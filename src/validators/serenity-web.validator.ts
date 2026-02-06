@@ -157,7 +157,7 @@ export function validateSerenityWeb(payload: ValidationPayloadWeb) {
       if (!payload.hasPrivateUIField) {
         errors.push('❌ CRÍTICO: Al usar Open.browserOn() se debe declarar un campo privado de la clase UI (ej: private UILoginPage uiLoginPage;)');
       }
-      
+
       // Note: uiFieldExtendsPageObject and uiFieldHasDefaultUrl cannot be validated from Task code alone
       // These must be validated when the UI class itself is validated
       warnings.push('⚠️ IMPORTANTE: La clase UI usada con Open.browserOn() DEBE extender PageObject y tener @DefaultUrl');
@@ -352,20 +352,20 @@ export function validateSerenityWebClass(
   // Validaciones para Open.browserOn (solo para Tasks)
   if (type === 'Task') {
     payload.usesOpenBrowserOn = code.includes('Open.browserOn(');
-    
+
     if (payload.usesOpenBrowserOn) {
       // Check for private UI field pattern: private UIClassName fieldName;
       const privateUIFieldPattern = /private\s+(UI\w+|\w+Page)\s+\w+;/;
       payload.hasPrivateUIField = privateUIFieldPattern.test(code);
-      
+
       // Extract UI class name from Open.browserOn call
       const openBrowserMatch = code.match(/Open\.browserOn\((\w+)\)/);
-      if (openBrowserMatch && openBrowserMatch[1]) {
+      if (openBrowserMatch?.[1]) {
         const uiFieldName = openBrowserMatch[1];
         // Check if this field is declared as private with a UI class type
         const fieldDeclarationPattern = new RegExp(`private\\s+(UI\\w+|\\w+Page)\\s+${uiFieldName};`);
         const fieldDeclarationMatch = code.match(fieldDeclarationPattern);
-        
+
         if (fieldDeclarationMatch) {
           payload.hasPrivateUIField = true;
           // Note: We can't validate if the UI class extends PageObject or has @DefaultUrl
