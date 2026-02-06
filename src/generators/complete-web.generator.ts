@@ -53,7 +53,7 @@ export function generateCompleteWebHU(request: WebHURequest): GeneratedHU {
 
   const hookSetup = buildCucumberHooks(pkgBase);
   const testRunner = buildJUnitRunner(pkgBase);
-  const serenityPropertiesConfig = buildSerenityPropertiesConfig(request.baseUrl);
+  const serenityPropertiesConfig = buildSerenityPropertiesConfig(request.baseUrl, pkgBase);
 
   const formattedOutput = [
     ...artifacts.userInterfaces.map((code, idx) =>
@@ -420,23 +420,34 @@ public class CucumberTestRunner {
 }`;
 }
 
-function buildSerenityPropertiesConfig(baseUrl: string): string {
-  return `# Serenity Configuration
-# Base URL de la aplicación web
+function buildSerenityPropertiesConfig(baseUrl: string, packageName: string): string {
+  // Extract project name from package (e.g., "co.com.saucedemo.web" -> "co.com.saucedemo.web")
+  const projectName = packageName;
+  
+  return `serenity.project.name=${projectName}
 webdriver.base.url=${baseUrl}
-
-# Configuración del navegador
 webdriver.driver=chrome
-chrome.switches=--start-maximized
+chrome.switches=--remote-allow-origins=*;--start-maximized;--force-device-scale-factor=1;--high-dpi-support=1;--disable-blink-features=AutomationControlled;--ignore-certificate-errors;--use-fake-ui-for-media-stream;--use-fake-device-for-media-stream;--disable-dev-shm-usage;--no-sandbox;--disable-gpu
+chrome.capabilities.loggingPrefs.browser=ALL
+chrome.capabilities.loggingPrefs.performance=ALL
+chrome.capabilities.acceptInsecureCerts=true
+chrome.capabilities.handlesAlerts=true
+webdriver.timeouts.implicitlywait=10000
+webdriver.wait.for.timeout=10000
 
-# Configuración de screenshots
+serenity.use.unique.browser=false
+serenity.dry.run=false
+serenity.verbose.steps=false
+serenity.report.encoding=UTF8
+feature.file.encoding=UTF8
+serenity.restart.browser.for.each=never
+cucumber.options=--plugin pretty
 serenity.take.screenshots=FOR_FAILURES
-
-# Configuración de reportes
 serenity.reports.show.step.details=true
 serenity.console.headings=normal
 serenity.logging=QUIET
+serenity.browser.maximized=true
 
-# NOTA: También puedes usar @DefaultUrl en las clases UI para especificar URLs específicas
-# Si usas serenity.properties, puedes remover la anotación @DefaultUrl de las clases UI`;
+# Driver download
+webdriver.autodownload=true`;
 }
